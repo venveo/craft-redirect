@@ -1,6 +1,6 @@
 # Redirect Changelog
 
-## 2.0.8 - 2019-04-16
+## 2.0.8 - 2019-04-19
 ### Fixed
 - Error in RegEx matching on dynamic patterns
 
