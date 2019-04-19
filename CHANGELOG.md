@@ -1,4 +1,9 @@
 # Redirect Changelog
+
+## 2.0.8 - 2019-04-16
+### Fixed
+- Error in RegEx matching on dynamic patterns
+
 ## 2.0.7 - 2019-04-16
 ### Fixed
 - Unexpected behavior that can occur on dynamic redirects matching without replacement
