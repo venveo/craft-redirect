@@ -1,5 +1,9 @@
 # Redirect Changelog
 
+## 2.0.9 - 2019-05-19
+### Fixed
+- Bug that can occur in some environment where PCRE \d is not available
+
 ## 2.0.8 - 2019-04-19
 ### Fixed
 - Error in RegEx matching on dynamic patterns

@@ -102,7 +102,7 @@ class Redirects extends Component
                 $sourceUrl .= '/';
             }
             // Only preg_replace if there are replacements available
-            if (preg_match("/\\$\d{1,}/", $redirect->destinationUrl)) {
+            if (preg_match('/\$[1-9]+/', $redirect->destinationUrl)) {
                 $processedUrl = preg_replace($sourceUrl, $redirect->destinationUrl, $uri);
             } else {
                 $processedUrl = $redirect->destinationUrl;
