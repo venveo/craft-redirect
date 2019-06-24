@@ -25,8 +25,10 @@ class m190403_134317_fix_catchall_table extends Migration
     public function safeUp()
     {
         // The erroneous table name...
-        if ($this->db->tableExists('{{%dolphiq_redirects_catch_all_urls%}}')) {
+        if ($this->db->tableExists('{{%dolphiq_redirects_catch_all_urls%}}') && !$this->db->tableExists('{{%dolphiq_redirects_catch_all_urls}}')) {
             MigrationHelper::renameTable('{{%dolphiq_redirects_catch_all_urls%}}', '{{%dolphiq_redirects_catch_all_urls}}', $this);
+        } elseif ($this->db->tableExists('{{%dolphiq_redirects_catch_all_urls%}}') && $this->db->tableExists('{{%dolphiq_redirects_catch_all_urls}}')) {
+            MigrationHelper::dropTable('{{%dolphiq_redirects_catch_all_urls%}}');
         }
         return true;
     }
