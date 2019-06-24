@@ -1,5 +1,9 @@
 # Redirect Changelog
 
+## 2.0.10 - 2019-06-19
+### Fixed
+- Fixed an install error that can occur if you fixed your dolphiq catch-all table prior to install
+
 ## 2.0.9 - 2019-05-19
 ### Fixed
 - Bug that can occur in some environment where PCRE \d is not available
