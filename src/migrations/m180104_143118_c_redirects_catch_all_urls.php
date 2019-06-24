@@ -18,7 +18,7 @@ class m180104_143118_c_redirects_catch_all_urls extends Migration
         if (!$this->db->tableExists('{{%dolphiq_redirects_catch_all_urls}}')) {
 
             $this->createTable(
-                '{{%dolphiq_redirects_catch_all_urls%}}',
+                '{{%dolphiq_redirects_catch_all_urls}}',
                 [
                     'id' => $this->primaryKey(),
                     'uri' => $this->string(255)->notNull()->defaultValue(''),
