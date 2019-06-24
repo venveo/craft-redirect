@@ -1,5 +1,9 @@
 # Redirect Changelog
 
+## Unreleased
+### Fixed
+- Added additional hardening to install migration
+
 ## 2.0.10 - 2019-06-19
 ### Fixed
 - Fixed an install error that can occur if you fixed your dolphiq catch-all table prior to install
