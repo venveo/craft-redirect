@@ -15,7 +15,9 @@ use craft\base\Plugin as BasePlugin;
 use craft\errors\MigrationException;
 use craft\events\ExceptionEvent;
 use craft\events\RegisterUrlRulesEvent;
+use craft\events\RegisterUserPermissionsEvent;
 use craft\services\Gc;
+use craft\services\UserPermissions;
 use craft\web\ErrorHandler;
 use craft\web\UrlManager;
 use venveo\redirect\elements\FeedMeRedirect;
@@ -40,6 +42,9 @@ class Plugin extends BasePlugin
 
     protected $_redirectsService;
     protected $_catchAllService;
+
+    public const PERMISSION_MANAGE_REDIRECTS = 'vredirect:redirects:manage';
+    public const PERMISSION_MANAGE_404S = 'vredirect:404s:manage';
 
     /**
      * Returns the Redirects service.
@@ -121,24 +126,27 @@ class Plugin extends BasePlugin
     */
     public function getCpNavItem()
     {
+        $subnavItems = [];
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        if ($currentUser->can('vredirect:redirects:manage')) {
+            $subnavItems['redirects'] = [
+                'label' => Craft::t('vredirect', 'Redirects'),
+                'url' => 'redirect/redirects'
+            ];
+        }
+
+        if ($currentUser->can('vredirect:404s:manage')) {
+            $subnavItems['catch-all'] = [
+                'label' => Craft::t('vredirect', 'Registered 404s'),
+                'url' => 'redirect/catch-all'
+            ];
+        }
+
         return [
             'url' => 'redirect',
             'label' => Craft::t('vredirect', 'Site Redirects'),
             'fontIcon' => 'share',
-            'subnav' => [
-//                'dashboard' => [
-//                    'label' => 'Dashboard',
-//                    'url' => UrlHelper::cpUrl('redirect/dashboard')
-//                ],
-                'redirects' => [
-                    'label' => Craft::t('vredirect', 'Redirects'),
-                    'url' => 'redirect/redirects'
-                ],
-                'catch-all' => [
-                    'label' => Craft::t('vredirect', 'Registered 404s'),
-                    'url' => 'redirect/catch-all'
-                ]
-            ]
+            'subnav' => $subnavItems
         ];
     }
 
@@ -189,26 +197,20 @@ class Plugin extends BasePlugin
             });
         }
     }
-//    // TODO: Finish this
-//    private function registerPermissions() {
-//        $sitePermissions = [];
-//        $sites = Craft::$app->getSites()->getAllSites();
-//        foreach($sites as $site) {
-//            $sitePermissions
-//        }
-//
-//
-//        Event::on(UserPermissions::class, UserPermissions::EVENT_REGISTER_PERMISSIONS, function(RegisterUserPermissionsEvent $event) {
-//            $event->permissions[\Craft::t('vredirect', 'Redirects')] = [
-//                'create' => [
-//                    'label' => \Craft::t('vredirect', 'Create Redirects'),
-//                    'nested' => [
-//
-//                    ]
-//                ]
-//            ];
-//        });
-//    }
+
+    private function registerPermissions()
+    {
+        Event::on(UserPermissions::class, UserPermissions::EVENT_REGISTER_PERMISSIONS, function (RegisterUserPermissionsEvent $event) {
+            $event->permissions[\Craft::t('vredirect', 'Redirects')] = [
+                'vredirect:redirects:manage' => [
+                    'label' => \Craft::t('vredirect', 'Manage Redirects on Editable Sites'),
+                ],
+                'vredirect:404s:manage' => [
+                    'label' => \Craft::t('vredirect', 'Manage Registered 404s')
+                ]
+            ];
+        });
+    }
 
 
     public function init()
@@ -219,6 +221,7 @@ class Plugin extends BasePlugin
 
         $this->registerCpRoutes();
         $this->registerFeedMeElement();
+        $this->registerPermissions();
 
         // Remove our soft-deleted redirects when Craft is ready
         Event::on(Gc::class, Gc::EVENT_RUN, function () {

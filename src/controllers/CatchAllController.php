@@ -13,6 +13,7 @@ use craft\db\Paginator;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use craft\web\Response;
+use venveo\redirect\Plugin;
 use venveo\redirect\records\CatchAllUrl;
 use yii\db\Query;
 
@@ -30,7 +31,12 @@ class CatchAllController extends Controller
      */
     public function actionIndex()
     {
-        return $this->renderTemplate('vredirect/catch-all/index', [
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        if (!$currentUser->can(Plugin::PERMISSION_MANAGE_404S)) {
+            return Craft::$app->response->setStatusCode('403', Craft::t('vredirect', 'You lack the required permissions to manage registered 404s'));
+        }
+
+        return $this->renderTemplate('vredirect/_catch-all/index', [
             'catchAllQuery' => CatchAllUrl::find()->orderBy('hitCount DESC')
         ]);
     }
@@ -43,6 +49,12 @@ class CatchAllController extends Controller
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
+
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        if (!$currentUser->can(Plugin::PERMISSION_MANAGE_404S)) {
+            return Craft::$app->response->setStatusCode('403', Craft::t('vredirect', 'You lack the required permissions to manage registered 404s'));
+        }
+
         $data = \GuzzleHttp\json_decode(Craft::$app->request->getRawBody(), true);
         $recordQuery = CatchAllUrl::find();
 
@@ -104,6 +116,12 @@ class CatchAllController extends Controller
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
+
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        if (!$currentUser->can(Plugin::PERMISSION_MANAGE_404S)) {
+            return Craft::$app->response->setStatusCode('403', Craft::t('vredirect', 'You lack the required permissions to manage registered 404s'));
+        }
+
         $data = \GuzzleHttp\json_decode(Craft::$app->request->getRawBody(), true);
         CatchAllUrl::deleteAll(['in', 'id', $data]);
         return $this->asJson('Deleted');
@@ -113,6 +131,12 @@ class CatchAllController extends Controller
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
+
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        if (!$currentUser->can(Plugin::PERMISSION_MANAGE_404S)) {
+            return Craft::$app->response->setStatusCode('403', Craft::t('vredirect', 'You lack the required permissions to manage registered 404s'));
+        }
+
         $data = \GuzzleHttp\json_decode(Craft::$app->request->getRawBody(), true);
         CatchAllUrl::updateAll(['ignored' => true], ['in', 'id', $data]);
         return $this->asJson('Ignored');
@@ -122,6 +146,13 @@ class CatchAllController extends Controller
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
+
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        if (!$currentUser->can(Plugin::PERMISSION_MANAGE_404S)) {
+            return Craft::$app->response->setStatusCode('403', Craft::t('vredirect', 'You lack the required permissions to manage registered 404s'));
+        }
+
+
         $data = \GuzzleHttp\json_decode(Craft::$app->request->getRawBody(), true);
         CatchAllUrl::updateAll(['ignored' => false], ['in', 'id', $data]);
         return $this->asJson('Un-ignored');

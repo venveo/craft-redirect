@@ -139,7 +139,7 @@ class Redirect extends Element
      */
     public function getEditorHtml(): string
     {
-        $html = Craft::$app->getView()->renderTemplate('vredirect/redirects/_redirectfields', [
+        $html = Craft::$app->getView()->renderTemplate('vredirect/_redirects/redirectfields', [
             'redirect' => $this,
             'isNewRedirect' => false,
             'meta' => false,

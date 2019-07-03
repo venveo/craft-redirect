@@ -29,6 +29,8 @@ class CatchAll extends Component
      *
      * @param int|null $siteId
      * @return bool
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
      */
     public function registerHitByUri(string $uri, $siteId = null): bool
     {
