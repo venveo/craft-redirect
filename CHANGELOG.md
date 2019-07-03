@@ -3,6 +3,7 @@
 ## Unreleased
 ### Added
 - Added ability to truncate registered 404s after a certain number of hours of inactivity
+- Permissions for managing redirects and registered 404s
 
 ### Fixed
 - Added additional hardening to install migration

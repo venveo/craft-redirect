@@ -32,6 +32,11 @@ class RedirectsController extends Controller
      */
     public function actionIndex(): craft\web\Response
     {
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        if (!$currentUser->can(Plugin::PERMISSION_MANAGE_REDIRECTS)) {
+            return Craft::$app->response->setStatusCode('403', Craft::t('vredirect', 'You lack the required permissions to manage redirects'));
+        }
+
         // Get the site
         // ---------------------------------------------------------------------
         if (Craft::$app->getIsMultiSite()) {
@@ -41,23 +46,27 @@ class RedirectsController extends Controller
             $variables['siteIds'] = [Craft::$app->getSites()->getPrimarySite()->id];
         }
         if (!$variables['siteIds']) {
-            throw new ForbiddenHttpException('User not permitted to edit content in any sites');
+            return Craft::$app->response->setStatusCode('403', Craft::t('vredirect', 'You have no access to any sites'));
         }
 
-        return $this->renderTemplate('vredirect/redirects/index', $variables);
+        return $this->renderTemplate('vredirect/_redirects/index', $variables);
     }
 
     /**
      * Edit a redirect
      *
      * @param int|null $redirectId The redirect's ID, if editing an existing site
-     * @param Plugin|null $redirect The redirect being edited, if there were any validation errors
+     * @param Redirect $redirect The redirect being edited, if there were any validation errors
      *
      * @return Response
-     * @throws NotFoundHttpException if the requested redirect cannot be found
      */
     public function actionEditRedirect(int $redirectId = null, Redirect $redirect = null): craft\web\Response
     {
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        if (!$currentUser->can(Plugin::PERMISSION_MANAGE_REDIRECTS)) {
+            return Craft::$app->response->setStatusCode('403', Craft::t('vredirect', 'You lack the required permissions to manage redirects'));
+        }
+
         $fromCatchAllId = Craft::$app->request->getQueryParam('from');
         $catchAllRecord = null;
         if ($fromCatchAllId) {
@@ -134,7 +143,7 @@ class RedirectsController extends Controller
         $variables['source'] = $source;
         $variables['pathPrefix'] = ($source == 'CpSettings' ? 'settings/' : '');
         $variables['currentSiteId'] = $redirect->siteId;
-        return $this->renderTemplate('vredirect/redirects/edit', $variables);
+        return $this->renderTemplate('vredirect/_redirects/edit', $variables);
     }
 
 
@@ -142,9 +151,20 @@ class RedirectsController extends Controller
      * Saves a redirect.
      *
      * @return \yii\web\Response
+     * @throws \Throwable
+     * @throws \craft\errors\ElementNotFoundException
+     * @throws \craft\errors\MissingComponentException
+     * @throws \yii\base\Exception
+     * @throws \yii\db\StaleObjectException
+     * @throws \yii\web\BadRequestHttpException
      */
     public function actionSaveRedirect()
     {
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        if (!$currentUser->can(Plugin::PERMISSION_MANAGE_REDIRECTS)) {
+            return Craft::$app->response->setStatusCode('403', Craft::t('vredirect', 'You lack the required permissions to manage redirects'));
+        }
+
         $this->requirePostRequest();
 
         $request = Craft::$app->getRequest();
@@ -203,9 +223,15 @@ class RedirectsController extends Controller
      * Deletes a route.
      *
      * @return Response
+     * @throws \yii\web\BadRequestHttpException
      */
     public function actionDeleteRedirect()
     {
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        if (!$currentUser->can(Plugin::PERMISSION_MANAGE_REDIRECTS)) {
+            return Craft::$app->response->setStatusCode('403', Craft::t('vredirect', 'You lack the required permissions to manage redirects'));
+        }
+
         $this->requirePostRequest();
         $this->requireAcceptsJson();
         $request = Craft::$app->getRequest();
