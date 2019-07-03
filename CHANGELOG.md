@@ -1,6 +1,6 @@
 # Redirect Changelog
 
-## Unreleased
+## 2.0.11 - 2019-07-03
 ### Added
 - Added ability to truncate registered 404s after a certain number of hours of inactivity
 - Permissions for managing redirects and registered 404s
