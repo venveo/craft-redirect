@@ -35,7 +35,17 @@ class Settings extends Model
      */
     public $trimTrailingSlashFromPath = true;
 
-//    public $autoRedirect = true;
+    /**
+     * Delete stale 404s automatically
+     * @var bool
+     */
+    public $deleteStale404s = true;
+
+    /**
+     * Delete stale 404s after this many days if deleteStale404s is true
+     * @var int
+     */
+    public $deleteStale404sHours = 24 * 7;
 
     /**
      * @inheritdoc
@@ -43,7 +53,8 @@ class Settings extends Model
     public function rules()
     {
         return [
-            [['redirectsActive', 'catchAllActive', 'trimTrailingSlashFromPath'], 'boolean'],
+            [['redirectsActive', 'catchAllActive', 'trimTrailingSlashFromPath', 'deleteStale404s'], 'boolean'],
+            [['deleteStale404sHours'], 'integer'],
         ];
     }
 }

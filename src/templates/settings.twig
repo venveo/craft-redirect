@@ -41,3 +41,22 @@
     on:           settings.trimTrailingSlashFromPath,
     errors:       settings.getErrors('trimTrailingSlashFromPath')
 }) }}
+
+{{ forms.lightswitchField({
+    label:        "Delete stale 404s"|t('vredirect'),
+    instructions: "If enabled, we'll delete any registered 404s that haven't been hit in a while."|t('vredirect'),
+    id:           'deleteStale404s',
+    name:         'deleteStale404s',
+    on:           settings.deleteStale404s,
+    errors:       settings.getErrors('deleteStale404s')
+}) }}
+
+{{ forms.textField({
+    type:         'number',
+    label:        "Control how long to wait before a 404 is considered stale"|t('vredirect'),
+    instructions: "Enter how many hours to wait before a redirect is considered stale"|t('vredirect'),
+    id:           'deleteStale404sHours',
+    name:         'deleteStale404sHours',
+    value:           settings.deleteStale404sHours,
+    errors:       settings.getErrors('deleteStale404sHours')
+}) }}

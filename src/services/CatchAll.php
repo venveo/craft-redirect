@@ -9,6 +9,9 @@
 namespace venveo\redirect\services;
 
 use Craft;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
+use venveo\redirect\Plugin;
 use venveo\redirect\records\CatchAllUrl as CatchAllUrlRecord;
 use yii\base\Component;
 
@@ -55,6 +58,13 @@ class CatchAll extends Component
             ++$catchAllURL->hitCount;
         }
         $catchAllURL->save();
+
+        // Give the plugin an opportunity to do some garbage collection
+        if (Plugin::$plugin->getSettings()->deleteStale404s === true) {
+            // Let's only delete a few at a time to prevent flooding. Especially after initial feature roll-out
+            $this->deleteStale404s(100);
+        }
+
         return true;
     }
 
@@ -103,6 +113,33 @@ class CatchAll extends Component
 
 
         return $catchAllurl;
+    }
+
+    /**
+     * Deletes registered 404s that haven't been hit in a while
+     * @param null $limit
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
+     */
+    public function deleteStale404s($limit = null) {
+        $hours = Plugin::$plugin->getSettings()->deleteStale404sHours;
+
+        $interval = DateTimeHelper::secondsToInterval($hours * 60 * 60);
+        $expire = DateTimeHelper::currentUTCDateTime();
+        $pastTime = $expire->sub($interval);
+
+        $catchAllQuery = CatchAllUrlRecord::find()
+            ->andWhere(['<', 'dateUpdated', Db::prepareDateForDb($pastTime)]);
+
+        if($limit) {
+            $catchAllQuery->limit($limit);
+        }
+
+        $catchAll = $catchAllQuery->all();
+        /** @var CatchAllUrlRecord $item */
+        foreach($catchAll as $item) {
+            $item->delete();
+        }
     }
 
 
