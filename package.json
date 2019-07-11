@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "api": "1.0.0",
-    "axios": "0.18.0",
+    "axios": "0.18.1",
     "vue": "2.6.10",
     "vue-good-table": "2.17.2"
   },
@@ -18,9 +18,10 @@
     "@babel/core": "^7.4.0",
     "@vue/component-compiler-utils": "^2.6.0",
     "parcel-bundler": "^1.12.3",
-    "sass": "^1.17.3",
     "rollup-plugin-commonjs": "^10.0.1",
-    "rollup-plugin-vue": "^5.0.1"
+    "rollup-plugin-vue": "^5.0.1",
+    "sass": "^1.17.3",
+    "vue-template-compiler": "^2.6.10"
   },
   "babel": {
     "plugins": []
