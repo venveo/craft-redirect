@@ -48,6 +48,7 @@
     import VueGoodTablePlugin from "vue-good-table"
     import 'vue-good-table/dist/vue-good-table.css'
     import registered404s from "./api/registered404s"
+    import _ from 'lodash'
 
     Vue.use(VueGoodTablePlugin);
 
@@ -112,10 +113,10 @@
                         filterOptions: {
                             enabled: true,
                             placeholder: 'All',
-                            filterValue: false,
+                            filterValue: "false",
                             filterDropdownItems: [
-                                {value: true, text: 'Only Ignored'},
-                                {value: false, text: 'Only Un-ignored'},
+                                {value: "true", text: 'Only Ignored'},
+                                {value: "false", text: 'Only Un-ignored'},
                             ]
                         },
                     },
@@ -169,12 +170,13 @@
             },
 
             // load items is what brings back the rows from server
-            loadItems() {
+            loadItems: _.debounce(function () {
                 registered404s.get404s(this.serverParams).then(response => {
                     this.totalRecords = response.data.totalRecords;
                     this.rows = response.data.rows;
                 });
-            },
+            }, 500),
+
             actionDelete() {
                 registered404s.delete404s(this.selectedItems).then(() => {
                     this.loadItems();

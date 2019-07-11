@@ -7,6 +7,9 @@
 ### Changed
 - Create redirect button on 404 page now opens in a new window
 
+### Fixed
+- 404 table not respecting "ignored" filter
+
 ## 2.0.11 - 2019-07-03
 ### Added
 - Added ability to truncate registered 404s after a certain number of hours of inactivity
