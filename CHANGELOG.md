@@ -6,9 +6,12 @@
 
 ### Changed
 - Create redirect button on 404 page now opens in a new window
+- You can now "Save and Add Another" redirects
+- You can now press "CMD/CTRL+S" to save the redirect and add another
 
 ### Fixed
 - 404 table not respecting "ignored" filter
+- Error saving existing redirect
 
 ## 2.0.11 - 2019-07-03
 ### Added
