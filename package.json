@@ -3,22 +3,24 @@
   "version": "1.0.0",
   "description": "Manage site 404s",
   "scripts": {
-    "dev": "parcel watch ./src/assetbundles/registered404s/src/main.js --hmr-hostname localhost:8000 --public-url ./ --log-level 3 --out-dir ./src/assetbundles/registered404s/dist",
+    "dev": "parcel watch ./src/assetbundles/registered404s/src/main.js --hmr-hostname localhost --public-url ./ --log-level 3 --out-dir ./src/assetbundles/registered404s/dist",
     "build": "parcel build ./src/assetbundles/registered404s/src/main.js --out-dir ./src/assetbundles/registered404s/dist"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "api": "^1.0.0",
-    "axios": "^0.18.0",
-    "vue": "^2.6.10",
-    "vue-good-table": "^2.16.3"
+    "api": "1.0.0",
+    "axios": "0.18.0",
+    "vue": "2.6.10",
+    "vue-good-table": "2.17.2"
   },
   "devDependencies": {
     "@babel/core": "^7.4.0",
     "@vue/component-compiler-utils": "^2.6.0",
     "parcel-bundler": "^1.12.3",
-    "sass": "^1.17.3"
+    "sass": "^1.17.3",
+    "rollup-plugin-commonjs": "^10.0.1",
+    "rollup-plugin-vue": "^5.0.1"
   },
   "babel": {
     "plugins": []

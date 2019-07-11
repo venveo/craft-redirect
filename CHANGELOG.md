@@ -1,4 +1,7 @@
 # Redirect Changelog
+### Unreleased
+### Changed
+- Create redirect button on 404 page now opens in a new window
 
 ## 2.0.11 - 2019-07-03
 ### Added

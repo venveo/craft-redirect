@@ -33,7 +33,7 @@
             </div>
             <template slot="table-row" slot-scope="props">
                 <span v-if="props.column.field == 'createRedirect'">
-                <button class="btn small" v-on:click="actionCreateRedirect($event, props.row)">Create Redirect</button>
+                <button class="btn small" v-on:click.stop="actionCreateRedirect($event, props.row)">Create Redirect</button>
                 </span>
                 <span v-else>
                 {{props.formattedRow[props.column.field]}}
@@ -191,7 +191,7 @@
             actionCreateRedirect(event, row) {
                 event.preventDefault()
                 event.stopPropagation()
-                window.location = row.createUrl;
+                const child = window.open(row.createUrl);
             },
 
             formatBool(val) {
