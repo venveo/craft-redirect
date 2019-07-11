@@ -31305,6 +31305,9 @@ var _default = _vue.default.extend({
         label: 'URI',
         field: 'uri'
       }, {
+        label: 'Last Referrer',
+        field: 'referrer'
+      }, {
         label: 'Hits',
         field: 'hitCount',
         type: 'number'

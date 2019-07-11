@@ -76,6 +76,7 @@ class Install extends Migration
                     'dateUpdated' => $this->dateTime()->notNull(),
                     'hitCount' => $this->integer()->unsigned()->notNull()->defaultValue(0),
                     'ignored' => $this->boolean()->notNull()->defaultValue(false),
+                    'referrer' => $this->string(2000)->null(),
                 ]
             );
         }

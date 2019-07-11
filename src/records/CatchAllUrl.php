@@ -15,6 +15,8 @@ use craft\db\ActiveRecord;
  * @property int hitCount
  * @property int|null siteId
  * @property boolean ignored
+ * @property string referrer
+ * @property int $id [int(11)]
  */
 class CatchAllUrl extends ActiveRecord
 {

@@ -80,6 +80,10 @@
                         field: 'uri',
                     },
                     {
+                        label: 'Last Referrer',
+                        field: 'referrer'
+                    },
+                    {
                         label: 'Hits',
                         field: 'hitCount',
                         type: 'number',

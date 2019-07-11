@@ -40,6 +40,8 @@ class Plugin extends BasePlugin
     /** @var self $plugin */
     public static $plugin;
 
+    public $schemaVersion = '1.0.9';
+
     protected $_redirectsService;
     protected $_catchAllService;
 

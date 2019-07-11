@@ -59,6 +59,7 @@ class CatchAll extends Component
             }
             ++$catchAllURL->hitCount;
         }
+        $catchAllURL->referrer = Craft::$app->request->referrer ?? null;
         $catchAllURL->save();
 
         // Give the plugin an opportunity to do some garbage collection

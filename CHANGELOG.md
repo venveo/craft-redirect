@@ -1,5 +1,9 @@
 # Redirect Changelog
 ### Unreleased
+
+### Added
+- We now keep track of the last referrer for a 404
+
 ### Changed
 - Create redirect button on 404 page now opens in a new window
 
