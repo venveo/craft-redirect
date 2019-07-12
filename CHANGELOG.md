@@ -1,5 +1,9 @@
 # Redirect Changelog
 
+### 2.0.12.1 - 2019-07-12
+### Changed
+- Only update a referrer if its set
+
 ### 2.0.12 - 2019-07-12
 ### Added
 - We now keep track of the last referrer for a 404
