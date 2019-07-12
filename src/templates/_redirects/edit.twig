@@ -1,6 +1,5 @@
 {% extends 'vredirect/_layouts/cp' %}
 
-{% set fullPageForm = true %}
 {% set selectedSubnavItem = 'redirects' %}
 {% if brandNewRedirect is defined and brandNewRedirect %}
     {% set title = "New Redirect"|t('vredirect') %}
@@ -13,9 +12,22 @@
 
 {% import "_includes/forms" as forms %}
 
+{% block actionButton %}
+        <div class="btngroup">
+            <div class="btn submit formsubmit" data-form="redirectform">{{ 'Save'|t('app') }}</div>
+            <div class="btn submit menubtn" data-form="redirectform"></div>
+            <div class="menu">
+                <ul>
+                    <li><a class="formsubmit" data-redirect="{{ 'redirect/redirects/new#'|hash }}">{{ "Save and add another"|t('app') }}</a></li>
+                </ul>
+            </div>
+        </div>
+{% endblock %}
+
 {% block content %}
+<form id="redirectform" method="post" accept-charset="UTF-8" data-saveshortcut data-saveshortcut-redirect="{{ 'redirect/redirects/new'|hash }}" data-confirm-unload>
+    {{ csrfInput() }}
     {{ actionInput('vredirect/redirects/save-redirect') }}
-    {{ redirectInput(cpUrl('redirect/redirects')) }}
 
     {% if redirect is defined and redirect.id %}
         <input type="hidden"
@@ -100,7 +112,7 @@
             errors: redirect.getErrors('statusCode')
         }) }}
     </div>
-
+</form>
 {% endblock %}
 
 

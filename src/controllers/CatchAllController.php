@@ -26,7 +26,7 @@ class CatchAllController extends Controller
     /**
      * Called before displaying the redirect settings index page.
      *
-     * @return Response
+     * @return \yii\web\Response
      * @throws \craft\errors\SiteNotFoundException
      */
     public function actionIndex()

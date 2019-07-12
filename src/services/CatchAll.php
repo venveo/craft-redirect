@@ -59,6 +59,7 @@ class CatchAll extends Component
             }
             ++$catchAllURL->hitCount;
         }
+        $catchAllURL->referrer = Craft::$app->request->referrer ?? null;
         $catchAllURL->save();
 
         // Give the plugin an opportunity to do some garbage collection
@@ -95,7 +96,6 @@ class CatchAll extends Component
      */
     public function deleteUrlById(int $id): bool
     {
-        // TODO check if the user has rights in the siteId..
         $catchAllURL = CatchAllUrlRecord::findOne($id);
 
         if (!$catchAllURL) {

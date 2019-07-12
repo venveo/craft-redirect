@@ -168,8 +168,16 @@ class RedirectsController extends Controller
         $this->requirePostRequest();
 
         $request = Craft::$app->getRequest();
-        $redirect = new Redirect();
-        $redirect->id = $request->getBodyParam('redirectId');
+
+        $redirectId = $request->getBodyParam('redirectId');
+        $redirect = null;
+        if ($redirectId && !$redirect = Plugin::getInstance()->redirects->getRedirectById($redirectId)) {
+            return Craft::$app->response->setStatusCode('403', Craft::t('vredirect', 'Redirect not found'));
+        }
+
+        if (!$redirect instanceof Redirect) {
+            $redirect = new Redirect();
+        }
         $redirect->sourceUrl = $request->getBodyParam('sourceUrl');
         $redirect->destinationUrl = $request->getBodyParam('destinationUrl');
         $redirect->statusCode = $request->getBodyParam('statusCode');
