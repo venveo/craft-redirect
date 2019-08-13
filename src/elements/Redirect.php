@@ -120,9 +120,7 @@ class Redirect extends Element
     public function getSupportedSites(): array
     {
         $supportedSites = [];
-        foreach (Craft::$app->getSites()->getAllSites() as $site) {
-            $supportedSites[] = ['siteId' => $site->id, 'enabledByDefault' => false];
-        }
+        $supportedSites[] = ['siteId' => $this->siteId, 'enabledByDefault' => true];
         return $supportedSites;
     }
 

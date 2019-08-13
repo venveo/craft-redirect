@@ -48,7 +48,7 @@
     {#        <br>#}
     {#    </div>#}
     <div id="categorygroup-settings">
-        {% if craft.app.getIsMultiSite() %}
+        {% if craft.app.getIsMultiSite() and brandNewRedirect is defined and brandNewRedirect == true %}
             {% set siteId = currentSiteId %}
             {% if catchAllRecord is defined and catchAllRecord.siteId is defined %}
                 {% set siteId = catchAllRecord.siteId %}
@@ -63,6 +63,8 @@
                 targetPrefix: '.siteId-',
                 errors: redirect.getErrors('siteId')
             }) }}
+        {% elseif craft.app.getIsMultiSite() %}
+            <input type="hidden" value="{{ currentSiteId }}" name="siteId">
         {% endif %}
 
         {{ forms.selectField({
