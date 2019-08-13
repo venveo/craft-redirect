@@ -1,5 +1,11 @@
 # Redirect Changelog
 
+### 2.0.13 - 2019-08-13
+### Changed 
+- Improved the workflow for editing redirects (stay on page of edited redirect on save)
+
+### Changed
+- Only update a referrer if its set
 ### 2.0.12.1 - 2019-07-12
 ### Changed
 - Only update a referrer if its set
