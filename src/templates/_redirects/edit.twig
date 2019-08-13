@@ -25,7 +25,7 @@
 {% endblock %}
 
 {% block content %}
-<form id="redirectform" method="post" accept-charset="UTF-8" data-saveshortcut data-saveshortcut-redirect="{{ 'redirect/redirects/new'|hash }}" data-confirm-unload>
+<form id="redirectform" method="post" accept-charset="UTF-8" data-saveshortcut{% if brandNewRedirect is defined and brandNewRedirect %} data-saveshortcut-redirect="{{ 'redirect/redirects/new'|hash }}"{% endif %} data-confirm-unload>
     {{ csrfInput() }}
     {{ actionInput('vredirect/redirects/save-redirect') }}
 
@@ -54,8 +54,7 @@
                 {% set siteId = catchAllRecord.siteId %}
             {% endif %}
             {{ forms.selectField({
-                label: "Site"|t('vredirect'),
-                instructions: "Site"|t('vredirect'),
+                label: "Source Site"|t('vredirect'),
                 id: 'site-id',
                 name: 'siteId',
                 options: editableSitesOptions,
