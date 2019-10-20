@@ -34,7 +34,7 @@ class Redirect extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%dolphiq_redirects}}';
+        return '{{%venveo_redirects}}';
     }
 
     /**

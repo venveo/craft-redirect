@@ -26,7 +26,7 @@ class CatchAllUrl extends ActiveRecord
 
     public static function tableName(): string
     {
-        return '{{%dolphiq_redirects_catch_all_urls}}';
+        return '{{%venveo_redirects_catch_all_urls}}';
     }
 
 }

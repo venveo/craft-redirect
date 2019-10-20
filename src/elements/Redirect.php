@@ -207,12 +207,12 @@ class Redirect extends Element
     protected static function defineSortOptions(): array
     {
         $attributes = [
-            'dolphiq_redirects.sourceUrl' => Craft::t('vredirect', 'Source URL'),
-            'dolphiq_redirects.type' => Craft::t('vredirect', 'Type'),
-            'dolphiq_redirects.destinationUrl' => Craft::t('vredirect', 'Destination URL'),
-            'dolphiq_redirects.hitAt' => Craft::t('vredirect', 'Last hit'),
-            'dolphiq_redirects.statusCode' => Craft::t('vredirect', 'Redirect type'),
-            'dolphiq_redirects.hitCount' => Craft::t('vredirect', 'Hit count'),
+            'venveo_redirects.sourceUrl' => Craft::t('vredirect', 'Source URL'),
+            'venveo_redirects.type' => Craft::t('vredirect', 'Type'),
+            'venveo_redirects.destinationUrl' => Craft::t('vredirect', 'Destination URL'),
+            'venveo_redirects.hitAt' => Craft::t('vredirect', 'Last hit'),
+            'venveo_redirects.statusCode' => Craft::t('vredirect', 'Redirect type'),
+            'venveo_redirects.hitCount' => Craft::t('vredirect', 'Hit count'),
             'elements.dateCreated' => Craft::t('app', 'Date Created'),
         ];
         return $attributes;

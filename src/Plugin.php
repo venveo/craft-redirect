@@ -227,7 +227,7 @@ class Plugin extends BasePlugin
 
         // Remove our soft-deleted redirects when Craft is ready
         Event::on(Gc::class, Gc::EVENT_RUN, function () {
-            Craft::$app->gc->hardDelete('{{%dolphiq_redirects}}');
+            Craft::$app->gc->hardDelete('{{%venveo_redirects}}');
         });
 
         if (!$settings->redirectsActive) {

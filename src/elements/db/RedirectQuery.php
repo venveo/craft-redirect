@@ -120,55 +120,55 @@ class RedirectQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
-        $this->joinElementTable('dolphiq_redirects');
+        $this->joinElementTable('venveo_redirects');
 
 
         //   $this->joinElementTable('elements_sites');
 
         $this->query->select([
             'elements_sites.siteId',
-            'dolphiq_redirects.type',
-            'dolphiq_redirects.sourceUrl',
-            'dolphiq_redirects.destinationUrl',
-            'dolphiq_redirects.hitAt',
-            'dolphiq_redirects.hitCount',
-            'dolphiq_redirects.statusCode',
+            'venveo_redirects.type',
+            'venveo_redirects.sourceUrl',
+            'venveo_redirects.destinationUrl',
+            'venveo_redirects.hitAt',
+            'venveo_redirects.hitCount',
+            'venveo_redirects.statusCode',
         ]);
 
         if ($this->sourceUrl) {
-            $this->subQuery->andWhere(Db::parseParam('dolphiq_redirects.sourceUrl', $this->sourceUrl));
+            $this->subQuery->andWhere(Db::parseParam('venveo_redirects.sourceUrl', $this->sourceUrl));
         }
         if ($this->destinationUrl) {
-            $this->subQuery->andWhere(Db::parseParam('dolphiq_redirects.destinationUrl', $this->destinationUrl));
+            $this->subQuery->andWhere(Db::parseParam('venveo_redirects.destinationUrl', $this->destinationUrl));
         }
         if ($this->statusCode) {
-            $this->subQuery->andWhere(Db::parseParam('dolphiq_redirects.statusCode', $this->statusCode));
+            $this->subQuery->andWhere(Db::parseParam('venveo_redirects.statusCode', $this->statusCode));
         }
         if ($this->type) {
-            $this->subQuery->andWhere(Db::parseParam('dolphiq_redirects.type', $this->type));
+            $this->subQuery->andWhere(Db::parseParam('venveo_redirects.type', $this->type));
         }
         if ($this->hitAt && $this->hitAt > 0) {
             // TODO: Refactor...
             $inactiveDate = new \DateTime();
             $inactiveDate->modify("-60 days");
-            $this->subQuery->andWhere('([[dolphiq_redirects.hitAt]] < :calculatedDate AND [[dolphiq_redirects.hitAt]] IS NOT NULL)', [':calculatedDate' => $inactiveDate->format("Y-m-d H:m:s")]);
+            $this->subQuery->andWhere('([[venveo_redirects.hitAt]] < :calculatedDate AND [[venveo_redirects.hitAt]] IS NOT NULL)', [':calculatedDate' => $inactiveDate->format("Y-m-d H:m:s")]);
         }
         if($this->matchingUri) {
             $this->subQuery->andWhere(['and',
-                ['[[dolphiq_redirects.type]]' => 'static'],
-                ['[[dolphiq_redirects.sourceUrl]]' => $this->matchingUri]
+                ['[[venveo_redirects.type]]' => 'static'],
+                ['[[venveo_redirects.sourceUrl]]' => $this->matchingUri]
                 ]);
             if (Craft::$app->db->getIsPgsql()) {
                 $this->subQuery->orWhere([
                     'and',
-                    ['[[dolphiq_redirects.type]]' => 'dynamic'],
-                    ':uri SIMILAR TO [[dolphiq_redirects.sourceUrl]]'
+                    ['[[venveo_redirects.type]]' => 'dynamic'],
+                    ':uri SIMILAR TO [[venveo_redirects.sourceUrl]]'
                 ], ['uri' => $this->matchingUri]);
             } else {
                 $this->subQuery->orWhere([
                     'and',
-                    ['[[dolphiq_redirects.type]]' => 'dynamic'],
-                    ':uri RLIKE [[dolphiq_redirects.sourceUrl]]'
+                    ['[[venveo_redirects.type]]' => 'dynamic'],
+                    ':uri RLIKE [[venveo_redirects.sourceUrl]]'
                 ], ['uri' => $this->matchingUri]);
             }
         }
