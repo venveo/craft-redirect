@@ -27,6 +27,10 @@ use venveo\redirect\records\Redirect as RedirectRecord;
 use yii\db\Exception;
 use yii\db\StaleObjectException;
 
+/**
+ *
+ * @property string $name
+ */
 class Redirect extends Element
 {
     public const TYPE_STATIC = 'static';
@@ -64,22 +68,6 @@ class Redirect extends Element
     public static function refHandle()
     {
         return 'redirect';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function hasContent(): bool
-    {
-        return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function hasTitles(): bool
-    {
-        return false;
     }
 
     /**

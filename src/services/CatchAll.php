@@ -83,7 +83,6 @@ class CatchAll extends Component
      */
     public function ignoreUrlById(int $id)
     {
-        // TODO check if the user has rights in the siteId..
         $catchAllURL = CatchAllUrlRecord::findOne($id);
 
         if (!$catchAllURL) {
