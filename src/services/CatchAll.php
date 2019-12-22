@@ -16,7 +16,7 @@ use venveo\redirect\records\CatchAllUrl as CatchAllUrlRecord;
 use yii\base\Component;
 
 /**
- * Class Redirects service.
+ * Class CatchAll service.
  *
  */
 class CatchAll extends Component
@@ -81,7 +81,8 @@ class CatchAll extends Component
      * @param int $id
      * @return bool
      */
-    public function ignoreUrlById(int $id) {
+    public function ignoreUrlById(int $id)
+    {
         // TODO check if the user has rights in the siteId..
         $catchAllURL = CatchAllUrlRecord::findOne($id);
 
@@ -111,15 +112,15 @@ class CatchAll extends Component
         return true;
     }
 
+    /**
+     * @param string $uid
+     * @return CatchAllUrlRecord
+     */
     public function getUrlByUid(string $uid): CatchAllUrlRecord
     {
-        // search the redirect by its uri
-        $catchAllurl = CatchAllUrlRecord::findOne([
+        return CatchAllUrlRecord::findOne([
             'uid' => $uid,
         ]);
-
-
-        return $catchAllurl;
     }
 
     /**
@@ -128,7 +129,8 @@ class CatchAll extends Component
      * @throws \Throwable
      * @throws \yii\db\StaleObjectException
      */
-    public function deleteStale404s($limit = null) {
+    public function deleteStale404s($limit = null)
+    {
         $hours = Plugin::$plugin->getSettings()->deleteStale404sHours;
 
         $interval = DateTimeHelper::secondsToInterval($hours * 60 * 60);
@@ -138,13 +140,13 @@ class CatchAll extends Component
         $catchAllQuery = CatchAllUrlRecord::find()
             ->andWhere(['<', 'dateUpdated', Db::prepareDateForDb($pastTime)]);
 
-        if($limit) {
+        if ($limit) {
             $catchAllQuery->limit($limit);
         }
 
         $catchAll = $catchAllQuery->all();
         /** @var CatchAllUrlRecord $item */
-        foreach($catchAll as $item) {
+        foreach ($catchAll as $item) {
             $item->delete();
         }
     }
