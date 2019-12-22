@@ -4,7 +4,6 @@
 ### Changed
 - Renamed table prefixes
 
-### 2.0.13 - 2019-08-13
 ### Fixed
 - Fixed issues creating redirects in multi-site mode
 
