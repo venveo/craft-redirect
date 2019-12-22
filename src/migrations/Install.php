@@ -45,8 +45,6 @@ class Install extends Migration
      */
     protected function createTables()
     {
-        // new table!!
-
         $this->createTable('{{%venveo_redirects}}', [
             'id' => $this->primaryKey(),
             'type' => $this->string('8')->null()->defaultValue('static')->notNull(),
@@ -68,10 +66,8 @@ class Install extends Migration
                 [
                     'id' => $this->primaryKey(),
                     'uri' => $this->string(255)->notNull()->defaultValue(''),
-                    // 'firstHitAt' => $this->dateTime()->notNull(),
-                    // 'lastHitAt' => $this->dateTime()->notNull(),
                     'uid' => $this->uid(),
-                    'siteId' => $this->integer()->unsigned()->notNull()->defaultValue(0),
+                    'siteId' => $this->integer()->null()->defaultValue(null),
                     'dateCreated' => $this->dateTime()->notNull(),
                     'dateUpdated' => $this->dateTime()->notNull(),
                     'hitCount' => $this->integer()->unsigned()->notNull()->defaultValue(0),
@@ -82,6 +78,7 @@ class Install extends Migration
         }
 
         $this->addForeignKey(null, '{{%venveo_redirects}}', ['id'], '{{%elements}}', ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, '{{%venveo_redirects_catch_all_urls}}', ['siteId'], '{{%sites}}', ['id'], 'CASCADE', null);
         $this->createIndex($this->db->getIndexName('{{%venveo_redirects}}', 'type'), '{{%venveo_redirects}}', 'type');
     }
 }

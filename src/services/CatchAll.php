@@ -39,12 +39,13 @@ class CatchAll extends Component
             $siteId = Craft::$app->getSites()->currentSite->id;
         }
 
-        // search the redirect by its uri
+        // See if this URI already exists
         $catchAllURL = CatchAllUrlRecord::findOne([
             'uri' => $uri,
             'siteId' => $siteId,
         ]);
 
+        // It doesn't exist, so create it.
         if (!$catchAllURL) {
             // not found, new one!
             $catchAllURL = new CatchAllUrlRecord();
@@ -60,7 +61,7 @@ class CatchAll extends Component
             ++$catchAllURL->hitCount;
         }
 
-        if (Craft::$app->request->referrer) {
+        if (Craft::$app->request->referrer && Plugin::$plugin->getSettings()->storeReferrer) {
             $catchAllURL->referrer = Craft::$app->request->referrer;
         }
 

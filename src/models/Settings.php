@@ -36,6 +36,12 @@ class Settings extends Model
     public $trimTrailingSlashFromPath = true;
 
     /**
+     * If true, we'll store the last referrer for a registered 404
+     * @var bool
+     */
+    public $storeReferrer = true;
+
+    /**
      * Delete stale 404s automatically
      * @var bool
      */
@@ -53,7 +59,7 @@ class Settings extends Model
     public function rules()
     {
         return [
-            [['redirectsActive', 'catchAllActive', 'trimTrailingSlashFromPath', 'deleteStale404s'], 'boolean'],
+            [['redirectsActive', 'catchAllActive', 'trimTrailingSlashFromPath', 'deleteStale404s', 'storeReferrer'], 'boolean'],
             [['deleteStale404sHours'], 'integer'],
         ];
     }

@@ -45,10 +45,10 @@ class Redirects extends Component
      * @param HttpException $exception
      * @throws \yii\base\InvalidConfigException
      */
-    public function handle404(HttpException $exception)
+    public function handle404(HttpException $exception): void
     {
         // Path with query params
-        $fullPath = rtrim(ltrim(Craft::$app->request->getUrl(), '/'), '/');
+        $fullPath = Craft::$app->request->getFullPath();
 
         $query = new RedirectQuery(Redirect::class);
         $query->matchingUri = $fullPath;
@@ -132,12 +132,13 @@ class Redirects extends Component
     }
 
     /**
-     * @throws \yii\base\InvalidConfigException
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
      */
     public function registerCatchAll(): void
     {
         $catchAllService = Plugin::$plugin->catchAll;
-        $fullPath = ltrim(Craft::$app->request->getUrl(), '/');
+        $fullPath = Craft::$app->request->getFullPath();
         $catchAllService->registerHitByUri($fullPath);
     }
 }
