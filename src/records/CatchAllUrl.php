@@ -1,9 +1,9 @@
 <?php
 /**
  *
- * @author    dolphiq
+ * @author    dolphiq & Venveo
  * @copyright Copyright (c) 2017 dolphiq
- * @link      https://dolphiq.nl/
+ * @copyright Copyright (c) 2019 Venveo
  */
 
 namespace venveo\redirect\records;
