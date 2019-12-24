@@ -160,32 +160,38 @@ class RedirectsController extends Controller
      */
     public function actionSaveRedirect()
     {
+        $isNew = false;
         $currentUser = Craft::$app->getUser()->getIdentity();
         if (!$currentUser->can(Plugin::PERMISSION_MANAGE_REDIRECTS)) {
             return Craft::$app->response->setStatusCode('403', Craft::t('vredirect', 'You lack the required permissions to manage redirects'));
         }
 
-        $this->requirePostRequest();
-
         $request = Craft::$app->getRequest();
 
-        $redirectId = $request->getBodyParam('redirectId');
-        $redirect = null;
-        if ($redirectId && !$redirect = Plugin::getInstance()->redirects->getRedirectById($redirectId)) {
-            return Craft::$app->response->setStatusCode('403', Craft::t('vredirect', 'Redirect not found'));
-        }
+        $this->requirePostRequest();
 
-        if (!$redirect instanceof Redirect) {
-            $redirect = new Redirect();
-        }
-        $redirect->sourceUrl = $request->getBodyParam('sourceUrl');
-        $redirect->destinationUrl = $request->getBodyParam('destinationUrl');
-        $redirect->statusCode = $request->getBodyParam('statusCode');
         $siteId = $request->getBodyParam('siteId');
-        $redirect->type = $request->getBodyParam('type');
+
         if ($siteId == null) {
             $siteId = Craft::$app->getSites()->currentSite->id;
         }
+
+
+        $redirectId = $request->getBodyParam('redirectId');
+        $redirect = null;
+        if ($redirectId && !$redirect = Plugin::getInstance()->redirects->getRedirectById($redirectId, $siteId)) {
+            return Craft::$app->response->setStatusCode('404', Craft::t('vredirect', 'Redirect not found'));
+        }
+
+        if (!$redirect instanceof Redirect) {
+            $isNew = true;
+            $redirect = new Redirect();
+        }
+
+        $redirect->sourceUrl = $request->getBodyParam('sourceUrl');
+        $redirect->destinationUrl = $request->getBodyParam('destinationUrl');
+        $redirect->statusCode = $request->getBodyParam('statusCode');
+        $redirect->type = $request->getBodyParam('type');
 
         $redirect->siteId = $siteId;
 
@@ -223,7 +229,11 @@ class RedirectsController extends Controller
         }
         // else, normal result
         Craft::$app->getSession()->setNotice(Craft::t('vredirect', 'Redirect saved.'));
-        return $this->redirectToPostedUrl();
+        if ($isNew) {
+            return $this->redirectToPostedUrl();
+        }
+
+        return $this->redirect($redirect->getCpEditUrl());
     }
 
 

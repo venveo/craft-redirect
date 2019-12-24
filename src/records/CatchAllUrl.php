@@ -1,9 +1,9 @@
 <?php
 /**
  *
- * @author    dolphiq
+ * @author    dolphiq & Venveo
  * @copyright Copyright (c) 2017 dolphiq
- * @link      https://dolphiq.nl/
+ * @copyright Copyright (c) 2019 Venveo
  */
 
 namespace venveo\redirect\records;
@@ -26,7 +26,7 @@ class CatchAllUrl extends ActiveRecord
 
     public static function tableName(): string
     {
-        return '{{%dolphiq_redirects_catch_all_urls}}';
+        return '{{%venveo_redirects_catch_all_urls}}';
     }
 
 }

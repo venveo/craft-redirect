@@ -27,6 +27,10 @@ use venveo\redirect\records\Redirect as RedirectRecord;
 use yii\db\Exception;
 use yii\db\StaleObjectException;
 
+/**
+ *
+ * @property string $name
+ */
 class Redirect extends Element
 {
     public const TYPE_STATIC = 'static';
@@ -69,22 +73,6 @@ class Redirect extends Element
     /**
      * @inheritdoc
      */
-    public static function hasContent(): bool
-    {
-        return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function hasTitles(): bool
-    {
-        return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function isLocalized(): bool
     {
         return true;
@@ -120,9 +108,7 @@ class Redirect extends Element
     public function getSupportedSites(): array
     {
         $supportedSites = [];
-        foreach (Craft::$app->getSites()->getAllSites() as $site) {
-            $supportedSites[] = ['siteId' => $site->id, 'enabledByDefault' => false];
-        }
+        $supportedSites[] = ['siteId' => $this->siteId, 'enabledByDefault' => true];
         return $supportedSites;
     }
 
@@ -131,7 +117,7 @@ class Redirect extends Element
      */
     public function getCpEditUrl()
     {
-        return UrlHelper::cpUrl('redirect/redirects/'.$this->id.'?siteId='.$this->siteId);
+        return UrlHelper::cpUrl('redirect/redirects/' . $this->id . '?siteId=' . $this->siteId);
     }
 
     /**
@@ -209,12 +195,12 @@ class Redirect extends Element
     protected static function defineSortOptions(): array
     {
         $attributes = [
-            'dolphiq_redirects.sourceUrl' => Craft::t('vredirect', 'Source URL'),
-            'dolphiq_redirects.type' => Craft::t('vredirect', 'Type'),
-            'dolphiq_redirects.destinationUrl' => Craft::t('vredirect', 'Destination URL'),
-            'dolphiq_redirects.hitAt' => Craft::t('vredirect', 'Last hit'),
-            'dolphiq_redirects.statusCode' => Craft::t('vredirect', 'Redirect type'),
-            'dolphiq_redirects.hitCount' => Craft::t('vredirect', 'Hit count'),
+            'venveo_redirects.sourceUrl' => Craft::t('vredirect', 'Source URL'),
+            'venveo_redirects.type' => Craft::t('vredirect', 'Type'),
+            'venveo_redirects.destinationUrl' => Craft::t('vredirect', 'Destination URL'),
+            'venveo_redirects.hitAt' => Craft::t('vredirect', 'Last hit'),
+            'venveo_redirects.statusCode' => Craft::t('vredirect', 'Redirect type'),
+            'venveo_redirects.hitCount' => Craft::t('vredirect', 'Hit count'),
             'elements.dateCreated' => Craft::t('app', 'Date Created'),
         ];
         return $attributes;
@@ -250,7 +236,7 @@ class Redirect extends Element
 
             case 'baseUrl':
 
-                return Html::encodeParams('<a href="{baseUrl}" target="_blank">test</a>', ['baseUrl' => $this->getSite()->baseUrl.$this->sourceUrl]);
+                return Html::encodeParams('<a href="{baseUrl}" target="_blank">test</a>', ['baseUrl' => $this->getSite()->baseUrl . $this->sourceUrl]);
         }
 
         return parent::tableAttributeHtml($attribute);
@@ -348,14 +334,14 @@ class Redirect extends Element
      */
     private static function unparse_url($parsed_url): string
     {
-        $scheme   = isset($parsed_url['scheme']) ? $parsed_url['scheme'] . '://' : '';
-        $host     = $parsed_url['host'] ?? '';
-        $port     = isset($parsed_url['port']) ? ':' . $parsed_url['port'] : '';
-        $user     = $parsed_url['user'] ?? '';
-        $pass     = isset($parsed_url['pass']) ? ':' . $parsed_url['pass']  : '';
-        $pass     = ($user || $pass) ? "$pass@" : '';
-        $path     = $parsed_url['path'] ?? '';
-        $query    = isset($parsed_url['query']) ? '?' . $parsed_url['query'] : '';
+        $scheme = isset($parsed_url['scheme']) ? $parsed_url['scheme'] . '://' : '';
+        $host = $parsed_url['host'] ?? '';
+        $port = isset($parsed_url['port']) ? ':' . $parsed_url['port'] : '';
+        $user = $parsed_url['user'] ?? '';
+        $pass = isset($parsed_url['pass']) ? ':' . $parsed_url['pass'] : '';
+        $pass = ($user || $pass) ? "$pass@" : '';
+        $path = $parsed_url['path'] ?? '';
+        $query = isset($parsed_url['query']) ? '?' . $parsed_url['query'] : '';
         $fragment = isset($parsed_url['fragment']) ? '#' . $parsed_url['fragment'] : '';
         return "$scheme$user$pass$host$port$path$query$fragment";
     }
@@ -387,7 +373,7 @@ class Redirect extends Element
             $record = RedirectRecord::findOne($this->id);
 
             if (!$record) {
-                throw new Exception('Invalid redirect ID: '.$this->id);
+                throw new Exception('Invalid redirect ID: ' . $this->id);
             }
         } else {
             $record = new RedirectRecord();

@@ -43,6 +43,15 @@
 }) }}
 
 {{ forms.lightswitchField({
+    label:        "Store referrers"|t('vredirect'),
+    instructions: "If enabled, we'll store the last referral URL for registered 404s"|t('vredirect'),
+    id:           'storeReferrer',
+    name:         'storeReferrer',
+    on:           settings.storeReferrer,
+    errors:       settings.getErrors('storeReferrer')
+}) }}
+
+{{ forms.lightswitchField({
     label:        "Delete stale 404s"|t('vredirect'),
     instructions: "If enabled, we'll delete any registered 404s that haven't been hit in a while."|t('vredirect'),
     id:           'deleteStale404s',

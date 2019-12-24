@@ -1,5 +1,19 @@
 # Redirect Changelog
 
+### 2.1.0 - 2019-12-23
+### Added
+- Added setting to disable storing referral URLs
+
+### Fixed
+- Fixed issues creating redirects in multi-site mode
+
+### Changed
+- Improved the workflow for editing redirects (stay on page of edited redirect on save)
+- Only update a referrer if its set
+- Added foreign key to sites in registered 404s
+- Registered 404s no longer store the site base path
+- Renamed table prefixes
+
 ### 2.0.12.1 - 2019-07-12
 ### Changed
 - Only update a referrer if its set
