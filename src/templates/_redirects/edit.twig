@@ -1,4 +1,7 @@
 {% extends 'vredirect/_layouts/cp' %}
+{% import "_includes/forms" as forms %}
+
+{% set showSiteSelector = craft.app.getIsMultiSite() and brandNewRedirect is defined and brandNewRedirect == true %}
 
 {% set selectedSubnavItem = 'redirects' %}
 {% if brandNewRedirect is defined and brandNewRedirect %}
@@ -10,7 +13,6 @@
     {% set title = "Edit Redirect"|t('vredirect') %}
 {% endif %}
 
-{% import "_includes/forms" as forms %}
 
 {% block actionButton %}
         <div class="btngroup">
@@ -40,15 +42,8 @@
                name="catchAllRecordId"
                value="{{ catchAllRecord.id }}">
     {% endif %}
-    {#    <div class="readable">#}
-    {#        <p>{{ "You can use the Redirect plugin to redirect simple routes but also use it for more advanced route matches with parameters"|t('vredirect') }}#}
-    {#            .<br><a target="_blank"#}
-    {#                    href="https://github.com/Dolphiq/craft3-plugin-redirect/blob/master/RULES.md">{{ "See some examples and instructions here"|t('vredirect') }}</a>.#}
-    {#        </p>#}
-    {#        <br>#}
-    {#    </div>#}
     <div id="categorygroup-settings">
-        {% if craft.app.getIsMultiSite() and brandNewRedirect is defined and brandNewRedirect == true %}
+        {% if showSiteSelector %}
             {% set siteId = currentSiteId %}
             {% if catchAllRecord is defined and catchAllRecord.siteId is defined %}
                 {% set siteId = catchAllRecord.siteId %}
@@ -56,6 +51,7 @@
             {{ forms.selectField({
                 label: "Source Site"|t('vredirect'),
                 id: 'site-id',
+                first: true,
                 name: 'siteId',
                 options: editableSitesOptions,
                 value: siteId,
@@ -72,6 +68,7 @@
             instructions: "Redirect Type"|t('vredirect'),
             id: 'type',
             name: 'type',
+            first: (not showSiteSelector),
             options: typeOptions,
             value: redirect.type,
             toggle: true,
@@ -80,8 +77,8 @@
         }) }}
 
         {{ forms.textField({
-            label: "Source URL"|t('vredirect'),
-            instructions: "The URL to be redirected"|t('vredirect'),
+            label: "Source URI"|t('vredirect'),
+            instructions: "The URI to be redirected - should not include the site URL, only the path."|t('vredirect'),
             id: 'source-url',
             class: 'ltr',
             name: 'sourceUrl',

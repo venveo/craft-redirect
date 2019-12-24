@@ -60,7 +60,7 @@ class Redirects extends Component
             return;
         }
 
-        // Make sure we do static redirects first
+        // Make sure we handle static redirects first
         usort($matchedRedirects, function ($a, $b) {
             if ($a->type === 'static' && $b->type === 'dynamic') {
                 return -1;
