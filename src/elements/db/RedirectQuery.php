@@ -10,7 +10,6 @@
 namespace venveo\redirect\elements\db;
 
 use Craft;
-use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 
@@ -153,11 +152,11 @@ class RedirectQuery extends ElementQuery
             $inactiveDate->modify("-60 days");
             $this->subQuery->andWhere('([[venveo_redirects.hitAt]] < :calculatedDate AND [[venveo_redirects.hitAt]] IS NOT NULL)', [':calculatedDate' => $inactiveDate->format("Y-m-d H:m:s")]);
         }
-        if($this->matchingUri) {
+        if ($this->matchingUri) {
             $this->subQuery->andWhere(['and',
                 ['[[venveo_redirects.type]]' => 'static'],
                 ['[[venveo_redirects.sourceUrl]]' => $this->matchingUri]
-                ]);
+            ]);
             if (Craft::$app->db->getIsPgsql()) {
                 $this->subQuery->orWhere([
                     'and',
@@ -173,26 +172,11 @@ class RedirectQuery extends ElementQuery
             }
         }
 
-        // $this->subQuery->andWhere(Db::parseParam('elements_sites.siteId', null));
-        // $this->_applyEditableParam();
-
         return parent::beforePrepare();
     }
 
     // Private Methods
     // =========================================================================
 
-    /**
-     * Applies the 'editable' param to the query being prepared.
-     *
-     * @throws QueryAbortedException
-     */
-    private function _applyEditableParam()
-    {
-        if ($this->editable) {
-            // Limit the query to only the global sets the user has permission to edit
-            $editableSetIds = Craft::$app->getGlobals()->getEditableSetIds();
-            $this->subQuery->andWhere(['elements.id' => $editableSetIds]);
-        }
-    }
+
 }
