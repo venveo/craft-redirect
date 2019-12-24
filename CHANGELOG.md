@@ -1,6 +1,6 @@
 # Redirect Changelog
 
-### Unreleased
+### 2.1.0 - 2019-12-23
 ### Added
 - Added setting to disable storing referral URLs
 
