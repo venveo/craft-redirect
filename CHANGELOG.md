@@ -1,6 +1,14 @@
 # Redirect Changelog
 
-### 2.1.0 - 2019-12-23
+## Unreleased
+### Added
+- Setting to strip query parameters from registered 404s
+
+### Fixed
+- Improved compatibility with older versions of php
+
+
+## 2.1.0 - 2019-12-23
 ### Added
 - Added setting to disable storing referral URLs
 
@@ -14,11 +22,11 @@
 - Registered 404s no longer store the site base path
 - Renamed table prefixes
 
-### 2.0.12.1 - 2019-07-12
+## 2.0.12.1 - 2019-07-12
 ### Changed
 - Only update a referrer if its set
 
-### 2.0.12 - 2019-07-12
+## 2.0.12 - 2019-07-12
 ### Added
 - We now keep track of the last referrer for a 404
 

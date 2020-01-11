@@ -11,6 +11,7 @@ namespace venveo\redirect\services;
 use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\UrlHelper;
 use venveo\redirect\Plugin;
 use venveo\redirect\records\CatchAllUrl as CatchAllUrlRecord;
 use yii\base\Component;
@@ -37,6 +38,11 @@ class CatchAll extends Component
 
         if ($siteId === null) {
             $siteId = Craft::$app->getSites()->currentSite->id;
+        }
+
+        $settings = Plugin::getInstance()->getSettings();
+        if ($settings->stripQueryParameters) {
+            $uri = UrlHelper::stripQueryString($uri);
         }
 
         // See if this URI already exists

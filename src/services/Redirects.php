@@ -33,7 +33,7 @@ class Redirects extends Component
      *
      * @return Redirect|null
      */
-    public function getRedirectById(int $redirectId, int $siteId = null): ?Redirect
+    public function getRedirectById(int $redirectId, int $siteId = null)
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($redirectId, Redirect::class, $siteId);
@@ -45,7 +45,7 @@ class Redirects extends Component
      * @param HttpException $exception
      * @throws \yii\base\InvalidConfigException
      */
-    public function handle404(HttpException $exception): void
+    public function handle404(HttpException $exception)
     {
         // Path with query params
         $fullPath = Craft::$app->request->getFullPath();
@@ -87,7 +87,7 @@ class Redirects extends Component
      * @param $uri
      * @throws \Exception
      */
-    public function doRedirect(Redirect $redirect, $uri): void
+    public function doRedirect(Redirect $redirect, $uri)
     {
         $destinationUrl = null;
         if ($redirect->type === Redirect::TYPE_STATIC) {
@@ -135,10 +135,10 @@ class Redirects extends Component
      * @throws \Throwable
      * @throws \yii\db\StaleObjectException
      */
-    public function registerCatchAll(): void
+    public function registerCatchAll()
     {
         $catchAllService = Plugin::$plugin->catchAll;
-        $fullPath = Craft::$app->request->getFullPath();
+        $fullPath = Craft::$app->request->getUrl();
         $catchAllService->registerHitByUri($fullPath);
     }
 }

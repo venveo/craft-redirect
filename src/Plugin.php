@@ -45,8 +45,8 @@ class Plugin extends BasePlugin
     protected $_redirectsService;
     protected $_catchAllService;
 
-    public const PERMISSION_MANAGE_REDIRECTS = 'vredirect:redirects:manage';
-    public const PERMISSION_MANAGE_404S = 'vredirect:404s:manage';
+    const PERMISSION_MANAGE_REDIRECTS = 'vredirect:redirects:manage';
+    const PERMISSION_MANAGE_404S = 'vredirect:404s:manage';
 
     /**
      * Returns the Redirects service.
@@ -191,7 +191,7 @@ class Plugin extends BasePlugin
     /**
      * Registers our custom feed import logic if feed-me is enabled. Also note, we're checking for craft\feedme
      */
-    private function registerFeedMeElement(): void
+    private function registerFeedMeElement()
     {
         if (Craft::$app->plugins->isPluginEnabled('feed-me') && class_exists(\craft\feedme\Plugin::class)) {
             Event::on(\craft\feedme\services\Elements::class, \craft\feedme\services\Elements::EVENT_REGISTER_FEED_ME_ELEMENTS, function (\craft\feedme\events\RegisterFeedMeElementsEvent $e) {

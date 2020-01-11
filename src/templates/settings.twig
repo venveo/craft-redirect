@@ -19,6 +19,7 @@
     label:        "Activate redirects"|t('vredirect'),
     instructions: "This switch activate/de-activate all the entered redirects without removing them."|t('vredirect'),
     id:           'redirectsActive',
+    first:        true,
     name:         'redirectsActive',
     on:           settings.redirectsActive,
     errors:       settings.getErrors('redirectsActive')
@@ -49,6 +50,15 @@
     name:         'storeReferrer',
     on:           settings.storeReferrer,
     errors:       settings.getErrors('storeReferrer')
+}) }}
+
+{{ forms.lightswitchField({
+    label:        "Strip query parameters"|t('vredirect'),
+    instructions: "If enabled, we'll strip query parameters from captured 404s before recording it"|t('vredirect'),
+    id:           'stripQueryParameters',
+    name:         'stripQueryParameters',
+    on:           settings.stripQueryParameters,
+    errors:       settings.getErrors('stripQueryParameters')
 }) }}
 
 {{ forms.lightswitchField({
