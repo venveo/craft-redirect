@@ -2,8 +2,40 @@
 {% set selectedSubnavItem = 'catch-all' %}
 {% set title = "Registered 404 entries"|t('vredirect') %}
 
-{% do view.registerAssetBundle("venveo\\redirect\\assetbundles\\registered404s\\Registered404sAsset") %}
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 
 {% set content %}
-    <div id="app"></div>
+    <div id="hits-vue-admin-table"></div>
 {% endset %}
+
+{% js %}
+var columns = [
+    {
+        name: '__slot:title', title: Craft.t('vredirect', 'URI'), sortField: 'uri'
+    },
+    {
+        name: 'hitCount', title: Craft.t('vredirect', 'Hit Count'), sortField: 'hitCount'
+    },
+    {
+        name: 'referrer', title: Craft.t('vredirect', 'Last Referrer'), sortField: 'referrer'
+    },
+    {
+        name: 'dateCreated', title: Craft.t('vredirect', 'First Hit'), sortField: 'dateCreated'
+    },
+    {
+        name: 'dateUpdated', title: Craft.t('vredirect', 'Last Hit'), sortField: 'dateUpdated'
+    }
+];
+
+new Craft.VueAdminTable({
+    deleteAction: Craft.getActionUrl('vredirect/catch-all/delete'),
+    columns: columns,
+    checkboxes: true,
+    container: '#hits-vue-admin-table',
+    emptyMessage: Craft.t('vredirect', 'No 404s Registered.'),
+    padded: true,
+    search: true,
+    searchPlaceholder: Craft.t('vredirect', 'Search for 404s'),
+    tableDataEndpoint: Craft.getActionUrl('vredirect/catch-all/hits-table')
+});
+{% endjs %}

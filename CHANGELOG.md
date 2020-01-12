@@ -1,6 +1,10 @@
 # Redirect Changelog
 
 ## Unreleased
+### Changed
+- Redirect now requires Craft 3.4
+- Swapped registered 404s table for new native Vue table
+
 ### Added
 - Setting to strip query parameters from registered 404s
 
