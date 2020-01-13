@@ -12,6 +12,7 @@ use Craft;
 use craft\errors\SiteNotFoundException;
 use craft\helpers\AdminTable;
 use craft\helpers\Html;
+use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use venveo\redirect\Plugin;
 use venveo\redirect\records\CatchAllUrl;
@@ -138,7 +139,8 @@ class CatchAllController extends Controller
                 'referrer' => Html::encode($item['referrer']),
                 'hitCount' => $item['hitCount'],
                 'dateCreated' => $item['dateCreated'],
-                'dateUpdated' => $item['dateUpdated']
+                'dateUpdated' => $item['dateUpdated'],
+                'menu' => ['createUrl' => UrlHelper::cpUrl('redirect/redirects/new', ['from' => $item['id']])]
             ];
         }
 
