@@ -143,7 +143,7 @@ class CatchAllController extends Controller
                 'referrer' => Html::encode($item['referrer']),
                 'hitCount' => $item['hitCount'],
                 'dateCreated' => $item['dateCreated'],
-                'dateUpdated' => $item['dateUpdated'],
+                'dateUpdated' => $item['dateUpdated']
             ];
         }
 
