@@ -27,9 +27,29 @@ var columns = [
     }
 ];
 
+var actions = [
+    {
+        label: Craft.t('app', 'Change'),
+        actions: [
+            {
+                label: Craft.t('vredirect', 'Ignore'),
+                action: 'vredirect/catch-all/ignore',
+                ajax: true
+            },
+            {
+                label: Craft.t('app', 'Delete'),
+                action: 'vredirect/catch-all/delete',
+                ajax: true
+            }
+        ]
+    }
+];
+
+
 new Craft.VueAdminTable({
-    deleteAction: Craft.getActionUrl('vredirect/catch-all/delete'),
+    deleteAction: Craft.getActionUrl('vredirect/catch-all/delete-one'),
     columns: columns,
+    actions: actions,
     checkboxes: true,
     container: '#hits-vue-admin-table',
     emptyMessage: Craft.t('vredirect', 'No 404s Registered.'),
