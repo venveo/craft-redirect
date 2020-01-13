@@ -26,13 +26,13 @@ var columns = [
         name: 'dateUpdated', title: Craft.t('vredirect', 'Last Hit'), sortField: 'dateUpdated'
     },
     {
-        name: 'menu', callback: function(value) {
+        name: 'menu', callback: function (value) {
             if (value) {
-                return '<a class="btn primary small" target="_blank" href="'+value.url+'">Craft.t(\'vredirect\', \'Create\')</a>';
+                return '<a class="btn primary small" target="_blank" href="' + value.url + '">Craft.t(\'vredirect\', \'Create\')</a>';
             }
 
             return '';
-            }
+        }
     }
 ];
 

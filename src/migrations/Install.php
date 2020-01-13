@@ -9,15 +9,8 @@
 
 namespace venveo\redirect\migrations;
 
-use Craft;
-use craft\config\DbConfig;
 use craft\db\Migration;
-use craft\elements\User;
-use craft\helpers\StringHelper;
-use craft\mail\Mailer;
 use craft\mail\transportadapters\Php;
-use craft\models\Info;
-use craft\models\Site;
 
 class Install extends Migration
 {
@@ -27,16 +20,6 @@ class Install extends Migration
 
         echo " done\n";
     }
-
-    public function safeDown()
-    {
-        $this->dropTableIfExists('{{%venveo_redirects}}');
-        $this->dropTableIfExists('{{%venveo_redirects_catch_all_urls}}');
-        return true;
-    }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * Creates the tables.
@@ -83,5 +66,15 @@ class Install extends Migration
         $this->addForeignKey(null, '{{%venveo_redirects}}', ['destinationElementId'], '{{%elements}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%venveo_redirects_catch_all_urls}}', ['siteId'], '{{%sites}}', ['id'], 'CASCADE', null);
         $this->createIndex($this->db->getIndexName('{{%venveo_redirects}}', 'type'), '{{%venveo_redirects}}', 'type');
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    public function safeDown()
+    {
+        $this->dropTableIfExists('{{%venveo_redirects}}');
+        $this->dropTableIfExists('{{%venveo_redirects_catch_all_urls}}');
+        return true;
     }
 }

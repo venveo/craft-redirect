@@ -9,15 +9,12 @@
 namespace venveo\redirect\controllers;
 
 use Craft;
-use craft\db\Paginator;
 use craft\errors\SiteNotFoundException;
 use craft\helpers\AdminTable;
 use craft\helpers\Html;
-use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use venveo\redirect\Plugin;
 use venveo\redirect\records\CatchAllUrl;
-use yii\db\Query;
 use yii\web\Response;
 
 class CatchAllController extends Controller
@@ -34,10 +31,7 @@ class CatchAllController extends Controller
      */
     public function actionIndex()
     {
-        $currentUser = Craft::$app->getUser()->getIdentity();
-        if (!$currentUser->can(Plugin::PERMISSION_MANAGE_404S)) {
-            return Craft::$app->response->setStatusCode('403', Craft::t('vredirect', 'You lack the required permissions to manage registered 404s'));
-        }
+        $this->requirePermission(Plugin::PERMISSION_MANAGE_404S);
 
         return $this->renderTemplate('vredirect/_catch-all/index', [
             'catchAllQuery' => CatchAllUrl::find()->orderBy('hitCount DESC')
@@ -88,7 +82,8 @@ class CatchAllController extends Controller
         return $this->asJson(['success' => true]);
     }
 
-    public function actionHitsTable() {
+    public function actionHitsTable()
+    {
         $this->requireAcceptsJson();
         $request = Craft::$app->getRequest();
 

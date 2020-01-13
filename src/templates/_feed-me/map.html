@@ -2,72 +2,72 @@
 {% import 'feed-me/_macros' as feedMeMacro %}
 
 {% set fields = [
-  {
-    name: 'Source',
-    handle: 'sourceUrl',
-    instructions: 'The source URL' | t('vredirect'),
-    required: true,
-    default: {
-        type: 'text',
-    },
-  },
-  {
-    name: 'Destination',
-    handle: 'destinationUrl',
-    instructions: 'The destination URL' | t('vredirect'),
-    required: true,
-    default: {
-        type: 'text',
-    },
-  },
-  {
-    name: 'Response Code',
-    handle: 'statusCode',
-    instructions: 'Redirect status code: 301 or 302' | t('vredirect'),
-    default: {
-        type: 'select',
-        options: [
-          { label: '301', value: '301' },
-          { label: '302', value: '302' },
-        ],
-    },
-  },
-  {
-      name: 'Type',
-      handle: 'type',
-      instructions: 'Redirect Type' | t('vredirect'),
-      default: {
-        type: 'select',
-        options: [
-          { label: 'Static', value: 'static' },
-          { label: 'Dynamic', value: 'dynamic' },
-        ],
-  },
-  },
     {
-    name: 'Redirect ID',
-    handle: 'id',
-    instructions: '<strong class="error">Warning: </strong>This should only be used for an existing Redirect ID.' | t('vredirect'),
-    type: 'text',
+        name: 'Source',
+        handle: 'sourceUrl',
+        instructions: 'The source URL' | t('vredirect'),
+        required: true,
+        default: {
+        type: 'text',
+    },
+    },
+    {
+        name: 'Destination',
+        handle: 'destinationUrl',
+        instructions: 'The destination URL' | t('vredirect'),
+        required: true,
+        default: {
+        type: 'text',
+    },
+    },
+    {
+        name: 'Response Code',
+        handle: 'statusCode',
+        instructions: 'Redirect status code: 301 or 302' | t('vredirect'),
+        default: {
+        type: 'select',
+        options: [
+            { label: '301', value: '301' },
+            { label: '302', value: '302' },
+        ],
+    },
+    },
+    {
+        name: 'Type',
+        handle: 'type',
+        instructions: 'Redirect Type' | t('vredirect'),
+        default: {
+        type: 'select',
+        options: [
+            { label: 'Static', value: 'static' },
+            { label: 'Dynamic', value: 'dynamic' },
+        ],
+    },
+    },
+    {
+        name: 'Redirect ID',
+        handle: 'id',
+        instructions: '<strong class="error">Warning: </strong>This should only be used for an existing Redirect ID.' | t('vredirect'),
+        type: 'text',
     },
 ] %}
 
 <h2>{{ 'Redirect Fields' | t('vredirect') }}</h2>
 
 <table class="feedme-mapping data fullwidth collapsible">
-  <thead>
-  <th>{{ 'Field' | t('feed-me') }}</th>
-  <th>{{ 'Feed Element' | t('feed-me') }}</th>
-  <th>{{ 'Default Value' | t('feed-me') }}</th>
-  </thead>
-  <tbody>
-  {% for field in fields %}
-    {% set template = field.type ?? 'default' %}
-    {% set variables = field | merge({ feed: feed, feedData: feedData, attribute: true }) %}
+    <thead>
+    <th>{{ 'Field' | t('feed-me') }}</th>
+    <th>{{ 'Feed Element' | t('feed-me') }}</th>
+    <th>{{ 'Default Value' | t('feed-me') }}</th>
+    </thead>
+    <tbody>
+    {% for field in fields %}
+        {% set template = field.type ?? 'default' %}
+        {% set variables = field | merge({ feed: feed, feedData: feedData, attribute: true }) %}
 
-    {% include 'feed-me/_includes/fields/' ~ template ignore missing with variables only %}
-  {% endfor %}
-  </tbody>
+        {% include 'feed-me/_includes/fields/' ~ template ignore missing with variables only %}
+    {% endfor %}
+    </tbody>
 </table>
 
 <hr>

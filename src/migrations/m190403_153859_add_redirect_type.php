@@ -10,9 +10,7 @@
 
 namespace venveo\redirect\migrations;
 
-use Craft;
 use craft\db\Migration;
-use craft\db\Table;
 
 /**
  * m190403_153859_add_redirect_type migration.

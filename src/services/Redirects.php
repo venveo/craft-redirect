@@ -11,12 +11,17 @@ namespace venveo\redirect\services;
 use Craft;
 use craft\helpers\Db;
 use craft\helpers\UrlHelper;
+use DateTime;
+use Exception;
+use Throwable;
 use venveo\redirect\elements\db\RedirectQuery;
 use venveo\redirect\elements\Redirect;
 use venveo\redirect\Plugin;
 use venveo\redirect\records\Redirect as RedirectRecord;
 use yii\base\Component;
 use yii\base\ExitException;
+use yii\base\InvalidConfigException;
+use yii\db\StaleObjectException;
 use yii\web\HttpException;
 
 /**
@@ -43,7 +48,7 @@ class Redirects extends Component
     /**
      * Processes a 404 event, checking for redirects
      * @param HttpException $exception
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function handle404(HttpException $exception)
     {
@@ -75,9 +80,27 @@ class Redirects extends Component
 
         try {
             $this->doRedirect($matchedRedirects[0], $fullPath);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return;
         }
+    }
+
+    /**
+     * @throws Throwable
+     * @throws StaleObjectException
+     */
+    public function register404()
+    {
+        $catchAllService = Plugin::$plugin->catchAll;
+        $settings = Plugin::getInstance()->getSettings();
+
+        $fullPath = Craft::$app->request->getFullPath();
+        $queryString = null;
+        if (!$settings->stripQueryParameters) {
+            $queryString = Craft::$app->request->getQueryString();
+        }
+
+        $catchAllService->registerHitByUri($fullPath, $queryString);
     }
 
     /**
@@ -85,7 +108,7 @@ class Redirects extends Component
      *
      * @param Redirect $redirect
      * @param $uri
-     * @throws \Exception
+     * @throws Exception
      */
     public function doRedirect(Redirect $redirect, $uri)
     {
@@ -118,7 +141,7 @@ class Redirects extends Component
 
         if ($redirectRecord) {
             $redirectRecord->hitCount++;
-            $redirectRecord->hitAt = Db::prepareDateForDb(new \DateTime());
+            $redirectRecord->hitAt = Db::prepareDateForDb(new DateTime());
             $redirectRecord->save();
         }
 
@@ -129,23 +152,5 @@ class Redirects extends Component
         } catch (ExitException $e) {
             Craft::error($e->getMessage(), __METHOD__);
         }
-    }
-
-    /**
-     * @throws \Throwable
-     * @throws \yii\db\StaleObjectException
-     */
-    public function register404()
-    {
-        $catchAllService = Plugin::$plugin->catchAll;
-        $settings = Plugin::getInstance()->getSettings();
-
-        $fullPath = Craft::$app->request->getFullPath();
-        $queryString = null;
-        if (!$settings->stripQueryParameters) {
-            $queryString = Craft::$app->request->getQueryString();
-        }
-
-        $catchAllService->registerHitByUri($fullPath, $queryString);
     }
 }

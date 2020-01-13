@@ -11,12 +11,19 @@
 namespace venveo\redirect\controllers;
 
 use Craft;
+use craft\errors\ElementNotFoundException;
+use craft\errors\MissingComponentException;
+use craft\errors\SiteNotFoundException;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use craft\web\Response;
+use Throwable;
 use venveo\redirect\elements\Redirect;
 use venveo\redirect\Plugin;
 use venveo\redirect\records\CatchAllUrl;
+use yii\base\Exception;
+use yii\db\StaleObjectException;
+use yii\web\BadRequestHttpException;
 
 class RedirectsController extends Controller
 {
@@ -28,7 +35,7 @@ class RedirectsController extends Controller
      * Called before displaying the redirect settings index page.
      *
      * @return Response
-     * @throws \craft\errors\SiteNotFoundException
+     * @throws SiteNotFoundException
      */
     public function actionIndex(): craft\web\Response
     {
@@ -151,12 +158,12 @@ class RedirectsController extends Controller
      * Saves a redirect.
      *
      * @return \yii\web\Response
-     * @throws \Throwable
-     * @throws \craft\errors\ElementNotFoundException
-     * @throws \craft\errors\MissingComponentException
-     * @throws \yii\base\Exception
-     * @throws \yii\db\StaleObjectException
-     * @throws \yii\web\BadRequestHttpException
+     * @throws Throwable
+     * @throws ElementNotFoundException
+     * @throws MissingComponentException
+     * @throws Exception
+     * @throws StaleObjectException
+     * @throws BadRequestHttpException
      */
     public function actionSaveRedirect()
     {
@@ -241,7 +248,7 @@ class RedirectsController extends Controller
      * Deletes a route.
      *
      * @return Response
-     * @throws \yii\web\BadRequestHttpException
+     * @throws BadRequestHttpException
      */
     public function actionDeleteRedirect()
     {

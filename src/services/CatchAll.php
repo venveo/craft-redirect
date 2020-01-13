@@ -11,10 +11,11 @@ namespace venveo\redirect\services;
 use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
-use craft\helpers\UrlHelper;
+use Throwable;
 use venveo\redirect\Plugin;
 use venveo\redirect\records\CatchAllUrl as CatchAllUrlRecord;
 use yii\base\Component;
+use yii\db\StaleObjectException;
 
 /**
  * Class CatchAll service.
@@ -30,8 +31,8 @@ class CatchAll extends Component
      * @param null $queryString
      * @param int|null $siteId
      * @return bool
-     * @throws \Throwable
-     * @throws \yii\db\StaleObjectException
+     * @throws Throwable
+     * @throws StaleObjectException
      */
     public function registerHitByUri(string $uri, $queryString = null, $siteId = null): bool
     {
@@ -82,6 +83,34 @@ class CatchAll extends Component
     }
 
     /**
+     * Deletes registered 404s that haven't been hit in a while
+     * @param null $limit
+     * @throws Throwable
+     * @throws StaleObjectException
+     */
+    public function deleteStale404s($limit = null)
+    {
+        $hours = Plugin::$plugin->getSettings()->deleteStale404sHours;
+
+        $interval = DateTimeHelper::secondsToInterval($hours * 60 * 60);
+        $expire = DateTimeHelper::currentUTCDateTime();
+        $pastTime = $expire->sub($interval);
+
+        $catchAllQuery = CatchAllUrlRecord::find()
+            ->andWhere(['<', 'dateUpdated', Db::prepareDateForDb($pastTime)]);
+
+        if ($limit) {
+            $catchAllQuery->limit($limit);
+        }
+
+        $catchAll = $catchAllQuery->all();
+        /** @var CatchAllUrlRecord $item */
+        foreach ($catchAll as $item) {
+            $item->delete();
+        }
+    }
+
+    /**
      * Marks a 404 as ignored
      * @param int $id
      * @return bool
@@ -101,8 +130,8 @@ class CatchAll extends Component
     /**
      * @param int $id
      * @return bool
-     * @throws \Throwable
-     * @throws \yii\db\StaleObjectException
+     * @throws Throwable
+     * @throws StaleObjectException
      */
     public function deleteUrlById(int $id): bool
     {
@@ -125,34 +154,6 @@ class CatchAll extends Component
         return CatchAllUrlRecord::findOne([
             'uid' => $uid,
         ]);
-    }
-
-    /**
-     * Deletes registered 404s that haven't been hit in a while
-     * @param null $limit
-     * @throws \Throwable
-     * @throws \yii\db\StaleObjectException
-     */
-    public function deleteStale404s($limit = null)
-    {
-        $hours = Plugin::$plugin->getSettings()->deleteStale404sHours;
-
-        $interval = DateTimeHelper::secondsToInterval($hours * 60 * 60);
-        $expire = DateTimeHelper::currentUTCDateTime();
-        $pastTime = $expire->sub($interval);
-
-        $catchAllQuery = CatchAllUrlRecord::find()
-            ->andWhere(['<', 'dateUpdated', Db::prepareDateForDb($pastTime)]);
-
-        if ($limit) {
-            $catchAllQuery->limit($limit);
-        }
-
-        $catchAll = $catchAllQuery->all();
-        /** @var CatchAllUrlRecord $item */
-        foreach ($catchAll as $item) {
-            $item->delete();
-        }
     }
 
 
