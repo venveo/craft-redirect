@@ -12,6 +12,7 @@ use craft\db\ActiveRecord;
 
 /**
  * @property string uri
+ * @property string $params
  * @property int hitCount
  * @property int|null siteId
  * @property boolean ignored

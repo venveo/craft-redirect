@@ -50,6 +50,7 @@ class Install extends Migration
             'type' => $this->string('8')->null()->defaultValue('static')->notNull(),
             'sourceUrl' => $this->string(),
             'destinationUrl' => $this->string(),
+            'destinationElementId' => $this->integer()->null()->defaultValue(null),
             'statusCode' => $this->string(),
             'hitCount' => $this->integer()->unsigned()->notNull()->defaultValue(0),
             'hitAt' => $this->dateTime(),
@@ -66,6 +67,7 @@ class Install extends Migration
                 [
                     'id' => $this->primaryKey(),
                     'uri' => $this->string(255)->notNull()->defaultValue(''),
+                    'params' => $this->text()->null()->defaultValue(null),
                     'uid' => $this->uid(),
                     'siteId' => $this->integer()->null()->defaultValue(null),
                     'dateCreated' => $this->dateTime()->notNull(),
@@ -78,6 +80,7 @@ class Install extends Migration
         }
 
         $this->addForeignKey(null, '{{%venveo_redirects}}', ['id'], '{{%elements}}', ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, '{{%venveo_redirects}}', ['destinationElementId'], '{{%elements}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%venveo_redirects_catch_all_urls}}', ['siteId'], '{{%sites}}', ['id'], 'CASCADE', null);
         $this->createIndex($this->db->getIndexName('{{%venveo_redirects}}', 'type'), '{{%venveo_redirects}}', 'type');
     }

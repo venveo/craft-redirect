@@ -27,27 +27,25 @@ class CatchAll extends Component
      * Register a hit to the catch all uri by its uri.
      *
      * @param string $uri
-     *
+     * @param null $queryString
      * @param int|null $siteId
      * @return bool
      * @throws \Throwable
      * @throws \yii\db\StaleObjectException
      */
-    public function registerHitByUri(string $uri, $siteId = null): bool
+    public function registerHitByUri(string $uri, $queryString = null, $siteId = null): bool
     {
 
         if ($siteId === null) {
             $siteId = Craft::$app->getSites()->currentSite->id;
         }
 
-        $settings = Plugin::getInstance()->getSettings();
-        if ($settings->stripQueryParameters) {
-            $uri = UrlHelper::stripQueryString($uri);
-        }
+        $query = $queryString;
 
         // See if this URI already exists
         $catchAllURL = CatchAllUrlRecord::findOne([
             'uri' => $uri,
+            'params' => $queryString,
             'siteId' => $siteId,
         ]);
 
@@ -59,6 +57,7 @@ class CatchAll extends Component
             $catchAllURL->hitCount = 1;
             $catchAllURL->ignored = false;
             $catchAllURL->siteId = $siteId;
+            $catchAllURL->params = $query;
         } else {
             // Don't bother if it's ignored
             if ($catchAllURL->ignored) {

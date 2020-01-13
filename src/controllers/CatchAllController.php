@@ -144,11 +144,7 @@ class CatchAllController extends Controller
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
-
-        $currentUser = Craft::$app->getUser()->getIdentity();
-        if (!$currentUser->can(Plugin::PERMISSION_MANAGE_404S)) {
-            return Craft::$app->response->setStatusCode('403', Craft::t('vredirect', 'You lack the required permissions to manage registered 404s'));
-        }
+        $this->requirePermission(Plugin::PERMISSION_MANAGE_404S);
 
 
         $data = \GuzzleHttp\json_decode(Craft::$app->request->getRawBody(), true);
@@ -175,6 +171,7 @@ class CatchAllController extends Controller
                 [$likeOperator, '[[id]]', $search],
                 [$likeOperator, '[[uri]]', $search],
                 [$likeOperator, '[[uid]]', $search],
+                [$likeOperator, '[[params]]', $search],
                 [$likeOperator, '[[referrer]]', $search],
                 [$likeOperator, '[[dateUpdated]]', $search],
                 [$likeOperator, '[[dateCreated]]', $search]
@@ -197,14 +194,18 @@ class CatchAllController extends Controller
         $registered404s = $recordQuery->all();
 
         $rows = [];
-        foreach ($registered404s as $customer) {
+        foreach ($registered404s as $item) {
+            $title = $item['uri'];
+            if (isset($item['params']) && $item['params']) {
+                $title .= '?' . $item['params'];
+            }
             $rows[] = [
-                'id' => $customer['id'],
-                'title' => Html::encode($customer['uri']),
-                'referrer' => Html::encode($customer['referrer']),
-                'hitCount' => $customer['hitCount'],
-                'dateCreated' => $customer['dateCreated'],
-                'dateUpdated' => $customer['dateUpdated'],
+                'id' => $item['id'],
+                'title' => Html::encode($title),
+                'referrer' => Html::encode($item['referrer']),
+                'hitCount' => $item['hitCount'],
+                'dateCreated' => $item['dateCreated'],
+                'dateUpdated' => $item['dateUpdated'],
             ];
         }
 

@@ -55,7 +55,7 @@ class Redirects extends Component
         $matchedRedirects = $query->all();
         if (empty($matchedRedirects)) {
             if (Plugin::$plugin->getSettings()->catchAllActive) {
-                $this->registerCatchAll();
+                $this->register404();
             }
             return;
         }
@@ -135,10 +135,17 @@ class Redirects extends Component
      * @throws \Throwable
      * @throws \yii\db\StaleObjectException
      */
-    public function registerCatchAll()
+    public function register404()
     {
         $catchAllService = Plugin::$plugin->catchAll;
-        $fullPath = Craft::$app->request->getUrl();
-        $catchAllService->registerHitByUri($fullPath);
+        $settings = Plugin::getInstance()->getSettings();
+
+        $fullPath = Craft::$app->request->getFullPath();
+        $queryString = null;
+        if (!$settings->stripQueryParameters) {
+            $queryString = Craft::$app->request->getQueryString();
+        }
+
+        $catchAllService->registerHitByUri($fullPath, $queryString);
     }
 }
