@@ -118,6 +118,8 @@ class CatchAllController extends Controller
             $sortDir = $sortData[1] === 'asc' ? SORT_ASC : SORT_DESC;
             $orderParam = [$sortKey => $sortDir];
             $recordQuery->orderBy($orderParam);
+        } else {
+            $recordQuery->orderBy(['dateCreated' => SORT_DESC]);
         }
 
         $total = $recordQuery->count();
