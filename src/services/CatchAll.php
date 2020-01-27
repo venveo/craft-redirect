@@ -44,12 +44,12 @@ class CatchAll extends Component
         $query = $queryString != '' ? $queryString : null;
 
         // See if this URI already exists
-        $catchAllURL = CatchAllUrlRecord::findOne([
+        $params = [
             'uri' => $uri,
-            'query' => $queryString,
+            'query' => $query,
             'siteId' => $siteId,
-        ]);
-
+        ];
+        $catchAllURL = CatchAllUrlRecord::findOne($params);
         // It doesn't exist, so create it.
         if (!$catchAllURL) {
             // not found, new one!
