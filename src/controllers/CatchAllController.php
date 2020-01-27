@@ -30,9 +30,12 @@ class CatchAllController extends Controller
      * @return Response
      * @throws SiteNotFoundException
      */
-    public function actionIndex()
+    public function actionIndex($siteId = null)
     {
         $this->requirePermission(Plugin::PERMISSION_MANAGE_404S);
+        if ($siteId) {
+            Craft::$app->sites->setCurrentSite($siteId);
+        }
 
         return $this->renderTemplate('vredirect/_catch-all/index', [
             'catchAllQuery' => CatchAllUrl::find()->orderBy('hitCount DESC')
@@ -92,6 +95,7 @@ class CatchAllController extends Controller
         $sort = $request->getParam('sort', null);
         $limit = $request->getParam('per_page', 10);
         $search = $request->getParam('search', null);
+        $siteId = $request->getParam('siteId', Craft::$app->sites->getCurrentSite()->id);
         $offset = ($page - 1) * $limit;
 
         $recordQuery = CatchAllUrl::find();
@@ -108,6 +112,10 @@ class CatchAllController extends Controller
                 [$likeOperator, '[[dateUpdated]]', $search],
                 [$likeOperator, '[[dateCreated]]', $search]
             ]);
+        }
+
+        if ($siteId) {
+            $recordQuery->andWhere(['=','[[siteId]]', $siteId]);
         }
 
         $recordQuery->andWhere(['=', '[[ignored]]', false]);

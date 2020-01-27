@@ -202,6 +202,7 @@ class Plugin extends BasePlugin
             $event->rules = array_merge($event->rules, [
                 'redirect' => ['template' => 'vredirect/index'],
 
+                'redirect/catch-all/<siteId:\d+>' => 'vredirect/catch-all/index',
                 'redirect/catch-all' => 'vredirect/catch-all/index',
 
                 'redirect/dashboard' => 'vredirect/dashboard/index',

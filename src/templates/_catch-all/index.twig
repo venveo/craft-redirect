@@ -4,6 +4,12 @@
 
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 
+{% block contextMenu %}
+    {% include '_elements/sitemenu' with {
+        urlFormat: cpUrl('redirect/catch-all/{id}')
+    } only %}
+{% endblock %}
+
 {% set content %}
     <div id="hits-vue-admin-table"></div>
 {% endset %}
@@ -28,7 +34,7 @@ var columns = [
     {
         name: 'menu', callback: function (value) {
             if (value) {
-                return '<a class="btn primary small" target="_blank" href="' + value.createUrl + '">{{ 'Redirect'|t('vredirect') }}</a>';
+                return '<a class="btn primary small" target="_blank" href="' + value.createUrl + '">'+Craft.t('vredirect', 'Redirect')+'</a>';
             }
 
             return '';
@@ -65,6 +71,6 @@ new Craft.VueAdminTable({
     padded: true,
     search: true,
     searchPlaceholder: Craft.t('vredirect', 'Search for 404s'),
-    tableDataEndpoint: Craft.getActionUrl('vredirect/catch-all/hits-table')
+    tableDataEndpoint: Craft.getActionUrl('vredirect/catch-all/hits-table?siteId='+ Craft.siteId)
 });
 {% endjs %}
