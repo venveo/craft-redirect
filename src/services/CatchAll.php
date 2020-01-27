@@ -41,7 +41,7 @@ class CatchAll extends Component
             $siteId = Craft::$app->getSites()->currentSite->id;
         }
 
-        $query = $queryString;
+        $query = $queryString != '' ? $queryString : null;
 
         // See if this URI already exists
         $catchAllURL = CatchAllUrlRecord::findOne([
