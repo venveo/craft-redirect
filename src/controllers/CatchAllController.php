@@ -37,10 +37,19 @@ class CatchAllController extends Controller
             Craft::$app->sites->setCurrentSite($siteId);
         }
 
-        return $this->renderTemplate('vredirect/_catch-all/index', [
-            'catchAllQuery' => CatchAllUrl::find()->orderBy('hitCount DESC')
-        ]);
+        return $this->renderTemplate('vredirect/_catch-all/index', []);
     }
+
+    public function actionIgnored($siteId = null)
+    {
+        $this->requirePermission(Plugin::PERMISSION_MANAGE_404S);
+        if ($siteId) {
+            Craft::$app->sites->setCurrentSite($siteId);
+        }
+
+        return $this->renderTemplate('vredirect/_catch-all/ignored', []);
+    }
+
 
     public function actionDelete()
     {
@@ -75,7 +84,7 @@ class CatchAllController extends Controller
         return $this->asJson(['success' => true]);
     }
 
-    public function actionUnIgnore()
+    public function actionUnignore()
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -95,6 +104,7 @@ class CatchAllController extends Controller
         $sort = $request->getParam('sort', null);
         $limit = $request->getParam('per_page', 10);
         $search = $request->getParam('search', null);
+        $ignoredOnly = $request->getParam('ignored', false);
         $siteId = $request->getParam('siteId', Craft::$app->sites->getCurrentSite()->id);
         $offset = ($page - 1) * $limit;
 
@@ -115,10 +125,10 @@ class CatchAllController extends Controller
         }
 
         if ($siteId) {
-            $recordQuery->andWhere(['=','[[siteId]]', $siteId]);
+            $recordQuery->andWhere(['=', '[[siteId]]', $siteId]);
         }
 
-        $recordQuery->andWhere(['=', '[[ignored]]', false]);
+        $recordQuery->andWhere(['=', '[[ignored]]', (bool)$ignoredOnly]);
 
         if ($sort) {
             $sortData = explode('|', $sort);
@@ -145,6 +155,8 @@ class CatchAllController extends Controller
             }
             $rows[] = [
                 'id' => $item['id'],
+                'siteId' => $item['siteId'],
+                'ignored' => $item['ignored'],
                 'title' => Html::encode($title),
                 'referrer' => Html::encode($item['referrer']),
                 'hitCount' => $item['hitCount'],

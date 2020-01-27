@@ -142,6 +142,10 @@ class Plugin extends BasePlugin
                 'label' => Craft::t('vredirect', 'Registered 404s'),
                 'url' => 'redirect/catch-all'
             ];
+            $subnavItems['ignored'] = [
+                'label' => Craft::t('vredirect', 'Ignored 404s'),
+                'url' => 'redirect/catch-all/ignored'
+            ];
         }
 
         return [
@@ -204,6 +208,9 @@ class Plugin extends BasePlugin
 
                 'redirect/catch-all/<siteId:\d+>' => 'vredirect/catch-all/index',
                 'redirect/catch-all' => 'vredirect/catch-all/index',
+
+                'redirect/catch-all/ignored' => 'vredirect/catch-all/ignored',
+                'redirect/catch-all/ignored/<siteId:\d+>' => 'vredirect/catch-all/ignored',
 
                 'redirect/dashboard' => 'vredirect/dashboard/index',
 
