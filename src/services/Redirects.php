@@ -54,9 +54,14 @@ class Redirects extends Component
     {
         // Path with query params
         $fullPath = Craft::$app->request->getFullPath();
+        $queryString = Craft::$app->request->getQueryString();
+        $searchUri = $fullPath;
+        if ($queryString) {
+            $searchUri .= '?' . $queryString;
+        }
 
         $query = new RedirectQuery(Redirect::class);
-        $query->matchingUri = $fullPath;
+        $query->matchingUri = $searchUri;
         $matchedRedirects = $query->all();
         if (empty($matchedRedirects)) {
             if (Plugin::$plugin->getSettings()->catchAllActive) {
