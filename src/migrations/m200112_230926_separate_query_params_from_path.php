@@ -16,7 +16,7 @@ class m200112_230926_separate_query_params_from_path extends Migration
     {
         $this->addColumn(
             '{{%venveo_redirects_catch_all_urls}}',
-            'params',
+            'query',
             $this->text()->null()->defaultValue(null)->after('uri')
         );
         return true;

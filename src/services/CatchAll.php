@@ -46,7 +46,7 @@ class CatchAll extends Component
         // See if this URI already exists
         $catchAllURL = CatchAllUrlRecord::findOne([
             'uri' => $uri,
-            'params' => $queryString,
+            'query' => $queryString,
             'siteId' => $siteId,
         ]);
 
@@ -58,7 +58,7 @@ class CatchAll extends Component
             $catchAllURL->hitCount = 1;
             $catchAllURL->ignored = false;
             $catchAllURL->siteId = $siteId;
-            $catchAllURL->params = $query;
+            $catchAllURL->query = $query;
         } else {
             // Don't bother if it's ignored
             if ($catchAllURL->ignored) {

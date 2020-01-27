@@ -117,7 +117,7 @@ class CatchAllController extends Controller
                 [$likeOperator, '[[id]]', $search],
                 [$likeOperator, '[[uri]]', $search],
                 [$likeOperator, '[[uid]]', $search],
-                [$likeOperator, '[[params]]', $search],
+                [$likeOperator, '[[query]]', $search],
                 [$likeOperator, '[[referrer]]', $search],
                 [$likeOperator, '[[dateUpdated]]', $search],
                 [$likeOperator, '[[dateCreated]]', $search]
@@ -150,8 +150,8 @@ class CatchAllController extends Controller
         $rows = [];
         foreach ($registered404s as $item) {
             $title = $item['uri'];
-            if (isset($item['params']) && $item['params']) {
-                $title .= '?' . $item['params'];
+            if (isset($item['query']) && $item['query']) {
+                $title .= '?' . $item['query'];
             }
             $rows[] = [
                 'id' => $item['id'],

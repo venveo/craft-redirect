@@ -4,6 +4,9 @@
 ### Changed
 - Redirect now requires Craft 3.4
 - Swapped registered 404s table for new native Vue table
+- Split out registered 404s and ignored 404s into 2 tables
+- Query parameters and request URI are now stored in separate columns
+- Changed column types more appropriate settings
 
 ### Added
 - Setting to strip query parameters from registered 404s
