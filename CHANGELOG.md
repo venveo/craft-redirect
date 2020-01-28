@@ -1,6 +1,22 @@
 # Redirect Changelog
 
-### 2.1.0 - 2019-12-23
+## 3.0.0 - 2020-01-28
+### Changed
+- Redirect now requires Craft 3.4
+- Swapped registered 404s table for new native Vue table
+- Split out registered 404s and ignored 404s into 2 tables
+- Query parameters and request URI are now stored in separate columns
+- Changed column types more appropriate settings
+
+### Added
+- Setting to strip query parameters from registered 404s
+- Added Feed Me support to import "Hit Count" on redirects
+
+### Fixed
+- Improved compatibility with older versions of php
+
+
+## 2.1.0 - 2019-12-23
 ### Added
 - Added setting to disable storing referral URLs
 
@@ -14,11 +30,11 @@
 - Registered 404s no longer store the site base path
 - Renamed table prefixes
 
-### 2.0.12.1 - 2019-07-12
+## 2.0.12.1 - 2019-07-12
 ### Changed
 - Only update a referrer if its set
 
-### 2.0.12 - 2019-07-12
+## 2.0.12 - 2019-07-12
 ### Added
 - We now keep track of the last referrer for a 404
 

@@ -1,17 +1,17 @@
 {% extends 'vredirect/_layouts/cp' %}
-{% set selectedSubnavItem = 'catch-all' %}
-{% set title = "Registered 404 entries"|t('vredirect') %}
+{% set selectedSubnavItem = 'ignored' %}
+{% set title = "Ignored 404 URIs"|t('vredirect') %}
 
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 
 {% block contextMenu %}
     {% include '_elements/sitemenu' with {
-        urlFormat: cpUrl('redirect/catch-all/{id}')
+        urlFormat: cpUrl('redirect/catch-all/ignored/{id}')
     } only %}
 {% endblock %}
 
 {% set content %}
-    <div id="hits-vue-admin-table"></div>
+    <div id="ignored-vue-admin-table"></div>
 {% endset %}
 
 {% js %}
@@ -47,8 +47,8 @@ var actions = [
         label: Craft.t('app', 'Change'),
         actions: [
             {
-                label: Craft.t('vredirect', 'Ignore'),
-                action: 'vredirect/catch-all/ignore',
+                label: Craft.t('vredirect', 'Unignore'),
+                action: 'vredirect/catch-all/unignore',
                 ajax: true
             },
             {
@@ -66,11 +66,11 @@ new Craft.VueAdminTable({
     columns: columns,
     actions: actions,
     checkboxes: true,
-    container: '#hits-vue-admin-table',
-    emptyMessage: Craft.t('vredirect', 'No 404s Registered'),
+    container: '#ignored-vue-admin-table',
+    emptyMessage: Craft.t('vredirect', 'No ignored 404s'),
     padded: false,
     search: true,
-    searchPlaceholder: Craft.t('vredirect', 'Search for 404s'),
-    tableDataEndpoint: Craft.getActionUrl('vredirect/catch-all/hits-table?siteId='+ Craft.siteId)
+    searchPlaceholder: Craft.t('vredirect', 'Search for ignored 404s'),
+    tableDataEndpoint: Craft.getActionUrl('vredirect/catch-all/hits-table?siteId='+ Craft.siteId + '&ignored=true')
 });
 {% endjs %}

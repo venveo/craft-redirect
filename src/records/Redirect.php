@@ -15,9 +15,10 @@ use yii\db\ActiveQueryInterface;
 
 /**
  *
- * @property \yii\db\ActiveQueryInterface $element
+ * @property ActiveQueryInterface $element
  * @property Date|null hitAt
  * @property integer|null hitCount
+ * @property int $destinationElementId [int(11)]
  * @property int|null id
  * @property string sourceUrl
  * @property string destinationUrl
@@ -27,6 +28,7 @@ use yii\db\ActiveQueryInterface;
 class Redirect extends ActiveRecord
 {
     use SoftDeleteTrait;
+
     /**
      * @inheritdoc
      *

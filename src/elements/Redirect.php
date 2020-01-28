@@ -45,6 +45,34 @@ class Redirect extends Element
         'static' => 'Static',
         'dynamic' => 'Dynamic (RegExp)',
     ];
+    /**
+     * @var string|null sourceUrl
+     */
+    public $sourceUrl;
+    /**
+     * @var string|null destinationUrl
+     */
+    public $destinationUrl;
+    /**
+     * @var string|null hitAt
+     */
+    public $hitAt;
+    /**
+     * @var string|null hitCount
+     */
+    public $hitCount;
+    /**
+     * @var string|null statusCode
+     */
+    public $statusCode;
+    /**
+     * @var string type
+     */
+    public $type;
+    /**
+     * @var int|null siteId
+     */
+    public $siteId;
 
     /**
      * @inheritdoc
@@ -94,58 +122,6 @@ class Redirect extends Element
     public static function find(): ElementQueryInterface
     {
         return new RedirectQuery(static::class);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getIsEditable(): bool
-    {
-        return true;
-    }
-
-
-    public function getSupportedSites(): array
-    {
-        $supportedSites = [];
-        $supportedSites[] = ['siteId' => $this->siteId, 'enabledByDefault' => true];
-        return $supportedSites;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getCpEditUrl()
-    {
-        return UrlHelper::cpUrl('redirect/redirects/' . $this->id . '?siteId=' . $this->siteId);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getEditorHtml(): string
-    {
-        $html = Craft::$app->getView()->renderTemplate('vredirect/_redirects/redirectfields', [
-            'redirect' => $this,
-            'isNewRedirect' => false,
-            'meta' => false,
-            'statusCodeOptions' => self::STATUS_CODE_OPTIONS,
-            'typeOptions' => self::TYPE_OPTIONS
-        ]);
-
-        $html .= parent::getEditorHtml();
-
-        return $html;
-    }
-
-    /**
-     * Returns the name.
-     *
-     * @return string
-     */
-    public function getName(): string
-    {
-        return (string)$this->sourceUrl;
     }
 
     /**
@@ -227,25 +203,6 @@ class Redirect extends Element
     /**
      * @inheritdoc
      */
-    protected function tableAttributeHtml(string $attribute): string
-    {
-        switch ($attribute) {
-            case 'statusCode':
-
-                return $this->statusCode ? Html::encodeParams('{statusCode}', ['statusCode' => Craft::t('vredirect', self::STATUS_CODE_OPTIONS[$this->statusCode])]) : '';
-
-            case 'baseUrl':
-
-                return Html::encodeParams('<a href="{baseUrl}" target="_blank">test</a>', ['baseUrl' => $this->getSite()->baseUrl . $this->sourceUrl]);
-        }
-
-        return parent::tableAttributeHtml($attribute);
-    }
-
-
-    /**
-     * @inheritdoc
-     */
     protected static function defineActions(string $source = null): array
     {
         $actions = [];
@@ -276,6 +233,63 @@ class Redirect extends Element
     /**
      * @inheritdoc
      */
+    protected static function defineDefaultTableAttributes(string $source): array
+    {
+        $attributes = ['sourceUrl', 'destinationUrl', 'statusCode', 'hitAt', 'hitCount', 'dateCreated'];
+
+        return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsEditable(): bool
+    {
+        return true;
+    }
+
+    public function getSupportedSites(): array
+    {
+        $supportedSites = [];
+        $supportedSites[] = ['siteId' => $this->siteId, 'enabledByDefault' => true];
+        return $supportedSites;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCpEditUrl()
+    {
+        return UrlHelper::cpUrl('redirect/redirects/' . $this->id . '?siteId=' . $this->siteId);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEditorHtml(): string
+    {
+        $html = Craft::$app->getView()->renderTemplate('vredirect/_redirects/redirectfields', [
+            'redirect' => $this,
+            'isNewRedirect' => false,
+            'meta' => false,
+            'statusCodeOptions' => self::STATUS_CODE_OPTIONS,
+            'typeOptions' => self::TYPE_OPTIONS
+        ]);
+
+        $html .= parent::getEditorHtml();
+
+        return $html;
+    }
+
+    /**
+     * Use the sourceUrl as the string representation.
+     *
+     * @return string
+     */
+    /** @noinspection PhpInconsistentReturnPointsInspection */
+    /**
+     * @inheritdoc
+     */
     public function rules()
     {
         $rules = parent::rules();
@@ -286,64 +300,6 @@ class Redirect extends Element
         $rules[] = [['type'], 'in', 'range' => [self::TYPE_STATIC, self::TYPE_DYNAMIC]];
         $rules[] = [['statusCode'], 'in', 'range' => ['301', '302']];
         return $rules;
-    }
-
-    /**
-     * Cleans a URL by removing its base URL if it's a relative one
-     * Also strip leading slashes from absolute URLs
-     * @param string $url
-     * @param bool $isSource
-     * @return string
-     */
-    public function formatUrl(string $url, $isSource = false): string
-    {
-        /** @var Settings $settings */
-        $settings = Plugin::getInstance()->getSettings();
-
-        $resultUrl = $url;
-        $urlInfo = parse_url($resultUrl);
-        $siteUrlHost = parse_url($this->site->baseUrl, PHP_URL_HOST);
-        // If we're the source and we're static or we're not the source, we should check for relative URLs
-        if ($this->type === self::TYPE_STATIC || !$isSource) {
-            // If our redirect source or destination has our site URL, let's strip it out
-            if (isset($urlInfo['host']) && $urlInfo['host'] === $siteUrlHost) {
-                unset($urlInfo['scheme'], $urlInfo['host'], $urlInfo['port']);
-            }
-
-            // We're down to a relative URL, let's strip the leading slash from the path
-            if (!isset($urlInfo['host']) && isset($urlInfo['path'])) {
-                $urlInfo['path'] = ltrim($urlInfo['path'], '/');
-            }
-
-            // Remove the trailing slash from the path if enabled
-            if (isset($urlInfo['path']) && $settings->trimTrailingSlashFromPath) {
-                $urlInfo['path'] = rtrim($urlInfo['path'], '/');
-            }
-
-            // Rebuild our URL
-            $resultUrl = self::unparse_url($urlInfo);
-        }
-        return $resultUrl;
-    }
-
-
-    /**
-     * Source: https://www.php.net/manual/en/function.parse-url.php#106731
-     * @param array $parsed_url
-     * @return string
-     */
-    private static function unparse_url($parsed_url): string
-    {
-        $scheme = isset($parsed_url['scheme']) ? $parsed_url['scheme'] . '://' : '';
-        $host = $parsed_url['host'] ?? '';
-        $port = isset($parsed_url['port']) ? ':' . $parsed_url['port'] : '';
-        $user = $parsed_url['user'] ?? '';
-        $pass = isset($parsed_url['pass']) ? ':' . $parsed_url['pass'] : '';
-        $pass = ($user || $pass) ? "$pass@" : '';
-        $path = $parsed_url['path'] ?? '';
-        $query = isset($parsed_url['query']) ? '?' . $parsed_url['query'] : '';
-        $fragment = isset($parsed_url['fragment']) ? '#' . $parsed_url['fragment'] : '';
-        return "$scheme$user$pass$host$port$path$query$fragment";
     }
 
     /**
@@ -361,6 +317,10 @@ class Redirect extends Element
         }
         return parent::beforeDelete();
     }
+
+
+    // Properties
+    // =========================================================================
 
     /**
      * @inheritdoc
@@ -411,23 +371,64 @@ class Redirect extends Element
         parent::afterSave($isNew);
     }
 
-
     /**
-     * @inheritdoc
+     * Cleans a URL by removing its base URL if it's a relative one
+     * Also strip leading slashes from absolute URLs
+     * @param string $url
+     * @param bool $isSource
+     * @return string
      */
-    protected static function defineDefaultTableAttributes(string $source): array
+    public function formatUrl(string $url, $isSource = false): string
     {
-        $attributes = ['sourceUrl', 'destinationUrl', 'statusCode', 'hitAt', 'hitCount', 'dateCreated'];
+        /** @var Settings $settings */
+        $settings = Plugin::getInstance()->getSettings();
 
-        return $attributes;
+        $resultUrl = $url;
+        $urlInfo = parse_url($resultUrl);
+        $siteUrlHost = parse_url($this->site->baseUrl, PHP_URL_HOST);
+        // If we're the source and we're static or we're not the source, we should check for relative URLs
+        if ($this->type === self::TYPE_STATIC || !$isSource) {
+            // If our redirect source or destination has our site URL, let's strip it out
+            if (isset($urlInfo['host']) && $urlInfo['host'] === $siteUrlHost) {
+                unset($urlInfo['scheme'], $urlInfo['host'], $urlInfo['port']);
+            }
+
+            // We're down to a relative URL, let's strip the leading slash from the path
+            if (!isset($urlInfo['host']) && isset($urlInfo['path'])) {
+                $urlInfo['path'] = ltrim($urlInfo['path'], '/');
+            }
+
+            // Remove the trailing slash from the path if enabled
+            if (isset($urlInfo['path']) && $settings->trimTrailingSlashFromPath) {
+                $urlInfo['path'] = rtrim($urlInfo['path'], '/');
+            }
+
+            // Rebuild our URL
+            $resultUrl = self::unparse_url($urlInfo);
+        }
+        return $resultUrl;
     }
 
     /**
-     * Use the sourceUrl as the string representation.
-     *
+     * Source: https://www.php.net/manual/en/function.parse-url.php#106731
+     * @param array $parsed_url
      * @return string
      */
-    /** @noinspection PhpInconsistentReturnPointsInspection */
+    private static function unparse_url($parsed_url): string
+    {
+        $scheme = isset($parsed_url['scheme']) ? $parsed_url['scheme'] . '://' : '';
+        $host = $parsed_url['host'] ?? '';
+        $port = isset($parsed_url['port']) ? ':' . $parsed_url['port'] : '';
+        $user = $parsed_url['user'] ?? '';
+        $pass = isset($parsed_url['pass']) ? ':' . $parsed_url['pass'] : '';
+        $pass = ($user || $pass) ? "$pass@" : '';
+        $path = $parsed_url['path'] ?? '';
+        $query = isset($parsed_url['query']) ? '?' . $parsed_url['query'] : '';
+        $fragment = isset($parsed_url['fragment']) ? '#' . $parsed_url['fragment'] : '';
+        return "$scheme$user$pass$host$port$path$query$fragment";
+    }
+
+
     public function __toString()
     {
         try {
@@ -435,6 +436,16 @@ class Redirect extends Element
         } catch (Throwable $e) {
             ErrorHandler::convertExceptionToError($e);
         }
+    }
+
+    /**
+     * Returns the name.
+     *
+     * @return string
+     */
+    public function getName(): string
+    {
+        return (string)$this->sourceUrl;
     }
 
     /**
@@ -447,42 +458,21 @@ class Redirect extends Element
         return $names;
     }
 
-
-    // Properties
-    // =========================================================================
-
     /**
-     * @var string|null sourceUrl
+     * @inheritdoc
      */
-    public $sourceUrl;
+    protected function tableAttributeHtml(string $attribute): string
+    {
+        switch ($attribute) {
+            case 'statusCode':
 
-    /**
-     * @var string|null destinationUrl
-     */
-    public $destinationUrl;
+                return $this->statusCode ? Html::encodeParams('{statusCode}', ['statusCode' => Craft::t('vredirect', self::STATUS_CODE_OPTIONS[$this->statusCode])]) : '';
 
-    /**
-     * @var string|null hitAt
-     */
-    public $hitAt;
+            case 'baseUrl':
 
-    /**
-     * @var string|null hitCount
-     */
-    public $hitCount;
+                return Html::encodeParams('<a href="{baseUrl}" target="_blank">test</a>', ['baseUrl' => $this->getSite()->baseUrl . $this->sourceUrl]);
+        }
 
-    /**
-     * @var string|null statusCode
-     */
-    public $statusCode;
-
-    /**
-     * @var string type
-     */
-    public $type;
-
-    /**
-     * @var int|null siteId
-     */
-    public $siteId;
+        return parent::tableAttributeHtml($attribute);
+    }
 }

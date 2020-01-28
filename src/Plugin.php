@@ -16,15 +16,19 @@ use craft\errors\MigrationException;
 use craft\events\ExceptionEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
+use craft\feedme\events\RegisterFeedMeElementsEvent;
+use craft\feedme\services\Elements;
 use craft\services\Gc;
 use craft\services\UserPermissions;
 use craft\web\ErrorHandler;
 use craft\web\UrlManager;
+use Twig\Error\RuntimeError;
 use venveo\redirect\elements\FeedMeRedirect;
 use venveo\redirect\models\Settings;
 use venveo\redirect\services\CatchAll;
 use venveo\redirect\services\Redirects;
 use yii\base\Event;
+use yii\web\HttpException;
 
 
 /**
@@ -37,16 +41,16 @@ use yii\base\Event;
  */
 class Plugin extends BasePlugin
 {
+    const PERMISSION_MANAGE_REDIRECTS = 'vredirect:redirects:manage';
+    const PERMISSION_MANAGE_404S = 'vredirect:404s:manage';
     /** @var self $plugin */
     public static $plugin;
+    public $schemaVersion = '3.0.0';
 
-    public $schemaVersion = '1.1.0';
-
+    public $hasCpSection = true;
+    public $hasCpSettings = true;
     protected $_redirectsService;
     protected $_catchAllService;
-
-    public const PERMISSION_MANAGE_REDIRECTS = 'vredirect:redirects:manage';
-    public const PERMISSION_MANAGE_404S = 'vredirect:404s:manage';
 
     /**
      * Returns the Redirects service.
@@ -69,9 +73,6 @@ class Plugin extends BasePlugin
 
         return $this->_catchAllService;
     }
-
-    public $hasCpSection = true;
-    public $hasCpSettings = true;
 
     public function install()
     {
@@ -142,6 +143,10 @@ class Plugin extends BasePlugin
                 'label' => Craft::t('vredirect', 'Registered 404s'),
                 'url' => 'redirect/catch-all'
             ];
+            $subnavItems['ignored'] = [
+                'label' => Craft::t('vredirect', 'Ignored 404s'),
+                'url' => 'redirect/catch-all/ignored'
+            ];
         }
 
         return [
@@ -151,69 +156,6 @@ class Plugin extends BasePlugin
             'subnav' => $subnavItems
         ];
     }
-
-
-    protected function createSettingsModel(): Settings
-    {
-        return new Settings();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function settingsHtml(): string
-    {
-        return Craft::$app->view->renderTemplate(
-            'vredirect/settings',
-            [
-                'settings' => $this->getSettings()
-            ]
-        );
-    }
-
-    private function registerCpRoutes()
-    {
-        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function (RegisterUrlRulesEvent $event) {
-            $event->rules = array_merge($event->rules, [
-                'redirect' => ['template' => 'vredirect/index'],
-
-                'redirect/catch-all' => 'vredirect/catch-all/index',
-
-                'redirect/dashboard' => 'vredirect/dashboard/index',
-
-                'redirect/redirects' => 'vredirect/redirects/index',
-                'redirect/redirects/new' => 'vredirect/redirects/edit-redirect',
-                'redirect/redirects/<redirectId:\d+>' => 'vredirect/redirects/edit-redirect',
-            ]);
-        });
-    }
-
-    /**
-     * Registers our custom feed import logic if feed-me is enabled. Also note, we're checking for craft\feedme
-     */
-    private function registerFeedMeElement(): void
-    {
-        if (Craft::$app->plugins->isPluginEnabled('feed-me') && class_exists(\craft\feedme\Plugin::class)) {
-            Event::on(\craft\feedme\services\Elements::class, \craft\feedme\services\Elements::EVENT_REGISTER_FEED_ME_ELEMENTS, function (\craft\feedme\events\RegisterFeedMeElementsEvent $e) {
-                $e->elements[] = FeedMeRedirect::class;
-            });
-        }
-    }
-
-    private function registerPermissions()
-    {
-        Event::on(UserPermissions::class, UserPermissions::EVENT_REGISTER_PERMISSIONS, function (RegisterUserPermissionsEvent $event) {
-            $event->permissions[\Craft::t('vredirect', 'Redirects')] = [
-                'vredirect:redirects:manage' => [
-                    'label' => \Craft::t('vredirect', 'Manage Redirects on Editable Sites'),
-                ],
-                'vredirect:404s:manage' => [
-                    'label' => \Craft::t('vredirect', 'Manage Registered 404s')
-                ]
-            ];
-        });
-    }
-
 
     public function init()
     {
@@ -247,15 +189,80 @@ class Plugin extends BasePlugin
                 }
                 $exception = $event->exception;
 
-                if ($exception instanceof \Twig\Error\RuntimeError &&
+                if ($exception instanceof RuntimeError &&
                     ($previousException = $exception->getPrevious()) !== null) {
                     $exception = $previousException;
                 }
 
-                if ($exception instanceof \yii\web\HttpException && $exception->statusCode === 404) {
+                if ($exception instanceof HttpException && $exception->statusCode === 404) {
                     self::$plugin->redirects->handle404($exception);
                 }
             }
+        );
+    }
+
+    private function registerCpRoutes()
+    {
+        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function (RegisterUrlRulesEvent $event) {
+            $event->rules = array_merge($event->rules, [
+                'redirect' => ['template' => 'vredirect/index'],
+
+                'redirect/catch-all/<siteId:\d+>' => 'vredirect/catch-all/index',
+                'redirect/catch-all' => 'vredirect/catch-all/index',
+
+                'redirect/catch-all/ignored' => 'vredirect/catch-all/ignored',
+                'redirect/catch-all/ignored/<siteId:\d+>' => 'vredirect/catch-all/ignored',
+
+                'redirect/dashboard' => 'vredirect/dashboard/index',
+
+                'redirect/redirects' => 'vredirect/redirects/index',
+                'redirect/redirects/new' => 'vredirect/redirects/edit-redirect',
+                'redirect/redirects/<redirectId:\d+>' => 'vredirect/redirects/edit-redirect',
+            ]);
+        });
+    }
+
+    /**
+     * Registers our custom feed import logic if feed-me is enabled. Also note, we're checking for craft\feedme
+     */
+    private function registerFeedMeElement()
+    {
+        if (Craft::$app->plugins->isPluginEnabled('feed-me') && class_exists(\craft\feedme\Plugin::class)) {
+            Event::on(Elements::class, Elements::EVENT_REGISTER_FEED_ME_ELEMENTS, function (RegisterFeedMeElementsEvent $e) {
+                $e->elements[] = FeedMeRedirect::class;
+            });
+        }
+    }
+
+    private function registerPermissions()
+    {
+        Event::on(UserPermissions::class, UserPermissions::EVENT_REGISTER_PERMISSIONS, function (RegisterUserPermissionsEvent $event) {
+            $event->permissions[Craft::t('vredirect', 'Redirects')] = [
+                'vredirect:redirects:manage' => [
+                    'label' => Craft::t('vredirect', 'Manage Redirects on Editable Sites'),
+                ],
+                'vredirect:404s:manage' => [
+                    'label' => Craft::t('vredirect', 'Manage Registered 404s')
+                ]
+            ];
+        });
+    }
+
+    protected function createSettingsModel(): Settings
+    {
+        return new Settings();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function settingsHtml(): string
+    {
+        return Craft::$app->view->renderTemplate(
+            'vredirect/settings',
+            [
+                'settings' => $this->getSettings()
+            ]
         );
     }
 }

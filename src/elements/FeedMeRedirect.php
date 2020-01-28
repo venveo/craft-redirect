@@ -11,9 +11,13 @@ namespace venveo\redirect\elements;
 use Cake\Utility\Hash;
 use Craft;
 use craft\base\Element as BaseElement;
+use craft\elements\db\ElementQueryInterface;
+use craft\errors\ElementNotFoundException;
 use craft\feedme\base\Element;
 use craft\feedme\base\ElementInterface;
+use Throwable;
 use venveo\redirect\elements\Redirect as RedirectElement;
+use yii\base\Exception;
 
 /**
  *
@@ -64,7 +68,7 @@ class FeedMeRedirect extends Element implements ElementInterface
     /**
      * @param $settings
      * @param array $params
-     * @return \craft\elements\db\ElementQueryInterface|db\RedirectQuery
+     * @return ElementQueryInterface|db\RedirectQuery
      */
     public function getQuery($settings, $params = [])
     {
@@ -108,9 +112,9 @@ class FeedMeRedirect extends Element implements ElementInterface
      * @param $element
      * @param $settings
      * @return bool
-     * @throws \Throwable
-     * @throws \craft\errors\ElementNotFoundException
-     * @throws \yii\base\Exception
+     * @throws Throwable
+     * @throws ElementNotFoundException
+     * @throws Exception
      */
     public function save($element, $settings)
     {

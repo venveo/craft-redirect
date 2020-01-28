@@ -54,12 +54,26 @@ class Settings extends Model
     public $deleteStale404sHours = 24 * 7;
 
     /**
+     * If true, when recording a 404, we'll remove query parameters first.
+     * /blog?page=2 would be considered the same as /blog
+     * @var bool
+     */
+    public $stripQueryParameters = true;
+
+    /**
      * @inheritdoc
      */
     public function rules()
     {
         return [
-            [['redirectsActive', 'catchAllActive', 'trimTrailingSlashFromPath', 'deleteStale404s', 'storeReferrer'], 'boolean'],
+            [[
+                'redirectsActive',
+                'catchAllActive',
+                'trimTrailingSlashFromPath',
+                'deleteStale404s',
+                'storeReferrer',
+                'stripQueryParameters'
+            ], 'boolean'],
             [['deleteStale404sHours'], 'integer'],
         ];
     }

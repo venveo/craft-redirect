@@ -71,13 +71,16 @@
                 value: redirect.type,
                 errors: redirect.getErrors('type')
             }) }}
-
+            {% set catchAllUrl = null %}
+            {% if catchAllRecord is defined %}
+                {% set catchAllUrl = catchAllRecord.uri ~ '?' ~ catchAllRecord.query %}
+            {% endif %}
             {{ forms.textField({
                 label: "Source URI"|t('vredirect'),
                 instructions: "The URI to be redirected - should not include the site URL, only the path."|t('vredirect'),
                 class: 'ltr',
                 name: 'sourceUrl',
-                value: redirect.sourceUrl ?? catchAllRecord.uri ?? '',
+                value: redirect.sourceUrl ?? catchAllUrl ?? '',
                 errors: redirect.getErrors('sourceUrl'),
                 required: true
             }) }}

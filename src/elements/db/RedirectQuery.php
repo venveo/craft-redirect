@@ -12,6 +12,7 @@ namespace venveo\redirect\elements\db;
 use Craft;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
+use DateTime;
 
 class RedirectQuery extends ElementQuery
 {
@@ -148,7 +149,7 @@ class RedirectQuery extends ElementQuery
         }
         if ($this->hitAt && $this->hitAt > 0) {
             // TODO: Refactor...
-            $inactiveDate = new \DateTime();
+            $inactiveDate = new DateTime();
             $inactiveDate->modify("-60 days");
             $this->subQuery->andWhere('([[venveo_redirects.hitAt]] < :calculatedDate AND [[venveo_redirects.hitAt]] IS NOT NULL)', [':calculatedDate' => $inactiveDate->format("Y-m-d H:m:s")]);
         }

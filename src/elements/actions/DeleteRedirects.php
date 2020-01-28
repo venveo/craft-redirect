@@ -6,11 +6,11 @@
  * @copyright Copyright (c) 2017 dolphiq
  * @copyright Copyright (c) 2019 Venveo
  */
+
 namespace venveo\redirect\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
-use venveo\redirect\elements\Redirect;
 use craft\elements\db\ElementQueryInterface;
 use yii\base\Exception;
 
@@ -26,17 +26,17 @@ class DeleteRedirects extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerLabel(): string
+    public static function isDestructive(): bool
     {
-        return Craft::t('app', 'Delete…');
+        return true;
     }
 
     /**
      * @inheritdoc
      */
-    public static function isDestructive(): bool
+    public function getTriggerLabel(): string
     {
-        return true;
+        return Craft::t('app', 'Delete…');
     }
 
     /**
@@ -59,7 +59,7 @@ class DeleteRedirects extends ElementAction
         try {
             foreach ($query->all() as $redirect) {
 
-            Craft::$app->getElements()->deleteElement($redirect);
+                Craft::$app->getElements()->deleteElement($redirect);
 
             }
         } catch (Exception $exception) {

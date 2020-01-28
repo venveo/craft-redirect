@@ -10,12 +10,9 @@
 
 namespace venveo\redirect\controllers;
 
-use Craft;
-use craft\helpers\UrlHelper;
+use craft\errors\SiteNotFoundException;
 use craft\web\Controller;
 use craft\web\Response;
-use venveo\redirect\elements\Redirect;
-use venveo\redirect\Plugin;
 
 class DashboardController extends Controller
 {
@@ -27,7 +24,7 @@ class DashboardController extends Controller
      * Called before displaying the redirect settings index page.
      *
      * @return Response
-     * @throws \craft\errors\SiteNotFoundException
+     * @throws SiteNotFoundException
      */
     public function actionIndex(): craft\web\Response
     {
