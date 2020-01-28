@@ -1,5 +1,9 @@
 # Redirect Changelog
 
+## 3.0.0.1 - 2020-01-28
+### Fixed
+- Incorrect source URI when creating a redirect from a 404
+
 ## 3.0.0 - 2020-01-28
 ### Changed
 - Redirect now requires Craft 3.4
