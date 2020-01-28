@@ -73,7 +73,10 @@
             }) }}
             {% set catchAllUrl = null %}
             {% if catchAllRecord is defined %}
-                {% set catchAllUrl = catchAllRecord.uri ~ '?' ~ catchAllRecord.query %}
+                {% set catchAllUrl = catchAllRecord.uri %}
+                {% if catchAllRecord.query %}
+                    {% set catchAllUrl = catchAllUrl ~ '?' ~ catchAllRecord.query %}
+                {% endif %}
             {% endif %}
             {{ forms.textField({
                 label: "Source URI"|t('vredirect'),
