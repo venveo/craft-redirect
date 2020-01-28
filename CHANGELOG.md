@@ -1,6 +1,6 @@
 # Redirect Changelog
 
-## Unreleased
+## 3.0.0 - 2020-01-28
 ### Changed
 - Redirect now requires Craft 3.4
 - Swapped registered 404s table for new native Vue table
@@ -10,6 +10,7 @@
 
 ### Added
 - Setting to strip query parameters from registered 404s
+- Added Feed Me support to import "Hit Count" on redirects
 
 ### Fixed
 - Improved compatibility with older versions of php
