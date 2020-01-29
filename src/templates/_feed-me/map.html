@@ -53,11 +53,29 @@
     }
     },
     {
+        type: 'date',
+        name: 'Date Created',
+        handle: 'dateCreated',
+        instructions: 'Accepts Unix timestamp, or just about any English textual datetime description.' | t('feed-me'),
+        default: {
+        type: 'dateTime',
+    }
+    },
+    {
+        type: 'date',
+        name: 'Date Updated',
+        handle: 'dateUpdated',
+        instructions: 'Accepts Unix timestamp, or just about any English textual datetime description.' | t('feed-me'),
+        default: {
+        type: 'dateTime',
+    }
+    },
+    {
         name: 'Redirect ID',
         handle: 'id',
         instructions: '<strong class="error">Warning: </strong>This should only be used for an existing Redirect ID.' | t('vredirect'),
         type: 'text',
-    },
+    }
 ] %}
 
 <h2>{{ 'Redirect Fields' | t('vredirect') }}</h2>

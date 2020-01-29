@@ -5,6 +5,9 @@
 - PHP 7.1 incompatibilities
 - Broken Feed Me Hit Count import
 
+## Added
+- Feed me support for dateCreated and dateUpdated
+
 ## 3.0.0.1 - 2020-01-28
 ### Fixed
 - Incorrect source URI when creating a redirect from a 404

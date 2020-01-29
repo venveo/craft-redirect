@@ -357,6 +357,12 @@ class Redirect extends Element
         $record->destinationUrl = $this->formatUrl(trim($this->destinationUrl), false);
         $record->statusCode = $this->statusCode;
         $record->type = $this->type;
+        if ($this->dateCreated) {
+            $record->dateCreated = $this->dateCreated;
+        }
+        if ($this->dateUpdated) {
+            $record->dateUpdated = $this->dateUpdated;
+        }
 
         $record->save(false);
 
