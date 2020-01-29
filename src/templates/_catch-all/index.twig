@@ -5,9 +5,12 @@
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 
 {% block contextMenu %}
+    {% set siteIds = craft.app.sites.getEditableSiteIds() %}
+    {% if siteIds|length > 1 %}
     {% include '_elements/sitemenu' with {
-        urlFormat: cpUrl('redirect/catch-all/{id}')
+        urlFormat: cpUrl('redirect/catch-all/{id}'),
     } only %}
+    {% endif %}
 {% endblock %}
 
 {% set content %}
