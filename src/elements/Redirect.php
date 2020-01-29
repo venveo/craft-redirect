@@ -33,15 +33,15 @@ use yii\db\StaleObjectException;
  */
 class Redirect extends Element
 {
-    public const TYPE_STATIC = 'static';
-    public const TYPE_DYNAMIC = 'dynamic';
+    const TYPE_STATIC = 'static';
+    const TYPE_DYNAMIC = 'dynamic';
 
-    public const STATUS_CODE_OPTIONS = [
+    const STATUS_CODE_OPTIONS = [
         '301' => 'Permanent redirect (301)',
         '302' => 'Temporarily redirect (302)'
     ];
 
-    public const TYPE_OPTIONS = [
+    const TYPE_OPTIONS = [
         'static' => 'Static',
         'dynamic' => 'Dynamic (RegExp)',
     ];

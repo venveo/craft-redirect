@@ -1,5 +1,9 @@
 # Redirect Changelog
 
+## Unreleased
+### Fixed
+- PHP 7.1 incompatibilities
+
 ## 3.0.0.1 - 2020-01-28
 ### Fixed
 - Incorrect source URI when creating a redirect from a 404
