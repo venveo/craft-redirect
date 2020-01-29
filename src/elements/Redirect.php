@@ -174,9 +174,9 @@ class Redirect extends Element
             'venveo_redirects.sourceUrl' => Craft::t('vredirect', 'Source URL'),
             'venveo_redirects.type' => Craft::t('vredirect', 'Type'),
             'venveo_redirects.destinationUrl' => Craft::t('vredirect', 'Destination URL'),
-            'venveo_redirects.hitAt' => Craft::t('vredirect', 'Last hit'),
-            'venveo_redirects.statusCode' => Craft::t('vredirect', 'Redirect type'),
-            'venveo_redirects.hitCount' => Craft::t('vredirect', 'Hit count'),
+            'venveo_redirects.hitAt' => Craft::t('vredirect', 'Last Hit'),
+            'venveo_redirects.statusCode' => Craft::t('vredirect', 'Redirect Type'),
+            'venveo_redirects.hitCount' => Craft::t('vredirect', 'Hit Count'),
             'elements.dateCreated' => Craft::t('app', 'Date Created'),
         ];
         return $attributes;
@@ -191,10 +191,10 @@ class Redirect extends Element
             'sourceUrl' => ['label' => Craft::t('vredirect', 'Source URL')],
             'type' => ['label' => Craft::t('vredirect', 'Type')],
             'destinationUrl' => ['label' => Craft::t('vredirect', 'Destination URL')],
-            'hitAt' => ['label' => Craft::t('vredirect', 'Last hit')],
-            'hitCount' => ['label' => Craft::t('vredirect', 'Hit count')],
+            'hitAt' => ['label' => Craft::t('vredirect', 'Last Hit')],
+            'hitCount' => ['label' => Craft::t('vredirect', 'Hit Count')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
-            'statusCode' => ['label' => Craft::t('vredirect', 'Redirect type')],
+            'statusCode' => ['label' => Craft::t('vredirect', 'Redirect Type')],
         ];
 
         return $attributes;
