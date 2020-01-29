@@ -1,0 +1,12 @@
+{% import "_includes/forms" as forms %}
+
+<div id="{{ id }}">
+    {{ forms.textField({
+        type: 'number',
+        label: 'Count'|t('vredirect'),
+        id: 'countField',
+        name: 'count',
+        value: widget.count,
+        instructions: 'How many 404s should we display?'|t('vredirect')
+    }) }}
+</div>

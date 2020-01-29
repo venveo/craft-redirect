@@ -14,10 +14,12 @@ use Craft;
 use craft\base\Plugin as BasePlugin;
 use craft\errors\MigrationException;
 use craft\events\ExceptionEvent;
+use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\feedme\events\RegisterFeedMeElementsEvent;
 use craft\feedme\services\Elements;
+use craft\services\Dashboard;
 use craft\services\Gc;
 use craft\services\UserPermissions;
 use craft\web\ErrorHandler;
@@ -27,6 +29,7 @@ use venveo\redirect\elements\FeedMeRedirect;
 use venveo\redirect\models\Settings;
 use venveo\redirect\services\CatchAll;
 use venveo\redirect\services\Redirects;
+use venveo\redirect\widgets\LatestErrors;
 use yii\base\Event;
 use yii\web\HttpException;
 
@@ -165,6 +168,7 @@ class Plugin extends BasePlugin
 
         $this->registerCpRoutes();
         $this->registerFeedMeElement();
+        $this->registerWidgets();
         $this->registerPermissions();
 
         // Remove our soft-deleted redirects when Craft is ready
@@ -264,5 +268,12 @@ class Plugin extends BasePlugin
                 'settings' => $this->getSettings()
             ]
         );
+    }
+
+    private function registerWidgets()
+    {
+        Event::on(Dashboard::class, Dashboard::EVENT_REGISTER_WIDGET_TYPES, function (RegisterComponentTypesEvent $event) {
+            $event->types[] = LatestErrors::class;
+        });
     }
 }
