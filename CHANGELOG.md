@@ -3,6 +3,7 @@
 ## Unreleased
 ### Fixed
 - PHP 7.1 incompatibilities
+- Broken Feed Me Hit Count import
 
 ## 3.0.0.1 - 2020-01-28
 ### Fixed
