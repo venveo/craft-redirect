@@ -27,6 +27,7 @@ use craft\web\UrlManager;
 use Twig\Error\RuntimeError;
 use venveo\redirect\elements\FeedMeRedirect;
 use venveo\redirect\models\Settings;
+use venveo\redirect\records\CatchAllUrl;
 use venveo\redirect\services\CatchAll;
 use venveo\redirect\services\Redirects;
 use venveo\redirect\widgets\LatestErrors;
@@ -146,6 +147,12 @@ class Plugin extends BasePlugin
                 'label' => Craft::t('vredirect', 'Registered 404s'),
                 'url' => 'redirect/catch-all'
             ];
+            $count = CatchAllUrl::find()->where(['=', 'ignored', false])->count();
+
+            if ($count) {
+                $subnavItems['catch-all']['badgeCount'] = $count;
+            }
+
             $subnavItems['ignored'] = [
                 'label' => Craft::t('vredirect', 'Ignored 404s'),
                 'url' => 'redirect/catch-all/ignored'

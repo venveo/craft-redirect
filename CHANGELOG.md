@@ -25,6 +25,7 @@
 ### Added
 - Setting to strip query parameters from registered 404s
 - Added Feed Me support to import "Hit Count" on redirects
+- "Registered 404s" nav item has a badge count now
 
 ### Fixed
 - Improved compatibility with older versions of php
