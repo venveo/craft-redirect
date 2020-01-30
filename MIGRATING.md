@@ -9,7 +9,8 @@ Fortunately, Venveo Redirect provides a migration to help out with this.
 
 ### Pre-requisites:
 
-- Dolphiq redirect installed, enabled, and updated to no further than 1.0.20. **THIS IS IMPORTANT.**
+- Dolphiq redirect installed, enabled, and updated to no further than
+  1.0.23. **THIS IS IMPORTANT.**
 
 ### Steps
 1. Install Venveo redirect either through composer or the plugin store

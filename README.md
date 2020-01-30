@@ -1,4 +1,4 @@
-# Craft CMS 3.1 Redirect Manager
+# Craft CMS Redirect Manager
 **Note**
 This is a fork of the original redirect plugin by Dolphiq with efforts to better 
 maintain and support it. The codebase has been overhauled to have minimal impact on
