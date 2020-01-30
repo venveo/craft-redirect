@@ -62,6 +62,15 @@
 }) }}
 
 {{ forms.lightswitchField({
+    label:        "Automatically create redirects"|t('vredirect'),
+    instructions: "If enabled, we'll automatically create redirects when an element's URI changes"|t('vredirect'),
+    id:           'createElementRedirects',
+    name:         'createElementRedirects',
+    on:           settings.createElementRedirects,
+    errors:       settings.getErrors('createElementRedirects')
+}) }}
+
+{{ forms.lightswitchField({
     label:        "Delete stale 404s"|t('vredirect'),
     instructions: "If enabled, we'll delete any registered 404s that haven't been hit in a while."|t('vredirect'),
     id:           'deleteStale404s',

@@ -10,6 +10,7 @@
 ## Added
 - Feed me support for dateCreated and dateUpdated
 - Dashboard widget
+- Adding setting to automatically create element redirects
 
 ## 3.0.0.1 - 2020-01-28
 ### Fixed

@@ -61,6 +61,12 @@ class Settings extends Model
     public $stripQueryParameters = true;
 
     /**
+     * If true, we'll watch element save events and automatically create 301 redirects if the URI has changed
+     * @var bool
+     */
+    public $createElementRedirects = true;
+
+    /**
      * @inheritdoc
      */
     public function rules()
@@ -72,7 +78,8 @@ class Settings extends Model
                 'trimTrailingSlashFromPath',
                 'deleteStale404s',
                 'storeReferrer',
-                'stripQueryParameters'
+                'stripQueryParameters',
+                'createElementRedirects'
             ], 'boolean'],
             [['deleteStale404sHours'], 'integer'],
         ];

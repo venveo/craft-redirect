@@ -11,14 +11,17 @@
 namespace venveo\redirect;
 
 use Craft;
+use craft\base\Element;
 use craft\base\Plugin as BasePlugin;
 use craft\errors\MigrationException;
 use craft\events\ExceptionEvent;
+use craft\events\ModelEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\feedme\events\RegisterFeedMeElementsEvent;
 use craft\feedme\services\Elements;
+use craft\helpers\ElementHelper;
 use craft\services\Dashboard;
 use craft\services\Gc;
 use craft\services\UserPermissions;
@@ -26,6 +29,7 @@ use craft\web\ErrorHandler;
 use craft\web\UrlManager;
 use Twig\Error\RuntimeError;
 use venveo\redirect\elements\FeedMeRedirect;
+use venveo\redirect\elements\Redirect;
 use venveo\redirect\models\Settings;
 use venveo\redirect\records\CatchAllUrl;
 use venveo\redirect\services\CatchAll;
@@ -175,6 +179,7 @@ class Plugin extends BasePlugin
 
         $this->registerCpRoutes();
         $this->registerFeedMeElement();
+        $this->registerElementEvents();
         $this->registerWidgets();
         $this->registerPermissions();
 
@@ -281,6 +286,50 @@ class Plugin extends BasePlugin
     {
         Event::on(Dashboard::class, Dashboard::EVENT_REGISTER_WIDGET_TYPES, function (RegisterComponentTypesEvent $event) {
             $event->types[] = LatestErrors::class;
+        });
+    }
+
+    private function registerElementEvents()
+    {
+        if (!Plugin::getInstance()->getSettings()->createElementRedirects) {
+            return;
+        }
+
+        Event::on(Element::class, Element::EVENT_BEFORE_SAVE, function (ModelEvent $e) {
+            /** @var Element $element */
+            $element = $e->sender;
+
+            if (ElementHelper::isDraftOrRevision($element)) {
+                return;
+            }
+
+            if (!$element->getUriFormat()) {
+                return;
+            }
+
+            $elementId = $element->id;
+            $siteId = $element->siteId;
+            $oldUri = $element->uri;
+            Event::on(get_class($element), get_class($element)::EVENT_AFTER_SAVE, function (ModelEvent $e) use ($oldUri, $siteId, $elementId) {
+                /** @var Element $savedElement */
+                $savedElement = $e->sender;
+                if (ElementHelper::isDraftOrRevision($savedElement)) {
+                    return;
+                }
+                if ($savedElement->id !== $elementId || $savedElement->siteId !== $siteId) {
+                    return;
+                }
+                if ($oldUri !== $savedElement->uri) {
+                    $redirect = new Redirect();
+                    $redirect->siteId = $siteId;
+                    $redirect->sourceUrl = $oldUri;
+                    $redirect->destinationUrl = $savedElement->uri;
+                    $redirect->type = Redirect::TYPE_STATIC;
+                    $redirect->statusCode = '301';
+                    Craft::$app->elements->saveElement($redirect);
+                }
+            });
+
         });
     }
 }
