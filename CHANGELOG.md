@@ -5,6 +5,7 @@
 - PHP 7.1 incompatibilities
 - Broken Feed Me Hit Count import
 - Don't show site switcher if there's only one site
+- Issue migrating from Dolphiq Redirect
 
 ## Added
 - Feed me support for dateCreated and dateUpdated
