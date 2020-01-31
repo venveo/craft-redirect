@@ -1,9 +1,6 @@
 {# @var craft \craft\web\twig\variables\CraftVariable #}
 {#
 /**
- * Varnish plugin for Craft CMS 3.x
- *
- * Varnish Settings.twig
  *
  * @author    Venveo
  * @copyright Copyright (c) 2019 Venveo
@@ -59,6 +56,15 @@
     name:         'stripQueryParameters',
     on:           settings.stripQueryParameters,
     errors:       settings.getErrors('stripQueryParameters')
+}) }}
+
+{{ forms.lightswitchField({
+    label:        "Automatically create redirects"|t('vredirect'),
+    instructions: "If enabled, we'll automatically create redirects when an element's URI changes"|t('vredirect'),
+    id:           'createElementRedirects',
+    name:         'createElementRedirects',
+    on:           settings.createElementRedirects,
+    errors:       settings.getErrors('createElementRedirects')
 }) }}
 
 {{ forms.lightswitchField({

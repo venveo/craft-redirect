@@ -1,5 +1,17 @@
 # Redirect Changelog
 
+## Unreleased
+### Fixed
+- PHP 7.1 incompatibilities
+- Broken Feed Me Hit Count import
+- Don't show site switcher if there's only one site
+- Issue migrating from Dolphiq Redirect
+
+## Added
+- Feed me support for dateCreated and dateUpdated
+- Dashboard widget
+- Adding setting to automatically create element redirects
+
 ## 3.0.0.1 - 2020-01-28
 ### Fixed
 - Incorrect source URI when creating a redirect from a 404
@@ -15,6 +27,7 @@
 ### Added
 - Setting to strip query parameters from registered 404s
 - Added Feed Me support to import "Hit Count" on redirects
+- "Registered 404s" nav item has a badge count now
 
 ### Fixed
 - Improved compatibility with older versions of php

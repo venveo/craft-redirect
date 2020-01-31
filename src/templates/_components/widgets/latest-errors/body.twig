@@ -1,0 +1,39 @@
+<div class="vredirect-widget-table-wrapper">
+    &nbsp;
+    <div id="{{ id }}"></div>
+</div>
+
+{% js %}
+var columns = [
+    {
+        name: '__slot:title', title: Craft.t('vredirect', 'URI')
+    },
+    {
+        name: 'hitCount', title: Craft.t('vredirect', 'Hit Count')
+    },
+    {
+        name: 'dateCreated', title: Craft.t('vredirect', 'First Hit')
+    },
+    {
+        name: 'menu', callback: function (value) {
+            if (value) {
+                return '<a class="btn primary small" target="_blank" href="' + value.createUrl + '">' + Craft.t('vredirect', 'Redirect') + '</a>';
+            }
+
+            return '';
+        }
+    }
+];
+
+
+new Craft.VueAdminTable({
+    deleteAction: Craft.getActionUrl('vredirect/catch-all/delete-one'),
+    columns: columns,
+    container: '#{{ id }}',
+    emptyMessage: Craft.t('vredirect', 'No 404s Registered'),
+    padded: false,
+    search: false,
+    searchPlaceholder: Craft.t('vredirect', 'Search for 404s'),
+    tableDataEndpoint: Craft.getActionUrl('vredirect/catch-all/hits-table?sort=dateCreated')
+    });
+{% endjs %}

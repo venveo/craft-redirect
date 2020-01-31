@@ -33,15 +33,15 @@ use yii\db\StaleObjectException;
  */
 class Redirect extends Element
 {
-    public const TYPE_STATIC = 'static';
-    public const TYPE_DYNAMIC = 'dynamic';
+    const TYPE_STATIC = 'static';
+    const TYPE_DYNAMIC = 'dynamic';
 
-    public const STATUS_CODE_OPTIONS = [
+    const STATUS_CODE_OPTIONS = [
         '301' => 'Permanent redirect (301)',
         '302' => 'Temporarily redirect (302)'
     ];
 
-    public const TYPE_OPTIONS = [
+    const TYPE_OPTIONS = [
         'static' => 'Static',
         'dynamic' => 'Dynamic (RegExp)',
     ];
@@ -174,9 +174,9 @@ class Redirect extends Element
             'venveo_redirects.sourceUrl' => Craft::t('vredirect', 'Source URL'),
             'venveo_redirects.type' => Craft::t('vredirect', 'Type'),
             'venveo_redirects.destinationUrl' => Craft::t('vredirect', 'Destination URL'),
-            'venveo_redirects.hitAt' => Craft::t('vredirect', 'Last hit'),
-            'venveo_redirects.statusCode' => Craft::t('vredirect', 'Redirect type'),
-            'venveo_redirects.hitCount' => Craft::t('vredirect', 'Hit count'),
+            'venveo_redirects.hitAt' => Craft::t('vredirect', 'Last Hit'),
+            'venveo_redirects.statusCode' => Craft::t('vredirect', 'Redirect Type'),
+            'venveo_redirects.hitCount' => Craft::t('vredirect', 'Hit Count'),
             'elements.dateCreated' => Craft::t('app', 'Date Created'),
         ];
         return $attributes;
@@ -191,10 +191,10 @@ class Redirect extends Element
             'sourceUrl' => ['label' => Craft::t('vredirect', 'Source URL')],
             'type' => ['label' => Craft::t('vredirect', 'Type')],
             'destinationUrl' => ['label' => Craft::t('vredirect', 'Destination URL')],
-            'hitAt' => ['label' => Craft::t('vredirect', 'Last hit')],
-            'hitCount' => ['label' => Craft::t('vredirect', 'Hit count')],
+            'hitAt' => ['label' => Craft::t('vredirect', 'Last Hit')],
+            'hitCount' => ['label' => Craft::t('vredirect', 'Hit Count')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
-            'statusCode' => ['label' => Craft::t('vredirect', 'Redirect type')],
+            'statusCode' => ['label' => Craft::t('vredirect', 'Redirect Type')],
         ];
 
         return $attributes;
@@ -357,6 +357,12 @@ class Redirect extends Element
         $record->destinationUrl = $this->formatUrl(trim($this->destinationUrl), false);
         $record->statusCode = $this->statusCode;
         $record->type = $this->type;
+        if ($this->dateCreated) {
+            $record->dateCreated = $this->dateCreated;
+        }
+        if ($this->dateUpdated) {
+            $record->dateUpdated = $this->dateUpdated;
+        }
 
         $record->save(false);
 
