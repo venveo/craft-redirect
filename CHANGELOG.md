@@ -11,6 +11,7 @@
 - Feed me support for dateCreated and dateUpdated
 - Dashboard widget
 - Added setting to automatically create element redirects
+- Added logic to delete redirects for deleted source elements
 
 ## 3.0.0.1 - 2020-01-28
 ### Fixed

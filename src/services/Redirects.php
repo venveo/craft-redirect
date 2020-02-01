@@ -10,16 +10,20 @@ namespace venveo\redirect\services;
 
 use Craft;
 use craft\base\Element;
+use craft\events\DeleteElementEvent;
+use craft\events\ElementEvent;
 use craft\events\ModelEvent;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
+use craft\services\Elements;
 use DateTime;
 use Exception;
 use Throwable;
 use venveo\redirect\elements\db\RedirectQuery;
 use venveo\redirect\elements\Redirect;
 use venveo\redirect\Plugin;
+use venveo\redirect\queue\jobs\PruneDeletedRedirects;
 use venveo\redirect\records\Redirect as RedirectRecord;
 use yii\base\Component;
 use yii\base\Event;
@@ -165,25 +169,35 @@ class Redirects extends Component
     }
 
     /**
-     * @param ModelEvent $e
+     * @param ElementEvent $e
      */
-    public function handleElementSaved(ModelEvent $e)
+    public function handleElementSaved(ElementEvent $e)
     {
-        $element = $e->sender;
+        $element = $e->element;
         $elementId = $element->id;
         $siteId = $element->siteId;
         $oldUri = $element->uri;
 
-        Event::on(get_class($element), get_class($element)::EVENT_AFTER_SAVE, function (ModelEvent $e) use ($oldUri, $siteId, $elementId) {
+        Event::on(Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT, function (ElementEvent $e) use ($oldUri, $siteId, $elementId) {
             /** @var Element $savedElement */
-            $savedElement = $e->sender;
-            if (ElementHelper::isDraftOrRevision($savedElement)) {
+            $savedElement = $e->element;
+            if ($savedElement instanceof Redirect) {
                 return;
             }
+            if ($e->isNew || $savedElement->propagating || ElementHelper::isDraftOrRevision($savedElement)) {
+                return;
+            }
+
             if ($savedElement->id !== $elementId || $savedElement->siteId !== $siteId) {
                 return;
             }
+
             if ($oldUri !== $savedElement->uri) {
+                $exists = Redirect::find()->destinationElementId($savedElement->getSourceId())->siteId($siteId)->sourceUrl($oldUri)->exists();
+                if ($exists) {
+                    return;
+                }
+
                 $redirect = new Redirect();
                 $redirect->siteId = $siteId;
                 $redirect->sourceUrl = $oldUri;
@@ -193,5 +207,55 @@ class Redirects extends Component
                 Craft::$app->elements->saveElement($redirect);
             }
         });
+    }
+
+    /**
+     * When an element is deleted, we'll delete its redirects as well
+     * @param ModelEvent $e
+     */
+    public function handleElementDeleted(DeleteElementEvent $e)
+    {
+        /** @var Element $element */
+        $element = $e->element;
+        if ($element instanceof Redirect) {
+            return;
+        }
+
+        if (!$element->uri) {
+            return;
+        }
+
+        $job = new PruneDeletedRedirects([
+            'deletedElementId' => $element->id,
+            'deletedElementUri' => $element->uri,
+            'siteId' => $element->siteId,
+            'hardDelete' => $e->hardDelete
+        ]);
+        Craft::$app->queue->push($job);
+    }
+
+
+    /**
+     * When an element is restored, we'll try to restore any related redirects
+     * @param Event $e
+     * @throws Throwable
+     * @throws \yii\base\Exception
+     */
+    public function handleElementRestored(ElementEvent $e)
+    {
+        /** @var Element $element */
+        $element = $e->element;
+        if ($element instanceof Redirect) {
+            return;
+        }
+
+        if (!$element->uri) {
+            return;
+        }
+
+        $redirectsByUrl = Redirect::find()->destinationUrl($element->uri)->siteId($element->siteId)->trashed(true)->all();
+        $redirectsById = Redirect::find()->destinationElementId($element->id)->siteId($element->siteId)->trashed(true)->all();
+        Craft::$app->elements->restoreElements($redirectsById);
+        Craft::$app->elements->restoreElements($redirectsByUrl);
     }
 }

@@ -441,7 +441,7 @@ class Redirect extends Element
             }
 
             // Rebuild our URL
-            $resultUrl = self::unparse_url($urlInfo);
+            $resultUrl = self::unparseUrl($urlInfo);
         }
         return $resultUrl;
     }
@@ -451,7 +451,7 @@ class Redirect extends Element
      * @param array $parsed_url
      * @return string
      */
-    private static function unparse_url($parsed_url): string
+    private static function unparseUrl($parsed_url): string
     {
         $scheme = isset($parsed_url['scheme']) ? $parsed_url['scheme'] . '://' : '';
         $host = $parsed_url['host'] ?? '';

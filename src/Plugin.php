@@ -14,8 +14,9 @@ use Craft;
 use craft\base\Element;
 use craft\base\Plugin as BasePlugin;
 use craft\errors\MigrationException;
+use craft\events\DeleteElementEvent;
+use craft\events\ElementEvent;
 use craft\events\ExceptionEvent;
-use craft\events\ModelEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
@@ -294,19 +295,23 @@ class Plugin extends BasePlugin
             return;
         }
 
-        Event::on(Element::class, Element::EVENT_BEFORE_SAVE, function (ModelEvent $e) {
+        Event::on(\craft\services\Elements::class, \craft\services\Elements::EVENT_BEFORE_SAVE_ELEMENT, function (ElementEvent $e) {
             /** @var Element $element */
-            $element = $e->sender;
+            $element = $e->element;
 
-            if (ElementHelper::isDraftOrRevision($element)) {
-                return;
-            }
-
-            if (!$element->getUriFormat()) {
+            if ($e->isNew || !$element->getUrl() || ElementHelper::isDraftOrRevision($element)) {
                 return;
             }
 
             Plugin::getInstance()->redirects->handleElementSaved($e);
+        });
+
+        Event::on(\craft\services\Elements::class, \craft\services\Elements::EVENT_BEFORE_DELETE_ELEMENT, function (DeleteElementEvent $e) {
+            Plugin::getInstance()->redirects->handleElementDeleted($e);
+        });
+
+        Event::on(\craft\services\Elements::class, \craft\services\Elements::EVENT_AFTER_RESTORE_ELEMENT, function (ElementEvent $e) {
+            Plugin::getInstance()->redirects->handleElementRestored($e);
         });
     }
 }
