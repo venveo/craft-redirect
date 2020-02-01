@@ -19,6 +19,9 @@ use craft\helpers\UrlHelper;
 use craft\validators\DateTimeValidator;
 use craft\web\ErrorHandler;
 use Throwable;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 use venveo\redirect\elements\actions\DeleteRedirects;
 use venveo\redirect\elements\db\RedirectQuery;
 use venveo\redirect\models\Settings;
@@ -73,6 +76,11 @@ class Redirect extends Element
      * @var int|null siteId
      */
     public $siteId;
+
+    /**
+     * @var int|null destinationElementId
+     */
+    public $destinationElementId;
 
     /**
      * @inheritdoc
@@ -264,6 +272,24 @@ class Redirect extends Element
     }
 
     /**
+     * @return string|null
+     * @throws \Exception
+     */
+    public function getDestinationUrl()
+    {
+        if ($this->destinationElementId) {
+            $element = Craft::$app->elements->getElementById($this->destinationElementId, null, $this->siteId);
+            if ($element && $element->getUrl()) {
+                return $element->getUrl();
+            }
+        } elseif ($this->destinationUrl) {
+            return $this->destinationUrl;
+        }
+
+        throw new \Exception('No destination for redirect: ' . $this->id);
+    }
+
+    /**
      * @inheritdoc
      */
     public function getEditorHtml(): string
@@ -286,17 +312,16 @@ class Redirect extends Element
      *
      * @return string
      */
-    /** @noinspection PhpInconsistentReturnPointsInspection */
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['hitAt'], DateTimeValidator::class];
-        $rules[] = [['hitCount'], 'number', 'integerOnly' => true];
+        $rules[] = [['hitCount', 'destinationElementId'], 'number', 'integerOnly' => true];
         $rules[] = [['sourceUrl', 'destinationUrl'], 'string', 'max' => 255];
-        $rules[] = [['sourceUrl', 'destinationUrl', 'type'], 'required'];
+        $rules[] = [['sourceUrl', 'type'], 'required'];
         $rules[] = [['type'], 'in', 'range' => [self::TYPE_STATIC, self::TYPE_DYNAMIC]];
         $rules[] = [['statusCode'], 'in', 'range' => ['301', '302']];
         return $rules;
@@ -352,9 +377,15 @@ class Redirect extends Element
             }
         }
 
-
         $record->sourceUrl = $this->formatUrl(trim($this->sourceUrl), true);
-        $record->destinationUrl = $this->formatUrl(trim($this->destinationUrl), false);
+        if ($this->destinationUrl) {
+            $record->destinationUrl = $this->formatUrl(trim($this->destinationUrl), false);
+        }
+
+        if ($this->destinationElementId) {
+            $record->destinationElementId = $this->destinationElementId;
+        }
+
         $record->statusCode = $this->statusCode;
         $record->type = $this->type;
         if ($this->dateCreated) {
@@ -471,14 +502,34 @@ class Redirect extends Element
     {
         switch ($attribute) {
             case 'statusCode':
-
                 return $this->statusCode ? Html::encodeParams('{statusCode}', ['statusCode' => Craft::t('vredirect', self::STATUS_CODE_OPTIONS[$this->statusCode])]) : '';
 
             case 'baseUrl':
-
                 return Html::encodeParams('<a href="{baseUrl}" target="_blank">test</a>', ['baseUrl' => $this->getSite()->baseUrl . $this->sourceUrl]);
+
+            case 'destinationUrl':
+                return $this->renderDestinationUrl();
         }
 
         return parent::tableAttributeHtml($attribute);
+    }
+
+    /**
+     * @return string|null
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     * @throws \yii\base\Exception
+     */
+    private function renderDestinationUrl()
+    {
+        if ($this->destinationElementId) {
+            return Craft::$app->getView()->renderTemplate('_elements/element', [
+                'element' => Craft::$app->elements->getElementById($this->destinationElementId, null, $this->siteId),
+            ]);
+        }
+        if ($this->destinationUrl) {
+            return $this->destinationUrl;
+        }
     }
 }

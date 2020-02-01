@@ -29,7 +29,6 @@ use craft\web\ErrorHandler;
 use craft\web\UrlManager;
 use Twig\Error\RuntimeError;
 use venveo\redirect\elements\FeedMeRedirect;
-use venveo\redirect\elements\Redirect;
 use venveo\redirect\models\Settings;
 use venveo\redirect\records\CatchAllUrl;
 use venveo\redirect\services\CatchAll;
@@ -307,29 +306,7 @@ class Plugin extends BasePlugin
                 return;
             }
 
-            $elementId = $element->id;
-            $siteId = $element->siteId;
-            $oldUri = $element->uri;
-            Event::on(get_class($element), get_class($element)::EVENT_AFTER_SAVE, function (ModelEvent $e) use ($oldUri, $siteId, $elementId) {
-                /** @var Element $savedElement */
-                $savedElement = $e->sender;
-                if (ElementHelper::isDraftOrRevision($savedElement)) {
-                    return;
-                }
-                if ($savedElement->id !== $elementId || $savedElement->siteId !== $siteId) {
-                    return;
-                }
-                if ($oldUri !== $savedElement->uri) {
-                    $redirect = new Redirect();
-                    $redirect->siteId = $siteId;
-                    $redirect->sourceUrl = $oldUri;
-                    $redirect->destinationUrl = $savedElement->uri;
-                    $redirect->type = Redirect::TYPE_STATIC;
-                    $redirect->statusCode = '301';
-                    Craft::$app->elements->saveElement($redirect);
-                }
-            });
-
+            Plugin::getInstance()->redirects->handleElementSaved($e);
         });
     }
 }

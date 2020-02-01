@@ -9,7 +9,10 @@
 namespace venveo\redirect\services;
 
 use Craft;
+use craft\base\Element;
+use craft\events\ModelEvent;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use DateTime;
 use Exception;
@@ -19,6 +22,7 @@ use venveo\redirect\elements\Redirect;
 use venveo\redirect\Plugin;
 use venveo\redirect\records\Redirect as RedirectRecord;
 use yii\base\Component;
+use yii\base\Event;
 use yii\base\ExitException;
 use yii\base\InvalidConfigException;
 use yii\db\StaleObjectException;
@@ -118,8 +122,9 @@ class Redirects extends Component
     public function doRedirect(Redirect $redirect, $uri)
     {
         $destinationUrl = null;
+
         if ($redirect->type === Redirect::TYPE_STATIC) {
-            $processedUrl = $redirect->destinationUrl;
+            $processedUrl = $redirect->getDestinationUrl();
         } elseif ($redirect->type === Redirect::TYPE_DYNAMIC) {
             $sourceUrl = $redirect->sourceUrl;
             // Add leading and trailing slashes for RegEx
@@ -130,10 +135,10 @@ class Redirects extends Component
                 $sourceUrl .= '/';
             }
             // Only preg_replace if there are replacements available
-            if (preg_match('/\$[1-9]+/', $redirect->destinationUrl)) {
-                $processedUrl = preg_replace($sourceUrl, $redirect->destinationUrl, $uri);
+            if (preg_match('/\$[1-9]+/', $redirect->getDestinationUrl())) {
+                $processedUrl = preg_replace($sourceUrl, $redirect->getDestinationUrl(), $uri);
             } else {
-                $processedUrl = $redirect->destinationUrl;
+                $processedUrl = $redirect->getDestinationUrl();
             }
         } else {
             return;
@@ -157,5 +162,36 @@ class Redirects extends Component
         } catch (ExitException $e) {
             Craft::error($e->getMessage(), __METHOD__);
         }
+    }
+
+    /**
+     * @param ModelEvent $e
+     */
+    public function handleElementSaved(ModelEvent $e)
+    {
+        $element = $e->sender;
+        $elementId = $element->id;
+        $siteId = $element->siteId;
+        $oldUri = $element->uri;
+
+        Event::on(get_class($element), get_class($element)::EVENT_AFTER_SAVE, function (ModelEvent $e) use ($oldUri, $siteId, $elementId) {
+            /** @var Element $savedElement */
+            $savedElement = $e->sender;
+            if (ElementHelper::isDraftOrRevision($savedElement)) {
+                return;
+            }
+            if ($savedElement->id !== $elementId || $savedElement->siteId !== $siteId) {
+                return;
+            }
+            if ($oldUri !== $savedElement->uri) {
+                $redirect = new Redirect();
+                $redirect->siteId = $siteId;
+                $redirect->sourceUrl = $oldUri;
+                $redirect->destinationElementId = $savedElement->getSourceId();
+                $redirect->type = Redirect::TYPE_STATIC;
+                $redirect->statusCode = '301';
+                Craft::$app->elements->saveElement($redirect);
+            }
+        });
     }
 }

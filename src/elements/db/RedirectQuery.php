@@ -56,6 +56,11 @@ class RedirectQuery extends ElementQuery
      */
     public $matchingUri;
 
+    /**
+     * @var string|null An element ID
+     */
+    public $destinationElementId;
+
 
     // Public Methods
     // =========================================================================
@@ -115,6 +120,12 @@ class RedirectQuery extends ElementQuery
         return $this;
     }
 
+    public function destinationElementId($value)
+    {
+        $this->destinationElementId = $value;
+        return $this;
+    }
+
     /**
      * @inheritdoc
      */
@@ -130,6 +141,7 @@ class RedirectQuery extends ElementQuery
             'venveo_redirects.type',
             'venveo_redirects.sourceUrl',
             'venveo_redirects.destinationUrl',
+            'venveo_redirects.destinationElementId',
             'venveo_redirects.hitAt',
             'venveo_redirects.hitCount',
             'venveo_redirects.statusCode',
@@ -147,6 +159,10 @@ class RedirectQuery extends ElementQuery
         if ($this->type) {
             $this->subQuery->andWhere(Db::parseParam('venveo_redirects.type', $this->type));
         }
+        if ($this->destinationElementId) {
+            $this->subQuery->andWhere(Db::parseParam('venveo_redirects.destinationElementId', $this->destinationElementId));
+        }
+
         if ($this->hitAt && $this->hitAt > 0) {
             // TODO: Refactor...
             $inactiveDate = new DateTime();
