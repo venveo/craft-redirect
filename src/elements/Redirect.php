@@ -17,6 +17,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\validators\DateTimeValidator;
+use craft\validators\SiteIdValidator;
 use craft\web\ErrorHandler;
 use Throwable;
 use Twig\Error\LoaderError;
@@ -81,6 +82,11 @@ class Redirect extends Element
      * @var int|null destinationElementId
      */
     public $destinationElementId;
+
+    /**
+     * @var int|null destinationElementSiteId
+     */
+    public $destinationElementSiteId;
 
     /**
      * @inheritdoc
@@ -319,7 +325,8 @@ class Redirect extends Element
     {
         $rules = parent::defineRules();
         $rules[] = [['hitAt'], DateTimeValidator::class];
-        $rules[] = [['hitCount', 'destinationElementId'], 'number', 'integerOnly' => true];
+        $rules[] = [['hitCount', 'destinationElementId', 'destinationElementSiteId'], 'number', 'integerOnly' => true];
+        $rules[] = [['destinationElementSiteId'], SiteIdValidator::class];
         $rules[] = [['sourceUrl', 'destinationUrl'], 'string', 'max' => 255];
         $rules[] = [['sourceUrl', 'type'], 'required'];
         $rules[] = [['type'], 'in', 'range' => [self::TYPE_STATIC, self::TYPE_DYNAMIC]];
@@ -386,6 +393,10 @@ class Redirect extends Element
             $record->destinationElementId = $this->destinationElementId;
         }
 
+        if ($this->destinationElementSiteId) {
+            $record->destinationElementSiteId = $this->destinationElementSiteId;
+        }
+
         $record->statusCode = $this->statusCode;
         $record->type = $this->type;
         if ($this->dateCreated) {
@@ -396,15 +407,6 @@ class Redirect extends Element
         }
 
         $record->save(false);
-
-        // remove form other sites
-        Craft::$app->getDb()->createCommand()
-            ->delete('{{%elements_sites}}', [
-                'AND',
-                ['elementId' => $record->id],
-                ['!=', 'siteId', $this->siteId]
-            ])
-            ->execute();
         parent::afterSave($isNew);
     }
 
@@ -525,7 +527,7 @@ class Redirect extends Element
     {
         if ($this->destinationElementId) {
             return Craft::$app->getView()->renderTemplate('_elements/element', [
-                'element' => Craft::$app->elements->getElementById($this->destinationElementId, null, $this->siteId),
+                'element' => Craft::$app->elements->getElementById($this->destinationElementId, null, $this->destinationElementSiteId),
             ]);
         }
         if ($this->destinationUrl) {

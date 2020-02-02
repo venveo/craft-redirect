@@ -64,7 +64,7 @@
 
             {{ forms.selectField({
                 label: "Match Type"|t('vredirect'),
-                instructions: "Redirect Type"|t('vredirect'),
+                instructions: "Static redirects will match the exact URL. RegEx matches will match a regular expression and allows for option group replacements."|t('vredirect'),
                 name: 'type',
                 first: (not showSiteSelector),
                 options: typeOptions,
@@ -88,6 +88,20 @@
                 required: true
             }) }}
 
+            {% if redirect.destinationElementId %}
+                <div class="field">
+                    <div class="heading">
+                        <label class="required">{{ 'Target Element'|t('vredirect') }}</label>
+                        <div class="instructions"><p>{{ 'This redirect is tied to an element and may not be edited.'|t('vredirect') }}</p>
+                        </div>
+                    </div>
+                    <div class="input ltr">
+                        {% include '_elements/element' with {
+                            element: craft.app.elements.elementById(redirect.destinationElementId, null, redirect.destinationElementSiteId),
+                        } %}
+                    </div>
+                </div>
+            {% else %}
             {{ forms.textField({
                 label: "Destination URL"|t('vredirect'),
                 instructions: "The final URL"|t('vredirect'),
@@ -97,6 +111,7 @@
                 errors: redirect.getErrors('destinationUrl'),
                 required: true
             }) }}
+            {% endif %}
             {{ forms.selectField({
                 label: "Redirect Type"|t('vredirect'),
                 instructions: "Redirect status code"|t('vredirect'),

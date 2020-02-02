@@ -57,9 +57,14 @@ class RedirectQuery extends ElementQuery
     public $matchingUri;
 
     /**
-     * @var string|null An element ID
+     * @var int|null An element ID
      */
     public $destinationElementId;
+
+    /**
+     * @var int|null site id for the destination
+     */
+    public $destinationElementSiteId;
 
 
     // Public Methods
@@ -120,9 +125,16 @@ class RedirectQuery extends ElementQuery
         return $this;
     }
 
-    public function destinationElementId($value)
+    public function destinationElementId($value, $siteId = null)
     {
         $this->destinationElementId = $value;
+        $this->destinationElementSiteId = $siteId;
+        return $this;
+    }
+
+    public function destinationElementSiteId($value)
+    {
+        $this->destinationElementSiteId = $value;
         return $this;
     }
 
@@ -142,6 +154,7 @@ class RedirectQuery extends ElementQuery
             'venveo_redirects.sourceUrl',
             'venveo_redirects.destinationUrl',
             'venveo_redirects.destinationElementId',
+            'venveo_redirects.destinationElementSiteId',
             'venveo_redirects.hitAt',
             'venveo_redirects.hitCount',
             'venveo_redirects.statusCode',
@@ -161,6 +174,9 @@ class RedirectQuery extends ElementQuery
         }
         if ($this->destinationElementId) {
             $this->subQuery->andWhere(Db::parseParam('venveo_redirects.destinationElementId', $this->destinationElementId));
+        }
+        if ($this->destinationElementSiteId) {
+            $this->subQuery->andWhere(Db::parseParam('venveo_redirects.destinationElementSiteId', $this->destinationElementSiteId));
         }
 
         if ($this->hitAt && $this->hitAt > 0) {

@@ -53,7 +53,7 @@ class Plugin extends BasePlugin
     const PERMISSION_MANAGE_404S = 'vredirect:404s:manage';
     /** @var self $plugin */
     public static $plugin;
-    public $schemaVersion = '3.0.1';
+    public $schemaVersion = '3.0.2';
 
     public $hasCpSection = true;
     public $hasCpSettings = true;

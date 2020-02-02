@@ -193,7 +193,11 @@ class Redirects extends Component
             }
 
             if ($oldUri !== $savedElement->uri) {
-                $exists = Redirect::find()->destinationElementId($savedElement->getSourceId())->siteId($siteId)->sourceUrl($oldUri)->exists();
+                $exists = Redirect::find()
+                    ->destinationElementId($savedElement->getSourceId())
+                    ->siteId($siteId)
+                    ->destinationElementSiteId($siteId)
+                    ->sourceUrl($oldUri)->exists();
                 if ($exists) {
                     return;
                 }
@@ -202,6 +206,7 @@ class Redirects extends Component
                 $redirect->siteId = $siteId;
                 $redirect->sourceUrl = $oldUri;
                 $redirect->destinationElementId = $savedElement->getSourceId();
+                $redirect->destinationElementSiteId = $siteId;
                 $redirect->type = Redirect::TYPE_STATIC;
                 $redirect->statusCode = '301';
                 Craft::$app->elements->saveElement($redirect);
