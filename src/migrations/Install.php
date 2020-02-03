@@ -10,7 +10,6 @@
 namespace venveo\redirect\migrations;
 
 use craft\db\Migration;
-use craft\mail\transportadapters\Php;
 
 class Install extends Migration
 {
