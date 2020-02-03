@@ -124,3 +124,22 @@
     </form>
 {% endblock %}
 
+{% block details %}
+{% if redirect.id %}
+<div class="meta">
+    <div class="data">
+        <h5 class="heading">Date Created</h5>
+        <div class="value">{{ redirect.dateCreated|date('short') }} {{ redirect.dateCreated|time('short') }}</div>
+    </div>
+    <div class="data">
+        <h5 class="heading">Last Updated</h5>
+        <div class="value">{{ redirect.dateUpdated|date('short') }} {{ redirect.dateUpdated|time('short') }}</div>
+    </div>
+    <div class="data">
+        <h5 class="heading">Hit Count</h5>
+        <div class="value">{{ redirect.hitCount }}</div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
