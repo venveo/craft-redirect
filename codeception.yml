@@ -20,6 +20,6 @@ modules:
                 vredirect:
                     class: '\venveo\redirect\Plugin'
                     handle: vredirect
-            cleanup: true
+            cleanup: false
             transaction: true
             dbSetup: {clean: true, setupCraft: true}
