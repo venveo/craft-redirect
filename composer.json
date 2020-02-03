@@ -49,5 +49,9 @@
         "documentationUrl": "https://github.com/venveo/craft-redirect/blob/master/README.md",
         "changelogUrl": "https://raw.githubusercontent.com/venveo/craft-redirect/master/CHANGELOG.md",
         "class": "venveo\\redirect\\Plugin"
+    },
+    "require-dev": {
+        "codeception/codeception": "^3.1.0",
+        "vlucas/phpdotenv": "^3.0"
     }
 }
