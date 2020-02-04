@@ -126,7 +126,7 @@
 
 {% block details %}
 {% if redirect.id %}
-<div class="meta">
+<div class="meta read-only">
     <div class="data">
         <h5 class="heading">Date Created</h5>
         <div class="value">{{ redirect.dateCreated|date('short') }} {{ redirect.dateCreated|time('short') }}</div>
