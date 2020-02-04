@@ -14,6 +14,9 @@
 - Added logic to delete redirects for deleted source elements
 - Added details pane to "Edit" redirects screen
 
+## Changed
+- Moved some redirect settings to the sidebar
+
 ## 3.0.0.1 - 2020-01-28
 ### Fixed
 - Incorrect source URI when creating a redirect from a 404

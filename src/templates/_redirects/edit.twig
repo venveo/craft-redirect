@@ -13,7 +13,6 @@
     {% set title = "Edit Redirect"|t('vredirect') %}
 {% endif %}
 
-
 {% block actionButton %}
     <div class="btngroup">
         <div class="btn submit formsubmit" data-form="redirectform">{{ 'Save'|t('app') }}</div>
@@ -62,15 +61,6 @@
                 {{ hiddenInput('siteId', currentSiteId) }}
             {% endif %}
 
-            {{ forms.selectField({
-                label: "Match Type"|t('vredirect'),
-                instructions: "Static redirects will match the exact URL. RegEx matches will match a regular expression and allows for option group replacements."|t('vredirect'),
-                name: 'type',
-                first: (not showSiteSelector),
-                options: typeOptions,
-                value: redirect.type,
-                errors: redirect.getErrors('type')
-            }) }}
             {% set catchAllUrl = null %}
             {% if catchAllRecord is defined %}
                 {% set catchAllUrl = catchAllRecord.uri %}
@@ -112,28 +102,37 @@
                 required: true
             }) }}
             {% endif %}
-            {{ forms.selectField({
-                label: "Redirect Type"|t('vredirect'),
-                instructions: "Redirect status code"|t('vredirect'),
-                name: 'statusCode',
-                options: statusCodeOptions,
-                value: redirect.statusCode,
-                errors: redirect.getErrors('statusCode')
-            }) }}
         </div>
     </form>
 {% endblock %}
 
 {% block details %}
+    <div id="settings" class="meta">
+        {{ forms.selectField({
+            label: "Match Type"|t('vredirect'),
+            id: 'type',
+            name: 'type',
+            options: typeOptions,
+            value: redirect.type,
+            errors: redirect.getErrors('type')
+        }) }}
+        {{ forms.selectField({
+            label: "Redirect Type"|t('vredirect'),
+            name: 'statusCode',
+            options: statusCodeOptions,
+            value: redirect.statusCode,
+            errors: redirect.getErrors('statusCode')
+        }) }}
+    </div>
 {% if redirect.id %}
 <div class="meta read-only">
     <div class="data">
-        <h5 class="heading">Date Created</h5>
-        <div class="value">{{ redirect.dateCreated|date('short') }} {{ redirect.dateCreated|time('short') }}</div>
+        <h5 class="heading">{{ "Date Created"|t('app') }}</h5>
+        <div class="value">{{ redirect.dateCreated|datetime }}</div>
     </div>
     <div class="data">
-        <h5 class="heading">Last Updated</h5>
-        <div class="value">{{ redirect.dateUpdated|date('short') }} {{ redirect.dateUpdated|time('short') }}</div>
+        <h5 class="heading">{{ "Date Updated"|t('app') }}</h5>
+        <div class="value">{{ redirect.dateUpdated|datetime('short') }}</div>
     </div>
     <div class="data">
         <h5 class="heading">Hit Count</h5>
