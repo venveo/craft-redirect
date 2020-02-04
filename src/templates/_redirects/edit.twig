@@ -2,6 +2,11 @@
 {% import "_includes/forms" as forms %}
 
 {% set showSiteSelector = craft.app.getIsMultiSite() and brandNewRedirect is defined and brandNewRedirect == true %}
+{% set fullPageForm = true %}
+{% set saveShortcut = true %}
+{% if brandNewRedirect is defined and brandNewRedirect %}
+    {% set saveShortcutRedirect = 'redirect/redirects/new' %}
+{% endif %}
 
 {% set selectedSubnavItem = 'redirects' %}
 {% if brandNewRedirect is defined and brandNewRedirect %}
@@ -29,37 +34,26 @@
 {% endblock %}
 
 {% block content %}
-    <form id="redirectform" method="post" accept-charset="UTF-8"
-          data-saveshortcut{% if brandNewRedirect is defined and brandNewRedirect %} data-saveshortcut-redirect="{{ 'redirect/redirects/new'|hash }}"{% endif %}
-          data-confirm-unload>
-        {{ csrfInput() }}
         {{ actionInput('vredirect/redirects/save-redirect') }}
 
-        {% if redirect is defined and redirect.id %}
+        {% if redirect.id %}
             {{ hiddenInput('redirectId', redirect.id) }}
         {% endif %}
 
         {% if catchAllRecord is defined and catchAllRecord.id %}
             {{ hiddenInput('catchAllRecordId', catchAllRecord.id) }}
         {% endif %}
+
         <div>
-            {% if showSiteSelector %}
-                {% set siteId = currentSiteId %}
-                {% if catchAllRecord is defined and catchAllRecord.siteId is defined %}
-                    {% set siteId = catchAllRecord.siteId %}
-                {% endif %}
-                {{ forms.selectField({
-                    label: "Source Site"|t('vredirect'),
-                    first: true,
-                    name: 'siteId',
-                    options: editableSitesOptions,
-                    value: siteId,
-                    toggle: true,
-                    errors: redirect.getErrors('siteId')
-                }) }}
-            {% elseif craft.app.getIsMultiSite() %}
-                {{ hiddenInput('siteId', currentSiteId) }}
-            {% endif %}
+            {{ forms.selectField({
+                label: "Source Site"|t('vredirect'),
+                first: true,
+                name: 'siteId',
+                options: editableSitesOptions,
+                value: craft.app.sites.currentSite.id,
+                toggle: true,
+                errors: redirect.getErrors('siteId')
+            }) }}
 
             {% set catchAllUrl = null %}
             {% if catchAllRecord is defined %}
@@ -135,7 +129,7 @@
         <div class="value">{{ redirect.dateUpdated|datetime('short') }}</div>
     </div>
     <div class="data">
-        <h5 class="heading">Hit Count</h5>
+        <h5 class="heading">{{'Hit Count'|t('vredirect')}}</h5>
         <div class="value">{{ redirect.hitCount }}</div>
     </div>
 </div>

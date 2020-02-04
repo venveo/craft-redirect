@@ -103,7 +103,6 @@ class RedirectsController extends Controller
         $variables['typeOptions'] = Redirect::TYPE_OPTIONS;
         $variables['editableSitesOptions'] = $editableSitesOptions;
 
-
         $variables['brandNewRedirect'] = false;
 
         if ($redirectId !== null) {
@@ -143,13 +142,6 @@ class RedirectsController extends Controller
         }
 
         $variables['redirect'] = $redirect;
-
-        $routeParameters = Craft::$app->getUrlManager()->getRouteParams();
-        $source = (isset($routeParameters['source']) ? $routeParameters['source'] : 'CpSection');
-
-        $variables['source'] = $source;
-        $variables['pathPrefix'] = ($source == 'CpSettings' ? 'settings/' : '');
-        $variables['currentSiteId'] = $redirect->siteId;
         return $this->renderTemplate('vredirect/_redirects/edit', $variables);
     }
 
@@ -169,9 +161,7 @@ class RedirectsController extends Controller
     {
         $isNew = false;
         $currentUser = Craft::$app->getUser()->getIdentity();
-        if (!$currentUser->can(Plugin::PERMISSION_MANAGE_REDIRECTS)) {
-            return Craft::$app->response->setStatusCode('403', Craft::t('vredirect', 'You lack the required permissions to manage redirects'));
-        }
+        $this->requirePermission(Plugin::PERMISSION_MANAGE_REDIRECTS);
 
         $request = Craft::$app->getRequest();
 
@@ -195,10 +185,12 @@ class RedirectsController extends Controller
             $redirect = new Redirect();
         }
 
-        $redirect->sourceUrl = $request->getBodyParam('sourceUrl');
+        $redirect->sourceUrl = $request->getRequiredParam('sourceUrl');
         $redirect->destinationUrl = $request->getBodyParam('destinationUrl');
-        $redirect->statusCode = $request->getBodyParam('statusCode');
-        $redirect->type = $request->getBodyParam('type');
+        $redirect->destinationElementId = $request->getBodyParam('destinationElementId');
+        $redirect->destinationElementSiteId = $request->getBodyParam('destinationElementSiteId');
+        $redirect->statusCode = $request->getRequiredParam('statusCode');
+        $redirect->type = $request->getRequiredParam('type');
 
         $redirect->siteId = $siteId;
 
@@ -217,7 +209,7 @@ class RedirectsController extends Controller
                 'redirect' => $redirect
             ]);
 
-            return Craft::$app->response;
+            return null;
         }
 
         $fromCatchAllId = Craft::$app->request->getBodyParam('catchAllRecordId');

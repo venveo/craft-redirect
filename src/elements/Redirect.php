@@ -288,8 +288,13 @@ class Redirect extends Element
                 return $element->getUrl();
             }
         } elseif ($this->destinationUrl) {
-            return $this->destinationUrl;
+            if (UrlHelper::isAbsoluteUrl($this->destinationUrl)) {
+                return $this->destinationUrl;
+            }
+
+            return UrlHelper::siteUrl($this->destinationUrl, null, null, $this->destinationElementSiteId ?? $this->siteId);
         }
+        return null;
     }
 
     /**
@@ -324,10 +329,16 @@ class Redirect extends Element
         $rules[] = [['hitAt'], DateTimeValidator::class];
         $rules[] = [['hitCount', 'destinationElementId', 'destinationElementSiteId'], 'number', 'integerOnly' => true];
         $rules[] = [['destinationElementSiteId'], SiteIdValidator::class];
+        $rules[] = ['destinationUrl', 'required', 'when' => function($model) {
+            return empty($model->destinationElementId);
+        }];
+        $rules[] = ['destinationElementSiteId', 'required', 'when' => function($model) {
+            return !empty($model->destinationElementId);
+        }];
         $rules[] = [['sourceUrl', 'destinationUrl'], 'string', 'max' => 255];
         $rules[] = [['sourceUrl', 'type'], 'required'];
         $rules[] = [['type'], 'in', 'range' => [self::TYPE_STATIC, self::TYPE_DYNAMIC]];
-        $rules[] = [['statusCode'], 'in', 'range' => ['301', '302']];
+        $rules[] = [['statusCode'], 'in', 'range' => array_keys(self::STATUS_CODE_OPTIONS)];
         return $rules;
     }
 
@@ -522,13 +533,20 @@ class Redirect extends Element
      */
     private function renderDestinationUrl()
     {
-        if ($this->destinationElementId) {
+        if (isset($this->destinationElementId)) {
             return Craft::$app->getView()->renderTemplate('_elements/element', [
                 'element' => Craft::$app->elements->getElementById($this->destinationElementId, null, $this->destinationElementSiteId),
             ]);
         }
         if ($this->destinationUrl) {
-            return $this->destinationUrl;
+            return Html::a(Html::tag('span', $this->destinationUrl, ['dir' => 'ltr']), $this->getDestinationUrl(), [
+                'href' => $this->destinationUrl,
+                'rel' => 'noopener',
+                'target' => '_blank',
+                'class' => 'go',
+                'title' => Craft::t('app', 'Visit webpage'),
+            ]);
         }
+        return '';
     }
 }
