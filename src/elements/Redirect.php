@@ -279,20 +279,17 @@ class Redirect extends Element
 
     /**
      * @return string|null
-     * @throws \Exception
      */
     public function getDestinationUrl()
     {
         if ($this->destinationElementId) {
-            $element = Craft::$app->elements->getElementById($this->destinationElementId, null, $this->siteId);
+            $element = Craft::$app->elements->getElementById($this->destinationElementId, null, $this->destinationElementSiteId ?? $this->siteId);
             if ($element && $element->getUrl()) {
                 return $element->getUrl();
             }
         } elseif ($this->destinationUrl) {
             return $this->destinationUrl;
         }
-
-        throw new \Exception('No destination for redirect: ' . $this->id);
     }
 
     /**
