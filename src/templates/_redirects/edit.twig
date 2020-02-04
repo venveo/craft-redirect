@@ -50,7 +50,7 @@
                 first: true,
                 name: 'siteId',
                 options: editableSitesOptions,
-                value: redirect.siteId,
+                value: redirect.siteId ?? craft.app.sites.currentSite.id,
                 toggle: true,
                 errors: redirect.getErrors('siteId')
             }) }}
@@ -70,6 +70,16 @@
                 value: redirect.sourceUrl ?? catchAllUrl ?? '',
                 errors: redirect.getErrors('sourceUrl'),
                 required: true
+            }) }}
+
+            {{ forms.selectField({
+                label: "Destination Site"|t('vredirect'),
+                first: true,
+                name: 'destionationElementSiteId',
+                options: editableSitesOptions|merge([{label: 'External URL'|t('vredirect'), value: null}]),
+                value: redirect.destinationElementSiteId ?? craft.app.sites.currentSite.id,
+                toggle: true,
+                errors: redirect.getErrors('destinationElementSiteId')
             }) }}
 
             {% if redirect.destinationElementId %}
