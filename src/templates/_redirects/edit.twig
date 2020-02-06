@@ -1,9 +1,9 @@
 {% extends 'vredirect/_layouts/cp' %}
 {% import "_includes/forms" as forms %}
 
-{% set showSiteSelector = craft.app.getIsMultiSite() and brandNewRedirect is defined and brandNewRedirect == true %}
 {% set fullPageForm = true %}
 {% set saveShortcut = true %}
+
 {% if brandNewRedirect is defined and brandNewRedirect %}
     {% set saveShortcutRedirect = 'redirect/redirects/new' %}
 {% endif %}
@@ -34,38 +34,38 @@
 {% endblock %}
 
 {% block content %}
-        {{ actionInput('vredirect/redirects/save-redirect') }}
+    {{ actionInput('vredirect/redirects/save-redirect') }}
 
-        {% if redirect.id %}
-            {{ hiddenInput('redirectId', redirect.id) }}
+    {% set catchAllUrl = null %}
+    {% if catchAllRecord is defined %}
+        {{ hiddenInput('catchAllRecordId', catchAllRecord.id) }}
+        {% set catchAllUrl = catchAllRecord.uri %}
+        {% if catchAllRecord.query %}
+            {% set catchAllUrl = catchAllUrl ~ '?' ~ catchAllRecord.query %}
         {% endif %}
+    {% endif %}
 
-        {% if catchAllRecord is defined and catchAllRecord.id %}
-            {{ hiddenInput('catchAllRecordId', catchAllRecord.id) }}
-        {% endif %}
+    {% if redirect.id %}
+        {{ hiddenInput('redirectId', redirect.id) }}
+    {% endif %}
+
 
         <div>
             {{ forms.selectField({
                 label: "Source Site"|t('vredirect'),
                 first: true,
                 name: 'siteId',
+                id: 'sourceSiteId',
                 options: editableSitesOptions,
                 value: redirect.siteId ?? craft.app.sites.currentSite.id,
                 toggle: true,
                 errors: redirect.getErrors('siteId')
             }) }}
-
-            {% set catchAllUrl = null %}
-            {% if catchAllRecord is defined %}
-                {% set catchAllUrl = catchAllRecord.uri %}
-                {% if catchAllRecord.query %}
-                    {% set catchAllUrl = catchAllUrl ~ '?' ~ catchAllRecord.query %}
-                {% endif %}
-            {% endif %}
             {{ forms.textField({
                 label: "Source URI"|t('vredirect'),
                 instructions: "The URI to be redirected - should not include the site URL, only the path."|t('vredirect'),
                 class: 'ltr',
+                id: 'sourceUri',
                 name: 'sourceUrl',
                 value: redirect.sourceUrl ?? catchAllUrl ?? '',
                 errors: redirect.getErrors('sourceUrl'),
@@ -76,6 +76,7 @@
                 label: "Destination Site"|t('vredirect'),
                 first: true,
                 name: 'destionationElementSiteId',
+                id: 'destionationElementSiteId',
                 options: editableSitesOptions|merge([{label: 'External URL'|t('vredirect'), value: null}]),
                 value: redirect.destinationElementSiteId ?? craft.app.sites.currentSite.id,
                 toggle: true,
@@ -101,13 +102,18 @@
                 instructions: "The final URL"|t('vredirect'),
                 class: 'ltr',
                 name: 'destinationUrl',
+                id: 'destinationElementId',
                 value: redirect.destinationUrl,
                 errors: redirect.getErrors('destinationUrl'),
                 required: true
             }) }}
             {% endif %}
         </div>
-    </form>
+
+    {% js %}
+        window.redirectSourceUriField = new Craft.UrlFieldInput('sourceSiteId', 'sourceUri');
+    {% endjs %}
+
 {% endblock %}
 
 {% block details %}

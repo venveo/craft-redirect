@@ -14,10 +14,13 @@ use Craft;
 use craft\errors\ElementNotFoundException;
 use craft\errors\MissingComponentException;
 use craft\errors\SiteNotFoundException;
+use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use craft\web\Response;
+use craft\web\View;
 use Throwable;
+use venveo\redirect\assetbundles\urlfieldinput\UrlFieldInputAsset;
 use venveo\redirect\elements\Redirect;
 use venveo\redirect\Plugin;
 use venveo\redirect\records\CatchAllUrl;
@@ -93,10 +96,22 @@ class RedirectsController extends Controller
                 'url' => UrlHelper::cpUrl('redirect/redirects')
             ]
         ];
+
         $editableSitesOptions = [];
+        $editableSiteData = [];
 
         foreach (Craft::$app->getSites()->getEditableSites() as $site) {
-            $editableSitesOptions[$site['id']] = $site->name;
+            if (!Craft::$app->config->general->headlessMode && !$site->hasUrls) {
+                continue;
+            }
+            $editableSitesOptions[] = $site->name;
+
+            $editableSiteData[] = [
+                'id' => $site->id,
+                'baseUrl' => $site->getBaseUrl(),
+                'name' => $site->name,
+                'handle' => $site->handle
+            ];
         }
 
         $variables['statusCodeOptions'] = Redirect::STATUS_CODE_OPTIONS;
@@ -142,6 +157,8 @@ class RedirectsController extends Controller
         }
 
         $variables['redirect'] = $redirect;
+        Craft::$app->view->registerJs('window.redirectEditableSiteData = '. Json::encode($editableSiteData) . ';', View::POS_HEAD);
+        Craft::$app->view->registerAssetBundle(UrlFieldInputAsset::class);
         return $this->renderTemplate('vredirect/_redirects/edit', $variables);
     }
 
