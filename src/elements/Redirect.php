@@ -161,7 +161,7 @@ class Redirect extends Element
                 [
                     'key' => 'static',
                     'label' => Craft::t('vredirect', 'Static Redirects'),
-                    'criteria' => ['type' => Redirect::TYPE_DYNAMIC]
+                    'criteria' => ['type' => Redirect::TYPE_STATIC]
                 ],
                 [
                     'key' => 'dynamic',
