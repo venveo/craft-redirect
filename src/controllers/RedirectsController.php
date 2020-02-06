@@ -28,6 +28,7 @@ use venveo\redirect\records\CatchAllUrl;
 use yii\base\Exception;
 use yii\db\StaleObjectException;
 use yii\web\BadRequestHttpException;
+use yii\web\NotFoundHttpException;
 
 class RedirectsController extends Controller
 {
@@ -39,10 +40,7 @@ class RedirectsController extends Controller
      */
     public function actionIndex(): craft\web\Response
     {
-        $currentUser = Craft::$app->getUser()->getIdentity();
-        if (!$currentUser->can(Plugin::PERMISSION_MANAGE_REDIRECTS)) {
-            return Craft::$app->response->setStatusCode('403', Craft::t('vredirect', 'You lack the required permissions to manage redirects'));
-        }
+        $this->requirePermission(Plugin::PERMISSION_MANAGE_REDIRECTS);
 
         if (Craft::$app->getIsMultiSite()) {
             // Only use the sites that the user has access to
