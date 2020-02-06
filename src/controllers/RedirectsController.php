@@ -211,6 +211,8 @@ class RedirectsController extends Controller
 
         $redirect->siteId = $siteId;
 
+        $redirect->refreshDestinationElement();
+
         $res = Craft::$app->getElements()->saveElement($redirect, true, false);
 
         if (!$res) {

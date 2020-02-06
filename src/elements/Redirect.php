@@ -601,4 +601,18 @@ class Redirect extends Element
         }
         return '';
     }
+
+    /**
+     * Attempt to figure out if the destination URL can be converted to an element
+     */
+    public function refreshDestinationElement() {
+        if (!isset($this->destinationUrl)) {
+            return;
+        }
+
+        $element = Craft::$app->getElements()->getElementByUri($this->destinationUrl, $this->destinationSiteId, true);
+        if ($element) {
+            $this->destinationElementId = $element->id;
+        }
+    }
 }

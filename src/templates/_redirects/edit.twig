@@ -96,16 +96,6 @@
                 required: true
             }) }}
 
-            {{ forms.selectField({
-                label: "Destination Site"|t('vredirect'),
-                name: 'destinationSiteId',
-                id: 'destinationSiteId',
-                options: editableSitesOptions|merge([{label: 'External URL'|t('vredirect'), value: 'external'}]),
-                value: redirect.destinationSiteId ?? craft.app.sites.currentSite.id,
-                toggle: true,
-                errors: redirect.getErrors('destinationSiteId')
-            }) }}
-
             {% if redirect.destinationElementId %}
                 <div class="field">
                     <div class="heading">
@@ -120,6 +110,16 @@
                     </div>
                 </div>
             {% else %}
+                {{ forms.selectField({
+                    label: "Destination Site"|t('vredirect'),
+                    name: 'destinationSiteId',
+                    id: 'destinationSiteId',
+                    options: editableSitesOptions|merge([{label: 'External URL'|t('vredirect'), value: 'external'}]),
+                    value: redirect.destinationSiteId ?? craft.app.sites.currentSite.id,
+                    toggle: true,
+                    errors: redirect.getErrors('destinationSiteId')
+                }) }}
+
                 {{ self.siteUrlField({
                     label: "Destination URL"|t('vredirect'),
                     name: 'destinationUrl',
