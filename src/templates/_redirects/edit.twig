@@ -167,6 +167,10 @@
         <div class="value">{{ redirect.dateUpdated|datetime('short') }}</div>
     </div>
     <div class="data">
+        <h5 class="heading">{{ "Last Hit"|t('app') }}</h5>
+        <div class="value">{{ redirect.hitAt|datetime('short') }}</div>
+    </div>
+    <div class="data">
         <h5 class="heading">{{'Hit Count'|t('vredirect')}}</h5>
         <div class="value">{{ redirect.hitCount }}</div>
     </div>

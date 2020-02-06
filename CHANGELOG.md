@@ -7,6 +7,7 @@
 - Don't show site switcher if there's only one site
 - Issue migrating from Dolphiq Redirect
 - Improved element validation
+- Fixed "Stale" redirects source not working properly
 
 ## Added
 - Feed me support for dateCreated and dateUpdated

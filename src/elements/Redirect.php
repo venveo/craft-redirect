@@ -14,6 +14,7 @@ use craft\base\Element;
 use craft\elements\actions\Restore;
 use craft\elements\actions\SetStatus;
 use craft\elements\db\ElementQueryInterface;
+use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\models\Site;
@@ -22,6 +23,7 @@ use craft\validators\SiteIdValidator;
 use craft\validators\UriValidator;
 use craft\validators\UrlValidator;
 use craft\web\ErrorHandler;
+use DateTime;
 use Throwable;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
@@ -147,6 +149,7 @@ class Redirect extends Element
      */
     protected static function defineSources(string $context = null): array
     {
+        $staleDate = new DateTime('2 months ago');
         $sources = [];
         if ($context === 'index') {
             $sources = [
@@ -166,9 +169,9 @@ class Redirect extends Element
                     'criteria' => ['statusCode' => 302]
                 ],
                 [
-                    'key' => 'inactive',
+                    'key' => 'stale',
                     'label' => Craft::t('vredirect', 'Stale Redirects'),
-                    'criteria' => ['hitAt' => 60]
+                    'criteria' => ['hitAt' => '< ' . Db::prepareDateForDb($staleDate)]
                 ]
             ];
         }

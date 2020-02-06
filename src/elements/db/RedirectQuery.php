@@ -185,12 +185,10 @@ class RedirectQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseParam('venveo_redirects.destinationSiteId', $this->destinationSiteId));
         }
 
-        if ($this->hitAt && $this->hitAt > 0) {
-            // TODO: Refactor...
-            $inactiveDate = new DateTime();
-            $inactiveDate->modify("-60 days");
-            $this->subQuery->andWhere('([[venveo_redirects.hitAt]] < :calculatedDate AND [[venveo_redirects.hitAt]] IS NOT NULL)', [':calculatedDate' => $inactiveDate->format("Y-m-d H:m:s")]);
+        if ($this->hitAt) {
+            $this->subQuery->andWhere(Db::parseDateParam('venveo_redirects.hitAt', $this->hitAt));
         }
+
         if ($this->matchingUri) {
             $this->subQuery->andWhere(['and',
                 ['[[venveo_redirects.type]]' => 'static'],
