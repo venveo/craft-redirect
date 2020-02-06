@@ -52,7 +52,7 @@
 {% block content %}
     {{ actionInput('vredirect/redirects/save-redirect') }}
 
-    {% if catchAllRecord %}
+    {% if catchAllRecord is defined %}
     <p class="first">{{"You're creating a redirect from a registered 404. Once you save this redirect, that 404 entry will be deleted."|t('vredirect')}}</p>
     {% endif %}
 
@@ -70,7 +70,7 @@
     {% endif %}
 
     {% set sourceSiteId = redirect.siteId ?? craft.app.sites.currentSite.id %}
-    {% if catchAllRecord %}
+    {% if catchAllRecord is defined %}
         {% set sourceSiteId = catchAllRecord.siteId %}
     {% endif %}
 

@@ -134,7 +134,9 @@ class RedirectQuery extends ElementQuery
     public function destinationElementId($value, $siteId = null): RedirectQuery
     {
         $this->destinationElementId = $value;
-        $this->destinationSiteId = $siteId;
+        if ($siteId !== null) {
+            $this->destinationSiteId = $siteId;
+        }
         return $this;
     }
 
@@ -155,7 +157,6 @@ class RedirectQuery extends ElementQuery
         //   $this->joinElementTable('elements_sites');
 
         $this->query->select([
-            'elements_sites.siteId',
             'venveo_redirects.type',
             'venveo_redirects.sourceUrl',
             'venveo_redirects.destinationUrl',

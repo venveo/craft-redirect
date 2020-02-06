@@ -186,6 +186,13 @@ class Redirect extends Element
         return ['sourceUrl', 'destinationUrl'];
     }
 
+    public function getSupportedSites(): array
+    {
+        $supportedSites = [];
+        $supportedSites[] = ['siteId' => $this->siteId, 'enabledByDefault' => true];
+        return $supportedSites;
+    }
+
     /**
      * @inheritdoc
      */
@@ -338,11 +345,6 @@ class Redirect extends Element
     }
 
     /**
-     * Use the sourceUrl as the string representation.
-     *
-     * @return string
-     */
-    /**
      * @inheritdoc
      */
     public function defineRules(): array
@@ -357,7 +359,7 @@ class Redirect extends Element
         $rules[] = [['statusCode'], 'in', 'range' => array_keys(self::STATUS_CODE_OPTIONS)];
 
         $rules[] = [['destinationSiteId'], SiteIdValidator::class];
-        $rules[] = ['destinationElementId', 'exist', 'targetClass' => \craft\records\Element::class];
+        $rules[] = ['destinationElementId', 'exist', 'targetClass' => \craft\records\Element::class, 'targetAttribute' => ['destinationElementId' => 'id']];
         $rules[] = ['destinationSiteId', 'required', 'when' => function ($model) {
             return !empty($model->destinationElementId);
         }];
@@ -536,9 +538,6 @@ class Redirect extends Element
         switch ($attribute) {
             case 'statusCode':
                 return $this->statusCode ? Html::encodeParams('{statusCode}', ['statusCode' => Craft::t('vredirect', self::STATUS_CODE_OPTIONS[$this->statusCode])]) : '';
-
-            case 'baseUrl':
-                return Html::encodeParams('<a href="{baseUrl}" target="_blank">test</a>', ['baseUrl' => $this->getSite()->baseUrl . $this->sourceUrl]);
 
             case 'destinationUrl':
                 if ($this->type === self::TYPE_STATIC) {
