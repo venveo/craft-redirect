@@ -52,6 +52,10 @@
 {% block content %}
     {{ actionInput('vredirect/redirects/save-redirect') }}
 
+    {% if catchAllRecord %}
+    <p class="first">{{"You're creating a redirect from a registered 404. Once you save this redirect, that 404 entry will be deleted."|t('vredirect')}}</p>
+    {% endif %}
+
     {% set catchAllUrl = null %}
     {% if catchAllRecord is defined %}
         {{ hiddenInput('catchAllRecordId', catchAllRecord.id) }}
@@ -65,6 +69,10 @@
         {{ hiddenInput('redirectId', redirect.id) }}
     {% endif %}
 
+    {% set sourceSiteId = redirect.siteId ?? craft.app.sites.currentSite.id %}
+    {% if catchAllRecord %}
+        {% set sourceSiteId = catchAllRecord.siteId %}
+    {% endif %}
 
         <div>
             {{ forms.selectField({
@@ -73,7 +81,7 @@
                 name: 'siteId',
                 id: 'sourceSiteId',
                 options: editableSitesOptions,
-                value: redirect.siteId ?? craft.app.sites.currentSite.id,
+                value: sourceSiteId,
                 toggle: true,
                 errors: redirect.getErrors('siteId')
             }) }}
