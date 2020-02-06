@@ -56,7 +56,7 @@ class Redirect extends Element
         'dynamic' => 'Dynamic (RegExp)',
     ];
     /**
-     * @var string|null sourceUrl
+     * @var string sourceUrl
      */
     public $sourceUrl;
     /**
@@ -199,13 +199,38 @@ class Redirect extends Element
     protected static function defineSortOptions(): array
     {
         $attributes = [
-            'venveo_redirects.sourceUrl' => Craft::t('vredirect', 'Source URL'),
+            [
+                'label' => Craft::t('vredirect', 'Source URL'),
+                'orderBy' => 'venveo_redirects.sourceUrl',
+                'attribute' => 'sourceUrl'
+            ],
             'venveo_redirects.type' => Craft::t('vredirect', 'Type'),
-            'venveo_redirects.destinationUrl' => Craft::t('vredirect', 'Destination URL'),
-            'venveo_redirects.hitAt' => Craft::t('vredirect', 'Last Hit'),
+            [
+                'label' => Craft::t('vredirect', 'Destination URL'),
+                'orderBy' => 'venveo_redirects.destinationUrl',
+                'attribute' => 'destinationUrl'
+            ],
+            [
+                'label' => Craft::t('vredirect', 'Last Hit'),
+                'orderBy' => 'venveo_redirects.hitAt',
+                'attribute' => 'hitAt'
+            ],
             'venveo_redirects.statusCode' => Craft::t('vredirect', 'Redirect Type'),
-            'venveo_redirects.hitCount' => Craft::t('vredirect', 'Hit Count'),
-            'elements.dateCreated' => Craft::t('app', 'Date Created'),
+            [
+                'label' => Craft::t('vredirect', 'Hit Count'),
+                'orderBy' => 'venveo_redirects.hitCount',
+                'attribute' => 'hitCount'
+            ],
+            [
+                'label' => Craft::t('app', 'Date Created'),
+                'orderBy' => 'elements.dateCreated',
+                'attribute' => 'dateCreated'
+            ],
+            [
+                'label' => Craft::t('app', 'Date Updated'),
+                'orderBy' => 'elements.dateUpdated',
+                'attribute' => 'dateUpdated'
+            ],
         ];
         return $attributes;
     }
@@ -514,7 +539,7 @@ class Redirect extends Element
     public function __toString()
     {
         try {
-            return $this->getDestinationUrl();
+            return $this->sourceUrl;
         } catch (Throwable $e) {
             ErrorHandler::convertExceptionToError($e);
         }
@@ -544,6 +569,8 @@ class Redirect extends Element
                     return $this->renderDestinationUrl();
                 }
                 return $this->destinationUrl;
+            default:
+                break;
         }
 
         return parent::tableAttributeHtml($attribute);
