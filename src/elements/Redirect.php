@@ -159,14 +159,14 @@ class Redirect extends Element
                     'criteria' => []
                 ],
                 [
-                    'key' => 'permanent',
-                    'label' => Craft::t('vredirect', 'Permanent (301) Redirects'),
-                    'criteria' => ['statusCode' => 301]
+                    'key' => 'static',
+                    'label' => Craft::t('vredirect', 'Static Redirects'),
+                    'criteria' => ['type' => Redirect::TYPE_DYNAMIC]
                 ],
                 [
-                    'key' => 'temporarily',
-                    'label' => Craft::t('vredirect', 'Temporary (302) Redirects'),
-                    'criteria' => ['statusCode' => 302]
+                    'key' => 'dynamic',
+                    'label' => Craft::t('vredirect', 'Dynamic Redirects'),
+                    'criteria' => ['type' => Redirect::TYPE_DYNAMIC]
                 ],
                 [
                     'key' => 'stale',

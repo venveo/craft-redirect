@@ -20,6 +20,7 @@
 
 ## Changed
 - Moved some redirect settings to the sidebar
+- Change sources from 301/302 to static/dynamic
 
 ## 3.0.0.1 - 2020-01-28
 ### Fixed
