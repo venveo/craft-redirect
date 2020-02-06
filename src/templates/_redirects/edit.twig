@@ -1,3 +1,19 @@
+{% macro siteUrlField(config) %}
+    {% import "_includes/forms" as forms %}
+    {% set input %}
+        <div class="flex">
+            <div class="prefix"></div>
+            <div class="flex-grow">
+                {{ forms.text(config) }}
+            </div>
+        </div>
+    {% endset %}
+    {{ forms.field(config, input) }}
+{% endmacro %}
+
+
+{% import _self as self %}
+
 {% extends 'vredirect/_layouts/cp' %}
 {% import "_includes/forms" as forms %}
 
@@ -61,10 +77,11 @@
                 toggle: true,
                 errors: redirect.getErrors('siteId')
             }) }}
-            {{ forms.textField({
+
+
+            {{ self.siteUrlField({
                 label: "Source URI"|t('vredirect'),
                 instructions: "The URI to be redirected - should not include the site URL, only the path."|t('vredirect'),
-                class: 'ltr',
                 id: 'sourceUri',
                 name: 'sourceUrl',
                 value: redirect.sourceUrl ?? catchAllUrl ?? '',
@@ -74,10 +91,9 @@
 
             {{ forms.selectField({
                 label: "Destination Site"|t('vredirect'),
-                first: true,
-                name: 'destionationElementSiteId',
-                id: 'destionationElementSiteId',
-                options: editableSitesOptions|merge([{label: 'External URL'|t('vredirect'), value: null}]),
+                name: 'destinationElementSiteId',
+                id: 'destinationElementSiteId',
+                options: editableSitesOptions|merge([{label: 'External URL'|t('vredirect'), value: 'external'}]),
                 value: redirect.destinationElementSiteId ?? craft.app.sites.currentSite.id,
                 toggle: true,
                 errors: redirect.getErrors('destinationElementSiteId')
@@ -97,21 +113,21 @@
                     </div>
                 </div>
             {% else %}
-            {{ forms.textField({
-                label: "Destination URL"|t('vredirect'),
-                instructions: "The final URL"|t('vredirect'),
-                class: 'ltr',
-                name: 'destinationUrl',
-                id: 'destinationElementId',
-                value: redirect.destinationUrl,
-                errors: redirect.getErrors('destinationUrl'),
-                required: true
-            }) }}
+                {{ self.siteUrlField({
+                    label: "Destination URL"|t('vredirect'),
+                    instructions: "The final URL"|t('vredirect'),
+                    name: 'destinationUrl',
+                    id: 'destinationUrl',
+                    value: redirect.destinationUrl,
+                    errors: redirect.getErrors('destinationUrl'),
+                    required: true
+                }) }}
             {% endif %}
         </div>
 
     {% js %}
-        window.redirectSourceUriField = new Craft.UrlFieldInput('sourceSiteId', 'sourceUri');
+        window.redirectSourceUriField = new Craft.UrlFieldInput('sourceSiteId', 'sourceUri-field');
+        window.redirectDestinationUriField = new Craft.UrlFieldInput('destinationElementSiteId', 'destinationUrl-field');
     {% endjs %}
 
 {% endblock %}

@@ -15,6 +15,7 @@
 
             $siteSelect: null,
             $textInput: null,
+            $prefixContainer: null,
 
             selectedSite: null,
 
@@ -24,6 +25,7 @@
 
                 this.$siteSelect = $('#' + this.siteSelectId);
                 this.$textInput = $('#' + this.textInputId);
+                this.$prefixContainer = this.$textInput.find('.prefix').first();
 
                 this.addListener(this.$siteSelect, 'change', function(ev) {
                     var siteId = $(ev.target)[0].value;
@@ -36,15 +38,20 @@
             },
 
             changeSite: function(siteId) {
+                this.selectedSite = null;
                 for (var i = 0; i < window.redirectEditableSiteData.length; i++) {
                     if (window.redirectEditableSiteData[i].id == siteId) {
-                        this.selectedSite = Craft.sites[i];
+                        this.selectedSite = window.redirectEditableSiteData[i];
                     }
                 }
                 if (!this.selectedSite) {
-                    alert('Site not found');
+                    this.$prefixContainer.empty();
+                    this.$prefixContainer.hide();
                     return;
                 }
+
+                this.$prefixContainer.show();
+                this.$prefixContainer.text(this.selectedSite.baseUrl);
 
                 console.log(this.selectedSite);
             }

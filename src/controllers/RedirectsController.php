@@ -104,7 +104,10 @@ class RedirectsController extends Controller
             if (!Craft::$app->config->general->headlessMode && !$site->hasUrls) {
                 continue;
             }
-            $editableSitesOptions[] = $site->name;
+            $editableSitesOptions[$site->id] = [
+                'value' => $site->id,
+                'label' => $site->name
+            ];
 
             $editableSiteData[] = [
                 'id' => $site->id,
