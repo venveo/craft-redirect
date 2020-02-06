@@ -33,7 +33,7 @@ class Install extends Migration
             'sourceUrl' => $this->string(255),
             'destinationUrl' => $this->string(255),
             'destinationElementId' => $this->integer()->null()->defaultValue(null),
-            'destinationElementSiteId' => $this->integer()->null()->defaultValue(null),
+            'destinationSiteId' => $this->integer()->null()->defaultValue(null),
             'statusCode' => $this->string(3),
             'hitCount' => $this->integer()->unsigned()->notNull()->defaultValue(0),
             'hitAt' => $this->dateTime(),

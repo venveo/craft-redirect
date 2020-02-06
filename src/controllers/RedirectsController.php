@@ -14,6 +14,7 @@ use Craft;
 use craft\errors\ElementNotFoundException;
 use craft\errors\MissingComponentException;
 use craft\errors\SiteNotFoundException;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
@@ -30,10 +31,6 @@ use yii\web\BadRequestHttpException;
 
 class RedirectsController extends Controller
 {
-
-    // Public Methods
-    // =========================================================================
-
     /**
      * Called before displaying the redirect settings index page.
      *
@@ -47,8 +44,6 @@ class RedirectsController extends Controller
             return Craft::$app->response->setStatusCode('403', Craft::t('vredirect', 'You lack the required permissions to manage redirects'));
         }
 
-        // Get the site
-        // ---------------------------------------------------------------------
         if (Craft::$app->getIsMultiSite()) {
             // Only use the sites that the user has access to
             $variables['siteIds'] = Craft::$app->getSites()->getEditableSiteIds();
@@ -100,10 +95,7 @@ class RedirectsController extends Controller
         $editableSitesOptions = [];
         $editableSiteData = [];
 
-        foreach (Craft::$app->getSites()->getEditableSites() as $site) {
-            if (!Craft::$app->config->general->headlessMode && !$site->hasUrls) {
-                continue;
-            }
+        foreach (Plugin::getInstance()->redirects->getValidSites() as $site) {
             $editableSitesOptions[$site->id] = [
                 'value' => $site->id,
                 'label' => $site->name
@@ -205,10 +197,17 @@ class RedirectsController extends Controller
             $redirect = new Redirect();
         }
 
+        // If the requested site ID isn't valid, we'll consider it an absolute URL
+        $allowedSiteIds = ArrayHelper::getColumn(Plugin::getInstance()->redirects->getValidSites(), 'id');
+        $destinationSiteId = $request->getRequiredParam('destinationSiteId');
+        if (!in_array($destinationSiteId, $allowedSiteIds, true)) {
+            $destinationSiteId = null;
+        }
+
         $redirect->sourceUrl = $request->getRequiredParam('sourceUrl');
         $redirect->destinationUrl = $request->getBodyParam('destinationUrl');
         $redirect->destinationElementId = $request->getBodyParam('destinationElementId');
-        $redirect->destinationElementSiteId = $request->getBodyParam('destinationElementSiteId');
+        $redirect->destinationSiteId = $destinationSiteId;
         $redirect->statusCode = $request->getRequiredParam('statusCode');
         $redirect->type = $request->getRequiredParam('type');
 

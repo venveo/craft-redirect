@@ -17,10 +17,10 @@ class m200201_231143_add_destination_site_id extends Migration
     {
         $this->addColumn(
             '{{%venveo_redirects}}',
-            'destinationElementSiteId',
+            'destinationSiteId',
             $this->integer()->null()->defaultValue(null)->after('destinationElementId')
         );
-        $this->addForeignKey(null, '{{%venveo_redirects}}', ['destinationElementSiteId'], '{{%sites}}', ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, '{{%venveo_redirects}}', ['destinationSiteId'], '{{%sites}}', ['id'], 'CASCADE', null);
         return true;
     }
 

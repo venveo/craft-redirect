@@ -6,6 +6,7 @@
 - Broken Feed Me Hit Count import
 - Don't show site switcher if there's only one site
 - Issue migrating from Dolphiq Redirect
+- Improved element validation
 
 ## Added
 - Feed me support for dateCreated and dateUpdated
@@ -13,6 +14,7 @@
 - Added setting to automatically create element redirects
 - Added logic to delete redirects for deleted source elements
 - Added details pane to "Edit" redirects screen
+- You may now explicitly select source and destination sites
 
 ## Changed
 - Moved some redirect settings to the sidebar
