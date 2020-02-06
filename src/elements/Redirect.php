@@ -11,8 +11,8 @@ namespace venveo\redirect\elements;
 
 use Craft;
 use craft\base\Element;
-use craft\elements\actions\Edit;
 use craft\elements\actions\Restore;
+use craft\elements\actions\SetStatus;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
@@ -36,6 +36,7 @@ use yii\db\StaleObjectException;
 
 /**
  *
+ * @property null|Site $destinationSite
  * @property string $name
  */
 class Redirect extends Element
@@ -128,7 +129,7 @@ class Redirect extends Element
      */
     public static function hasStatuses(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -225,16 +226,15 @@ class Redirect extends Element
         $actions = [];
 
         // Edit
-        $actions[] = Craft::$app->getElements()->createAction(
-            [
-                'type' => Edit::class,
-                'label' => Craft::t('vredirect', 'Edit redirect'),
-            ]
-        );
+//        $actions[] = Craft::$app->getElements()->createAction(
+//            [
+//                'type' => Edit::class,
+//                'label' => Craft::t('vredirect', 'Edit redirect'),
+//            ]
+//        );
 
         // Delete
         $actions[] = DeleteRedirects::class;
-
 
         // Restore
         $actions[] = Craft::$app->getElements()->createAction([
@@ -243,6 +243,8 @@ class Redirect extends Element
             'partialSuccessMessage' => Craft::t('vredirect', 'Some redirects restored.'),
             'failMessage' => Craft::t('vredirect', 'Redirects not restored.'),
         ]);
+
+        $actions[] = SetStatus::class;
 
         return $actions;
     }
@@ -262,14 +264,7 @@ class Redirect extends Element
      */
     public function getIsEditable(): bool
     {
-        return true;
-    }
-
-    public function getSupportedSites(): array
-    {
-        $supportedSites = [];
-        $supportedSites[] = ['siteId' => $this->siteId, 'enabledByDefault' => true];
-        return $supportedSites;
+        return Craft::$app->getUser()->checkPermission('editSite:' . $this->getSite()->uid);
     }
 
     /**
@@ -331,8 +326,9 @@ class Redirect extends Element
      *
      * @return Site|null
      */
-    public function getDestinationSite() {
-        if($this->destinationSiteId === null) {
+    public function getDestinationSite()
+    {
+        if ($this->destinationSiteId === null) {
             return null;
         }
         return Craft::$app->sites->getSiteById($this->destinationSiteId);
@@ -359,16 +355,16 @@ class Redirect extends Element
 
         $rules[] = [['destinationSiteId'], SiteIdValidator::class];
         $rules[] = ['destinationElementId', 'exist', 'targetClass' => \craft\records\Element::class];
-        $rules[] = ['destinationSiteId', 'required', 'when' => function($model) {
+        $rules[] = ['destinationSiteId', 'required', 'when' => function ($model) {
             return !empty($model->destinationElementId);
         }];
-        $rules[] = ['destinationUrl', 'required', 'when' => function($model) {
+        $rules[] = ['destinationUrl', 'required', 'when' => function ($model) {
             return empty($model->destinationElementId);
         }];
-        $rules[] = ['destinationUrl', UrlValidator::class, 'when' => function($model) {
+        $rules[] = ['destinationUrl', UrlValidator::class, 'when' => function ($model) {
             return empty($model->destinationSiteId);
         }];
-        $rules[] = ['destinationUrl', UriValidator::class, 'when' => function($model) {
+        $rules[] = ['destinationUrl', UriValidator::class, 'when' => function ($model) {
             return !empty($model->destinationSiteId);
         }];
 
@@ -513,20 +509,10 @@ class Redirect extends Element
     public function __toString()
     {
         try {
-            return $this->getName();
+            return $this->getDestinationUrl();
         } catch (Throwable $e) {
             ErrorHandler::convertExceptionToError($e);
         }
-    }
-
-    /**
-     * Returns the name.
-     *
-     * @return string
-     */
-    public function getName(): string
-    {
-        return (string)$this->sourceUrl;
     }
 
     /**
@@ -552,7 +538,10 @@ class Redirect extends Element
                 return Html::encodeParams('<a href="{baseUrl}" target="_blank">test</a>', ['baseUrl' => $this->getSite()->baseUrl . $this->sourceUrl]);
 
             case 'destinationUrl':
-                return $this->renderDestinationUrl();
+                if ($this->type === self::TYPE_STATIC) {
+                    return $this->renderDestinationUrl();
+                }
+                return $this->destinationUrl;
         }
 
         return parent::tableAttributeHtml($attribute);

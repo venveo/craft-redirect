@@ -15,6 +15,7 @@
 - Added logic to delete redirects for deleted source elements
 - Added details pane to "Edit" redirects screen
 - You may now explicitly select source and destination sites
+- Redirects now have statuses and may be disabled and enabled
 
 ## Changed
 - Moved some redirect settings to the sidebar

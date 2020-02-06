@@ -14,6 +14,12 @@ use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 use DateTime;
 
+/**
+ * RedirectQuery represents a SELECT SQL statement for redirects in a way that is independent of DBMS.
+ *
+ * @supports-site-params
+ * @supports-status-param
+ */
 class RedirectQuery extends ElementQuery
 {
     // Properties
@@ -90,7 +96,7 @@ class RedirectQuery extends ElementQuery
      *
      * @return static self reference
      */
-    public function editable(bool $value = true)
+    public function editable(bool $value = true): RedirectQuery
     {
         $this->editable = $value;
 
@@ -104,7 +110,7 @@ class RedirectQuery extends ElementQuery
      *
      * @return static self reference
      */
-    public function sourceUrl($value)
+    public function sourceUrl($value): RedirectQuery
     {
         $this->sourceUrl = $value;
 
@@ -118,21 +124,21 @@ class RedirectQuery extends ElementQuery
      *
      * @return static self reference
      */
-    public function destinationUrl($value)
+    public function destinationUrl($value): RedirectQuery
     {
         $this->destinationUrl = $value;
 
         return $this;
     }
 
-    public function destinationElementId($value, $siteId = null)
+    public function destinationElementId($value, $siteId = null): RedirectQuery
     {
         $this->destinationElementId = $value;
         $this->destinationSiteId = $siteId;
         return $this;
     }
 
-    public function destinationSiteId($value)
+    public function destinationSiteId($value): RedirectQuery
     {
         $this->destinationSiteId = $value;
         return $this;

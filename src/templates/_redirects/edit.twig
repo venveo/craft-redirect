@@ -132,6 +132,13 @@
 
 {% block details %}
     <div id="settings" class="meta">
+        {{ forms.lightswitchField({
+            label: "Enabled"|t('app'),
+            id: 'enabled',
+            name: 'enabled',
+            on: redirect.enabled
+        }) }}
+
         {{ forms.selectField({
             label: "Match Type"|t('vredirect'),
             id: 'type',
@@ -140,6 +147,7 @@
             value: redirect.type,
             errors: redirect.getErrors('type')
         }) }}
+
         {{ forms.selectField({
             label: "Redirect Type"|t('vredirect'),
             name: 'statusCode',

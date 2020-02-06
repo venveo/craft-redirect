@@ -170,7 +170,6 @@ class RedirectsController extends Controller
     public function actionSaveRedirect()
     {
         $isNew = false;
-        $currentUser = Craft::$app->getUser()->getIdentity();
         $this->requirePermission(Plugin::PERMISSION_MANAGE_REDIRECTS);
 
         $request = Craft::$app->getRequest();
@@ -197,17 +196,18 @@ class RedirectsController extends Controller
 
         // If the requested site ID isn't valid, we'll consider it an absolute URL
         $allowedSiteIds = ArrayHelper::getColumn(Plugin::getInstance()->redirects->getValidSites(), 'id');
-        $destinationSiteId = $request->getRequiredParam('destinationSiteId');
+        $destinationSiteId = $request->getBodyParam('destinationSiteId', $redirect->destinationSiteId);
         if (!in_array($destinationSiteId, $allowedSiteIds, true)) {
             $destinationSiteId = null;
         }
-
-        $redirect->sourceUrl = $request->getRequiredParam('sourceUrl');
-        $redirect->destinationUrl = $request->getBodyParam('destinationUrl');
-        $redirect->destinationElementId = $request->getBodyParam('destinationElementId');
         $redirect->destinationSiteId = $destinationSiteId;
-        $redirect->statusCode = $request->getRequiredParam('statusCode');
-        $redirect->type = $request->getRequiredParam('type');
+
+        $redirect->enabled = (bool)$request->getBodyParam('enabled', $redirect->enabled);
+        $redirect->sourceUrl = $request->getBodyParam('sourceUrl', $redirect->sourceUrl);
+        $redirect->destinationUrl = $request->getBodyParam('destinationUrl', $redirect->destinationUrl);
+        $redirect->destinationElementId = $request->getBodyParam('destinationElementId', $redirect->destinationElementId);
+        $redirect->statusCode = $request->getBodyParam('statusCode', $redirect->statusCode);
+        $redirect->type = $request->getBodyParam('type', $redirect->type);
 
         $redirect->siteId = $siteId;
 
