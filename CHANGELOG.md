@@ -1,14 +1,6 @@
 # Redirect Changelog
 
-## Unreleased
-### Fixed
-- PHP 7.1 incompatibilities
-- Broken Feed Me Hit Count import
-- Don't show site switcher if there's only one site
-- Issue migrating from Dolphiq Redirect
-- Improved element validation
-- Fixed "Stale" redirects source not working properly
-
+## 3.0.1 - 2020-02-06
 ## Added
 - Feed me support for dateCreated and dateUpdated
 - Dashboard widget
@@ -21,6 +13,14 @@
 ## Changed
 - Moved some redirect settings to the sidebar
 - Change sources from 301/302 to static/dynamic
+
+### Fixed
+- PHP 7.1 incompatibilities
+- Broken Feed Me Hit Count import
+- Don't show site switcher if there's only one site
+- Issue migrating from Dolphiq Redirect
+- Improved element validation
+- Fixed "Stale" redirects source not working properly
 
 ## 3.0.0.1 - 2020-01-28
 ### Fixed
