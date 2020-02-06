@@ -1,7 +1,28 @@
+{% macro siteUrlField(config) %}
+    {% import "_includes/forms" as forms %}
+    {% set input %}
+        <div class="flex">
+            <div class="prefix"></div>
+            <div class="flex-grow">
+                {{ forms.text(config) }}
+            </div>
+        </div>
+    {% endset %}
+    {{ forms.field(config, input) }}
+{% endmacro %}
+
+
+{% import _self as self %}
+
 {% extends 'vredirect/_layouts/cp' %}
 {% import "_includes/forms" as forms %}
 
-{% set showSiteSelector = craft.app.getIsMultiSite() and brandNewRedirect is defined and brandNewRedirect == true %}
+{% set fullPageForm = true %}
+{% set saveShortcut = true %}
+
+{% if brandNewRedirect is defined and brandNewRedirect %}
+    {% set saveShortcutRedirect = 'redirect/redirects/new' %}
+{% endif %}
 
 {% set selectedSubnavItem = 'redirects' %}
 {% if brandNewRedirect is defined and brandNewRedirect %}
@@ -12,7 +33,6 @@
 {% else %}
     {% set title = "Edit Redirect"|t('vredirect') %}
 {% endif %}
-
 
 {% block actionButton %}
     <div class="btngroup">
@@ -30,82 +50,139 @@
 {% endblock %}
 
 {% block content %}
-    <form id="redirectform" method="post" accept-charset="UTF-8"
-          data-saveshortcut{% if brandNewRedirect is defined and brandNewRedirect %} data-saveshortcut-redirect="{{ 'redirect/redirects/new'|hash }}"{% endif %}
-          data-confirm-unload>
-        {{ csrfInput() }}
-        {{ actionInput('vredirect/redirects/save-redirect') }}
+    {{ actionInput('vredirect/redirects/save-redirect') }}
 
-        {% if redirect is defined and redirect.id %}
-            {{ hiddenInput('redirectId', redirect.id) }}
-        {% endif %}
+    {% if catchAllRecord is defined %}
+    <p class="first">{{"You're creating a redirect from a registered 404. Once you save this redirect, that 404 entry will be deleted."|t('vredirect')}}</p>
+    {% endif %}
 
-        {% if catchAllRecord is defined and catchAllRecord.id %}
-            {{ hiddenInput('catchAllRecordId', catchAllRecord.id) }}
+    {% set catchAllUrl = null %}
+    {% if catchAllRecord is defined %}
+        {{ hiddenInput('catchAllRecordId', catchAllRecord.id) }}
+        {% set catchAllUrl = catchAllRecord.uri %}
+        {% if catchAllRecord.query %}
+            {% set catchAllUrl = catchAllUrl ~ '?' ~ catchAllRecord.query %}
         {% endif %}
+    {% endif %}
+
+    {% if redirect.id %}
+        {{ hiddenInput('redirectId', redirect.id) }}
+    {% endif %}
+
+    {% set sourceSiteId = redirect.siteId ?? craft.app.sites.currentSite.id %}
+    {% if catchAllRecord is defined %}
+        {% set sourceSiteId = catchAllRecord.siteId %}
+    {% endif %}
+
         <div>
-            {% if showSiteSelector %}
-                {% set siteId = currentSiteId %}
-                {% if catchAllRecord is defined and catchAllRecord.siteId is defined %}
-                    {% set siteId = catchAllRecord.siteId %}
-                {% endif %}
-                {{ forms.selectField({
-                    label: "Source Site"|t('vredirect'),
-                    first: true,
-                    name: 'siteId',
-                    options: editableSitesOptions,
-                    value: siteId,
-                    toggle: true,
-                    errors: redirect.getErrors('siteId')
-                }) }}
-            {% elseif craft.app.getIsMultiSite() %}
-                {{ hiddenInput('siteId', currentSiteId) }}
-            {% endif %}
-
             {{ forms.selectField({
-                label: "Match Type"|t('vredirect'),
-                instructions: "Redirect Type"|t('vredirect'),
-                name: 'type',
-                first: (not showSiteSelector),
-                options: typeOptions,
-                value: redirect.type,
-                errors: redirect.getErrors('type')
+                label: "Source Site"|t('vredirect'),
+                first: true,
+                name: 'siteId',
+                id: 'sourceSiteId',
+                options: editableSitesOptions,
+                value: sourceSiteId,
+                toggle: true,
+                errors: redirect.getErrors('siteId')
             }) }}
-            {% set catchAllUrl = null %}
-            {% if catchAllRecord is defined %}
-                {% set catchAllUrl = catchAllRecord.uri %}
-                {% if catchAllRecord.query %}
-                    {% set catchAllUrl = catchAllUrl ~ '?' ~ catchAllRecord.query %}
-                {% endif %}
-            {% endif %}
-            {{ forms.textField({
+
+
+            {{ self.siteUrlField({
                 label: "Source URI"|t('vredirect'),
-                instructions: "The URI to be redirected - should not include the site URL, only the path."|t('vredirect'),
-                class: 'ltr',
+                id: 'sourceUri',
                 name: 'sourceUrl',
                 value: redirect.sourceUrl ?? catchAllUrl ?? '',
                 errors: redirect.getErrors('sourceUrl'),
                 required: true
             }) }}
 
-            {{ forms.textField({
-                label: "Destination URL"|t('vredirect'),
-                instructions: "The final URL"|t('vredirect'),
-                class: 'ltr',
-                name: 'destinationUrl',
-                value: redirect.destinationUrl,
-                errors: redirect.getErrors('destinationUrl'),
-                required: true
-            }) }}
-            {{ forms.selectField({
-                label: "Redirect Type"|t('vredirect'),
-                instructions: "Redirect status code"|t('vredirect'),
-                name: 'statusCode',
-                options: statusCodeOptions,
-                value: redirect.statusCode,
-                errors: redirect.getErrors('statusCode')
-            }) }}
+            {% if redirect.destinationElementId %}
+                <div class="field">
+                    <div class="heading">
+                        <label class="required">{{ 'Target Element'|t('vredirect') }}</label>
+                        <div class="instructions"><p>{{ 'This redirect is tied to an element and may not be edited.'|t('vredirect') }}</p>
+                        </div>
+                    </div>
+                    <div class="input ltr">
+                        {% include '_elements/element' with {
+                            element: craft.app.elements.elementById(redirect.destinationElementId, null, redirect.destinationSiteId),
+                        } %}
+                    </div>
+                </div>
+            {% else %}
+                {{ forms.selectField({
+                    label: "Destination Site"|t('vredirect'),
+                    name: 'destinationSiteId',
+                    id: 'destinationSiteId',
+                    options: editableSitesOptions|merge([{label: 'External URL'|t('vredirect'), value: 'external'}]),
+                    value: redirect.destinationSiteId ?? craft.app.sites.currentSite.id,
+                    toggle: true,
+                    errors: redirect.getErrors('destinationSiteId')
+                }) }}
+
+                {{ self.siteUrlField({
+                    label: "Destination URL"|t('vredirect'),
+                    name: 'destinationUrl',
+                    id: 'destinationUrl',
+                    value: redirect.destinationUrl,
+                    errors: redirect.getErrors('destinationUrl'),
+                    required: true
+                }) }}
+            {% endif %}
         </div>
-    </form>
+
+    {% js %}
+        window.redirectSourceUriField = new Craft.UrlFieldInput('sourceSiteId', 'sourceUri-field');
+        window.redirectDestinationUriField = new Craft.UrlFieldInput('destinationSiteId', 'destinationUrl-field');
+    {% endjs %}
+
+{% endblock %}
+
+{% block details %}
+    <div id="settings" class="meta">
+        {{ forms.lightswitchField({
+            label: "Enabled"|t('app'),
+            id: 'enabled',
+            name: 'enabled',
+            on: redirect.enabled
+        }) }}
+
+        {{ forms.selectField({
+            label: "Match Type"|t('vredirect'),
+            id: 'type',
+            name: 'type',
+            options: typeOptions,
+            value: redirect.type,
+            errors: redirect.getErrors('type')
+        }) }}
+
+        {{ forms.selectField({
+            label: "Redirect Type"|t('vredirect'),
+            name: 'statusCode',
+            options: statusCodeOptions,
+            value: redirect.statusCode,
+            errors: redirect.getErrors('statusCode')
+        }) }}
+    </div>
+{% if redirect.id %}
+<div class="meta read-only">
+    <div class="data">
+        <h5 class="heading">{{ "Date Created"|t('app') }}</h5>
+        <div class="value">{{ redirect.dateCreated|datetime }}</div>
+    </div>
+    <div class="data">
+        <h5 class="heading">{{ "Date Updated"|t('app') }}</h5>
+        <div class="value">{{ redirect.dateUpdated|datetime('short') }}</div>
+    </div>
+    <div class="data">
+        <h5 class="heading">{{ "Last Hit"|t('app') }}</h5>
+        <div class="value">{{ redirect.hitAt|datetime('short') }}</div>
+    </div>
+    <div class="data">
+        <h5 class="heading">{{'Hit Count'|t('vredirect')}}</h5>
+        <div class="value">{{ redirect.hitCount }}</div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
 

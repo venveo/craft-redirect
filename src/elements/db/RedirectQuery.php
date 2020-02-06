@@ -14,6 +14,12 @@ use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 use DateTime;
 
+/**
+ * RedirectQuery represents a SELECT SQL statement for redirects in a way that is independent of DBMS.
+ *
+ * @supports-site-params
+ * @supports-status-param
+ */
 class RedirectQuery extends ElementQuery
 {
     // Properties
@@ -56,6 +62,16 @@ class RedirectQuery extends ElementQuery
      */
     public $matchingUri;
 
+    /**
+     * @var int|null An element ID
+     */
+    public $destinationElementId;
+
+    /**
+     * @var int|null site id for the destination
+     */
+    public $destinationSiteId;
+
 
     // Public Methods
     // =========================================================================
@@ -80,7 +96,7 @@ class RedirectQuery extends ElementQuery
      *
      * @return static self reference
      */
-    public function editable(bool $value = true)
+    public function editable(bool $value = true): RedirectQuery
     {
         $this->editable = $value;
 
@@ -94,7 +110,7 @@ class RedirectQuery extends ElementQuery
      *
      * @return static self reference
      */
-    public function sourceUrl($value)
+    public function sourceUrl($value): RedirectQuery
     {
         $this->sourceUrl = $value;
 
@@ -108,10 +124,25 @@ class RedirectQuery extends ElementQuery
      *
      * @return static self reference
      */
-    public function destinationUrl($value)
+    public function destinationUrl($value): RedirectQuery
     {
         $this->destinationUrl = $value;
 
+        return $this;
+    }
+
+    public function destinationElementId($value, $siteId = null): RedirectQuery
+    {
+        $this->destinationElementId = $value;
+        if ($siteId !== null) {
+            $this->destinationSiteId = $siteId;
+        }
+        return $this;
+    }
+
+    public function destinationSiteId($value): RedirectQuery
+    {
+        $this->destinationSiteId = $value;
         return $this;
     }
 
@@ -126,10 +157,11 @@ class RedirectQuery extends ElementQuery
         //   $this->joinElementTable('elements_sites');
 
         $this->query->select([
-            'elements_sites.siteId',
             'venveo_redirects.type',
             'venveo_redirects.sourceUrl',
             'venveo_redirects.destinationUrl',
+            'venveo_redirects.destinationElementId',
+            'venveo_redirects.destinationSiteId',
             'venveo_redirects.hitAt',
             'venveo_redirects.hitCount',
             'venveo_redirects.statusCode',
@@ -147,12 +179,17 @@ class RedirectQuery extends ElementQuery
         if ($this->type) {
             $this->subQuery->andWhere(Db::parseParam('venveo_redirects.type', $this->type));
         }
-        if ($this->hitAt && $this->hitAt > 0) {
-            // TODO: Refactor...
-            $inactiveDate = new DateTime();
-            $inactiveDate->modify("-60 days");
-            $this->subQuery->andWhere('([[venveo_redirects.hitAt]] < :calculatedDate AND [[venveo_redirects.hitAt]] IS NOT NULL)', [':calculatedDate' => $inactiveDate->format("Y-m-d H:m:s")]);
+        if ($this->destinationElementId) {
+            $this->subQuery->andWhere(Db::parseParam('venveo_redirects.destinationElementId', $this->destinationElementId));
         }
+        if ($this->destinationSiteId) {
+            $this->subQuery->andWhere(Db::parseParam('venveo_redirects.destinationSiteId', $this->destinationSiteId));
+        }
+
+        if ($this->hitAt) {
+            $this->subQuery->andWhere(Db::parseDateParam('venveo_redirects.hitAt', $this->hitAt));
+        }
+
         if ($this->matchingUri) {
             $this->subQuery->andWhere(['and',
                 ['[[venveo_redirects.type]]' => 'static'],

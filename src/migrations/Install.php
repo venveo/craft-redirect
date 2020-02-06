@@ -10,7 +10,6 @@
 namespace venveo\redirect\migrations;
 
 use craft\db\Migration;
-use craft\mail\transportadapters\Php;
 
 class Install extends Migration
 {
@@ -34,6 +33,7 @@ class Install extends Migration
             'sourceUrl' => $this->string(255),
             'destinationUrl' => $this->string(255),
             'destinationElementId' => $this->integer()->null()->defaultValue(null),
+            'destinationSiteId' => $this->integer()->null()->defaultValue(null),
             'statusCode' => $this->string(3),
             'hitCount' => $this->integer()->unsigned()->notNull()->defaultValue(0),
             'hitAt' => $this->dateTime(),

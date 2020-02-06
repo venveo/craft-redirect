@@ -19,6 +19,7 @@ use yii\db\ActiveQueryInterface;
  * @property Date|null hitAt
  * @property integer|null hitCount
  * @property int $destinationElementId [int(11)]
+ * @property int $destinationSiteId [int(11)]
  * @property int|null id
  * @property string sourceUrl
  * @property string destinationUrl

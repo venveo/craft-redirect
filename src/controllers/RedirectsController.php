@@ -14,23 +14,24 @@ use Craft;
 use craft\errors\ElementNotFoundException;
 use craft\errors\MissingComponentException;
 use craft\errors\SiteNotFoundException;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use craft\web\Response;
+use craft\web\View;
 use Throwable;
+use venveo\redirect\assetbundles\urlfieldinput\UrlFieldInputAsset;
 use venveo\redirect\elements\Redirect;
 use venveo\redirect\Plugin;
 use venveo\redirect\records\CatchAllUrl;
 use yii\base\Exception;
 use yii\db\StaleObjectException;
 use yii\web\BadRequestHttpException;
+use yii\web\NotFoundHttpException;
 
 class RedirectsController extends Controller
 {
-
-    // Public Methods
-    // =========================================================================
-
     /**
      * Called before displaying the redirect settings index page.
      *
@@ -39,13 +40,8 @@ class RedirectsController extends Controller
      */
     public function actionIndex(): craft\web\Response
     {
-        $currentUser = Craft::$app->getUser()->getIdentity();
-        if (!$currentUser->can(Plugin::PERMISSION_MANAGE_REDIRECTS)) {
-            return Craft::$app->response->setStatusCode('403', Craft::t('vredirect', 'You lack the required permissions to manage redirects'));
-        }
+        $this->requirePermission(Plugin::PERMISSION_MANAGE_REDIRECTS);
 
-        // Get the site
-        // ---------------------------------------------------------------------
         if (Craft::$app->getIsMultiSite()) {
             // Only use the sites that the user has access to
             $variables['siteIds'] = Craft::$app->getSites()->getEditableSiteIds();
@@ -93,16 +89,27 @@ class RedirectsController extends Controller
                 'url' => UrlHelper::cpUrl('redirect/redirects')
             ]
         ];
-        $editableSitesOptions = [];
 
-        foreach (Craft::$app->getSites()->getEditableSites() as $site) {
-            $editableSitesOptions[$site['id']] = $site->name;
+        $editableSitesOptions = [];
+        $editableSiteData = [];
+
+        foreach (Plugin::getInstance()->redirects->getValidSites() as $site) {
+            $editableSitesOptions[$site->id] = [
+                'value' => $site->id,
+                'label' => $site->name
+            ];
+
+            $editableSiteData[] = [
+                'id' => $site->id,
+                'baseUrl' => $site->getBaseUrl(),
+                'name' => $site->name,
+                'handle' => $site->handle
+            ];
         }
 
         $variables['statusCodeOptions'] = Redirect::STATUS_CODE_OPTIONS;
         $variables['typeOptions'] = Redirect::TYPE_OPTIONS;
         $variables['editableSitesOptions'] = $editableSitesOptions;
-
 
         $variables['brandNewRedirect'] = false;
 
@@ -143,13 +150,8 @@ class RedirectsController extends Controller
         }
 
         $variables['redirect'] = $redirect;
-
-        $routeParameters = Craft::$app->getUrlManager()->getRouteParams();
-        $source = (isset($routeParameters['source']) ? $routeParameters['source'] : 'CpSection');
-
-        $variables['source'] = $source;
-        $variables['pathPrefix'] = ($source == 'CpSettings' ? 'settings/' : '');
-        $variables['currentSiteId'] = $redirect->siteId;
+        Craft::$app->view->registerJs('window.redirectEditableSiteData = '. Json::encode($editableSiteData) . ';', View::POS_HEAD);
+        Craft::$app->view->registerAssetBundle(UrlFieldInputAsset::class);
         return $this->renderTemplate('vredirect/_redirects/edit', $variables);
     }
 
@@ -168,10 +170,7 @@ class RedirectsController extends Controller
     public function actionSaveRedirect()
     {
         $isNew = false;
-        $currentUser = Craft::$app->getUser()->getIdentity();
-        if (!$currentUser->can(Plugin::PERMISSION_MANAGE_REDIRECTS)) {
-            return Craft::$app->response->setStatusCode('403', Craft::t('vredirect', 'You lack the required permissions to manage redirects'));
-        }
+        $this->requirePermission(Plugin::PERMISSION_MANAGE_REDIRECTS);
 
         $request = Craft::$app->getRequest();
 
@@ -195,12 +194,24 @@ class RedirectsController extends Controller
             $redirect = new Redirect();
         }
 
-        $redirect->sourceUrl = $request->getBodyParam('sourceUrl');
-        $redirect->destinationUrl = $request->getBodyParam('destinationUrl');
-        $redirect->statusCode = $request->getBodyParam('statusCode');
-        $redirect->type = $request->getBodyParam('type');
+        // If the requested site ID isn't valid, we'll consider it an absolute URL
+        $allowedSiteIds = ArrayHelper::getColumn(Plugin::getInstance()->redirects->getValidSites(), 'id');
+        $destinationSiteId = $request->getBodyParam('destinationSiteId', $redirect->destinationSiteId);
+        if (!in_array($destinationSiteId, $allowedSiteIds, true)) {
+            $destinationSiteId = null;
+        }
+        $redirect->destinationSiteId = $destinationSiteId;
+
+        $redirect->enabled = (bool)$request->getBodyParam('enabled', $redirect->enabled);
+        $redirect->sourceUrl = $request->getBodyParam('sourceUrl', $redirect->sourceUrl);
+        $redirect->destinationUrl = $request->getBodyParam('destinationUrl', $redirect->destinationUrl);
+        $redirect->destinationElementId = $request->getBodyParam('destinationElementId', $redirect->destinationElementId);
+        $redirect->statusCode = $request->getBodyParam('statusCode', $redirect->statusCode);
+        $redirect->type = $request->getBodyParam('type', $redirect->type);
 
         $redirect->siteId = $siteId;
+
+        $redirect->refreshDestinationElement();
 
         $res = Craft::$app->getElements()->saveElement($redirect, true, false);
 
@@ -217,7 +228,7 @@ class RedirectsController extends Controller
                 'redirect' => $redirect
             ]);
 
-            return Craft::$app->response;
+            return null;
         }
 
         $fromCatchAllId = Craft::$app->request->getBodyParam('catchAllRecordId');
