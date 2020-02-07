@@ -452,17 +452,14 @@ class Redirect extends Element
             }
 
             $record->sourceUrl = $this->formatUrl(trim($this->sourceUrl), true);
+
+            // Don't overwrite an existing destinationUrl, just in case...
             if ($this->destinationUrl) {
                 $record->destinationUrl = $this->formatUrl(trim($this->destinationUrl), false);
             }
 
-            if ($this->destinationElementId) {
-                $record->destinationElementId = $this->destinationElementId;
-            }
-
-            if ($this->destinationSiteId) {
-                $record->destinationSiteId = $this->destinationSiteId;
-            }
+            $record->destinationElementId = $this->destinationElementId;
+            $record->destinationSiteId = $this->destinationSiteId;
 
             $record->statusCode = $this->statusCode;
             $record->type = $this->type;
