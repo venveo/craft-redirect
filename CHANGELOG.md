@@ -3,6 +3,7 @@
 ## Unreleased
 ## Fixed
 - Bug where it was impossible to change a redirect site ID to null after it had already been set
+- Bug where there were two "Save" buttons on edit redirect screens
 
 ## 3.0.1 - 2020-02-06
 ## Added
