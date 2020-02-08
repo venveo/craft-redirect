@@ -3,11 +3,6 @@
 /** global: $ */
 
 (function($) {
-    /** global: Craft */
-    /** global: Garnish */
-    /**
-     * Matrix input class
-     */
     Craft.UrlFieldInput = Garnish.Base.extend(
         {
             siteSelectId: null,

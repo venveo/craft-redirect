@@ -5,6 +5,9 @@
 - Bug where it was impossible to change a redirect site ID to null after it had already been set
 - Bug where there were two "Save" buttons on edit redirect screens
 
+## Changed
+- You can now change the site on the 404 list pages without refreshing the page
+
 ## 3.0.1 - 2020-02-06
 ## Added
 - Feed me support for dateCreated and dateUpdated

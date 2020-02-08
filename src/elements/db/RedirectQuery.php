@@ -153,9 +153,6 @@ class RedirectQuery extends ElementQuery
     {
         $this->joinElementTable('venveo_redirects');
 
-
-        //   $this->joinElementTable('elements_sites');
-
         $this->query->select([
             'venveo_redirects.type',
             'venveo_redirects.sourceUrl',
