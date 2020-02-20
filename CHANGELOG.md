@@ -1,5 +1,9 @@
 # Redirect Changelog
 
+## 3.0.3 - 2020-02-20
+## Fixed
+- Bug where clicking the "Save" button did not work on edit redirect pages
+
 ## 3.0.2 - 2020-02-09
 ## Fixed
 - Bug where it was impossible to change a redirect site ID to null after it had already been set
