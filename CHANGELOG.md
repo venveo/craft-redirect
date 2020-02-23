@@ -1,7 +1,7 @@
 # Redirect Changelog
 
 ## Unreleased
-## Fixed
+## Security
 - Missing permission check on 404s table
 
 ## 3.0.4 - 2020-02-22
