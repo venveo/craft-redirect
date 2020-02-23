@@ -97,6 +97,7 @@ class CatchAllController extends Controller
 
     public function actionHitsTable()
     {
+        $this->requirePermission(Plugin::PERMISSION_MANAGE_404S);
         $this->requireAcceptsJson();
         $request = Craft::$app->getRequest();
 
