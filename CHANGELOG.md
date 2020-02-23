@@ -1,5 +1,9 @@
 # Redirect Changelog
 
+## Unreleased
+## Fixed
+- Fixed issue where external redirects would not show the correct value in the destination site dropdown
+
 ## 3.0.3 - 2020-02-20
 ## Fixed
 - Bug where clicking the "Save" button did not work on edit redirect pages
