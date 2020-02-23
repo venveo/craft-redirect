@@ -1,5 +1,14 @@
 # Redirect Changelog
 
+## 3.0.4 - 2020-02-22
+## Fixed
+- Fixed issue where external redirects would not show the correct value in the destination site dropdown
+- Issue with "page" query string not getting removed from redirect logic
+- Don't track 404s with URIs or queries over 255 characters
+
+## Changed
+- Registered 404 URIs will now truncate in the table to prevent the table from blowing up. Hovering a row will show the entire URL
+
 ## 3.0.3 - 2020-02-20
 ## Fixed
 - Bug where clicking the "Save" button did not work on edit redirect pages

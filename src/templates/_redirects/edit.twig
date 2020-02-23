@@ -113,8 +113,8 @@
                     label: "Destination Site"|t('vredirect'),
                     name: 'destinationSiteId',
                     id: 'destinationSiteId',
-                    options: editableSitesOptions|merge([{label: 'External URL'|t('vredirect'), value: 'external'}]),
-                    value: redirect.destinationSiteId ?? craft.app.sites.currentSite.id,
+                    options: editableSitesOptions|merge([{label: 'External URL'|t('vredirect'), value: null}]),
+                    value: redirect.destinationSiteId ?? (redirect.id ? null : craft.app.sites.currentSite.id),
                     toggle: true,
                     errors: redirect.getErrors('destinationSiteId')
                 }) }}

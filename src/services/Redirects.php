@@ -63,7 +63,7 @@ class Redirects extends Component
     {
         // Path with query params
         $fullPath = Craft::$app->request->getFullPath();
-        $queryString = Craft::$app->request->getQueryString();
+        $queryString = Craft::$app->request->getQueryStringWithoutPath();
         $searchUri = $fullPath;
         if ($queryString) {
             $searchUri .= '?' . $queryString;
