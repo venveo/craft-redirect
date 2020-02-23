@@ -21,6 +21,8 @@ use craft\db\ActiveRecord;
  */
 class CatchAllUrl extends ActiveRecord
 {
+    const MAX_URI_LENGTH = 255;
+    const MAX_QUERY_LENGTH = 255;
 
     // Public Methods
     // =========================================================================
@@ -28,6 +30,14 @@ class CatchAllUrl extends ActiveRecord
     public static function tableName(): string
     {
         return '{{%venveo_redirects_catch_all_urls}}';
+    }
+
+    public function rules()
+    {
+        $rules = parent::rules();
+        $rules[] = [['uri'], 'string', 'max' => self::MAX_URI_LENGTH];
+        $rules[] = [['query'], 'string', 'max' => self::MAX_QUERY_LENGTH];
+        return $rules;
     }
 
 }

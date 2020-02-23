@@ -4,6 +4,7 @@
 ## Fixed
 - Fixed issue where external redirects would not show the correct value in the destination site dropdown
 - Issue with "page" query string not getting removed from redirect logic
+- Don't track 404s with URIs or queries over 255 characters
 
 ## 3.0.3 - 2020-02-20
 ## Fixed
