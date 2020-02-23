@@ -15,6 +15,7 @@ use craft\errors\ElementNotFoundException;
 use craft\errors\MissingComponentException;
 use craft\errors\SiteNotFoundException;
 use craft\helpers\ArrayHelper;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
@@ -65,10 +66,7 @@ class RedirectsController extends Controller
      */
     public function actionEditRedirect(int $redirectId = null, Redirect $redirect = null): craft\web\Response
     {
-        $currentUser = Craft::$app->getUser()->getIdentity();
-        if (!$currentUser->can(Plugin::PERMISSION_MANAGE_REDIRECTS)) {
-            return Craft::$app->response->setStatusCode('403', Craft::t('vredirect', 'You lack the required permissions to manage redirects'));
-        }
+        $this->requirePermission(Plugin::PERMISSION_MANAGE_REDIRECTS);
 
         $fromCatchAllId = Craft::$app->request->getQueryParam('from');
         $catchAllRecord = null;
@@ -208,6 +206,12 @@ class RedirectsController extends Controller
         $redirect->destinationElementId = $request->getBodyParam('destinationElementId', $redirect->destinationElementId);
         $redirect->statusCode = $request->getBodyParam('statusCode', $redirect->statusCode);
         $redirect->type = $request->getBodyParam('type', $redirect->type);
+        if (($postDate = $request->getBodyParam('postDate')) !== null) {
+            $redirect->postDate = DateTimeHelper::toDateTime($postDate) ?: null;
+        }
+        if (($expiryDate = $request->getBodyParam('expiryDate')) !== null) {
+            $redirect->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
+        }
 
         $redirect->siteId = $siteId;
 

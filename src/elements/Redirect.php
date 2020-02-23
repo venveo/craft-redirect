@@ -14,6 +14,7 @@ use craft\base\Element;
 use craft\elements\actions\Restore;
 use craft\elements\actions\SetStatus;
 use craft\elements\db\ElementQueryInterface;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
@@ -45,6 +46,10 @@ class Redirect extends Element
 {
     const TYPE_STATIC = 'static';
     const TYPE_DYNAMIC = 'dynamic';
+
+    const STATUS_LIVE = 'live';
+    const STATUS_PENDING = 'pending';
+    const STATUS_EXPIRED = 'expired';
 
     const STATUS_CODE_OPTIONS = [
         '301' => 'Permanent redirect (301)',
@@ -93,6 +98,16 @@ class Redirect extends Element
      * @var int|null destinationSiteId
      */
     public $destinationSiteId;
+
+    /**
+     * @var DateTime
+     */
+    public $postDate;
+
+    /**
+     * @var DateTime
+     */
+    public $expiryDate;
 
     /**
      * @inheritdoc
@@ -246,6 +261,8 @@ class Redirect extends Element
             'destinationUrl' => ['label' => Craft::t('vredirect', 'Destination URL')],
             'hitAt' => ['label' => Craft::t('vredirect', 'Last Hit')],
             'hitCount' => ['label' => Craft::t('vredirect', 'Hit Count')],
+            'postDate' => ['label' => Craft::t('app', 'Post Date')],
+            'expiryDate' => ['label' => Craft::t('app', 'Expiry Date')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
             'statusCode' => ['label' => Craft::t('vredirect', 'Redirect Type')],
         ];
@@ -372,6 +389,32 @@ class Redirect extends Element
     /**
      * @inheritdoc
      */
+    public function getStatus()
+    {
+        $status = parent::getStatus();
+
+        if ($status == self::STATUS_ENABLED && $this->postDate) {
+            $currentTime = DateTimeHelper::currentTimeStamp();
+            $postDate = $this->postDate->getTimestamp();
+            $expiryDate = ($this->expiryDate ? $this->expiryDate->getTimestamp() : null);
+
+            if ($postDate <= $currentTime && ($expiryDate === null || $expiryDate > $currentTime)) {
+                return self::STATUS_LIVE;
+            }
+
+            if ($postDate > $currentTime) {
+                return self::STATUS_PENDING;
+            }
+
+            return self::STATUS_EXPIRED;
+        }
+
+        return $status;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function defineRules(): array
     {
         $rules = parent::defineRules();
@@ -398,6 +441,8 @@ class Redirect extends Element
             return !empty($model->destinationSiteId);
         }];
 
+        $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
+
         return $rules;
     }
 
@@ -417,9 +462,22 @@ class Redirect extends Element
         return parent::beforeDelete();
     }
 
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function beforeSave(bool $isNew): bool
+    {
 
-    // Properties
-    // =========================================================================
+        if ($this->enabled && !$this->postDate) {
+            // Default the post date to the current date/time
+            $this->postDate = new \DateTime();
+            // ...without the seconds
+            $this->postDate->setTimestamp($this->postDate->getTimestamp() - ($this->postDate->getTimestamp() % 60));
+        }
+
+        return parent::beforeSave($isNew);
+    }
 
     /**
      * @inheritdoc
@@ -469,6 +527,16 @@ class Redirect extends Element
             if ($this->dateUpdated) {
                 $record->dateUpdated = $this->dateUpdated;
             }
+            $record->postDate = $this->postDate;
+            $record->expiryDate = $this->expiryDate;
+
+            if ($this->enabled && !$this->postDate) {
+                // Default the post date to the current date/time
+                $this->postDate = new \DateTime();
+                // ...without the seconds
+                $this->postDate->setTimestamp($this->postDate->getTimestamp() - ($this->postDate->getTimestamp() % 60));
+            }
+
 
             $record->save(false);
         }
@@ -547,9 +615,11 @@ class Redirect extends Element
      */
     public function datetimeAttributes(): array
     {
-        $names = parent::datetimeAttributes();
-        $names[] = 'hitAt';
-        return $names;
+        $attributes = parent::datetimeAttributes();
+        $attributes[] = 'hitAt';
+        $attributes[] = 'postDate';
+        $attributes[] = 'expiryDate';
+        return $attributes;
     }
 
     /**

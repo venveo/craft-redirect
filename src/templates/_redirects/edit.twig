@@ -154,6 +154,24 @@
             on: redirect.enabled
         }) }}
 
+        {{ forms.dateTimeField({
+            status: redirect.getAttributeStatus('postDate'),
+            label: "Post Date"|t('app'),
+            id: 'postDate',
+            name: 'postDate',
+            value: (redirect.postDate ? redirect.postDate : null),
+            errors: redirect.getErrors('postDate')
+        }) }}
+
+        {{ forms.dateTimeField({
+            status: redirect.getAttributeStatus('expiryDate'),
+            label: "Expiry Date"|t('app'),
+            id: 'expiryDate',
+            name: 'expiryDate',
+            value: (redirect.expiryDate ? redirect.expiryDate : null),
+            errors: redirect.getErrors('expiryDate')
+        }) }}
+
         {{ forms.selectField({
             label: "Match Type"|t('vredirect'),
             id: 'type',

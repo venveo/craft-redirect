@@ -1,32 +1,35 @@
 # Redirect Changelog
 
 ## Unreleased
-## Security
+### Added
+- Added support support for specifying a post date and expiry date on redirects
+
+### Security
 - Missing permission check on 404s table
 
 ## 3.0.4 - 2020-02-22
-## Fixed
+### Fixed
 - Fixed issue where external redirects would not show the correct value in the destination site dropdown
 - Issue with "page" query string not getting removed from redirect logic
 - Don't track 404s with URIs or queries over 255 characters
 
-## Changed
+### Changed
 - Registered 404 URIs will now truncate in the table to prevent the table from blowing up. Hovering a row will show the entire URL
 
 ## 3.0.3 - 2020-02-20
-## Fixed
+### Fixed
 - Bug where clicking the "Save" button did not work on edit redirect pages
 
 ## 3.0.2 - 2020-02-09
-## Fixed
+### Fixed
 - Bug where it was impossible to change a redirect site ID to null after it had already been set
 - Bug where there were two "Save" buttons on edit redirect screens
 
-## Changed
+### Changed
 - You can now change the site on the 404 list pages without refreshing the page
 
 ## 3.0.1 - 2020-02-06
-## Added
+### Added
 - Feed me support for dateCreated and dateUpdated
 - Dashboard widget
 - Added setting to automatically create element redirects
@@ -35,7 +38,7 @@
 - You may now explicitly select source and destination sites
 - Redirects now have statuses and may be disabled and enabled
 
-## Changed
+### Changed
 - Moved some redirect settings to the sidebar
 - Change sources from 301/302 to static/dynamic
 
