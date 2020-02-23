@@ -18,16 +18,38 @@
     <div id="ignored-vue-admin-table"></div>
 {% endset %}
 
+{% css %}
+.vredirect_catch-all--truncate {
+    max-width: 300px;
+    margin: 0;
+    overflow: hidden;
+    position: relative;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.vuetable-body tr:hover .vredirect_catch-all--truncate {
+    -webkit-line-clamp: initial;
+}
+{% endcss %}
+
 {% js %}
 var columns = [
     {
-        name: '__slot:title', title: Craft.t('vredirect', 'URI'), sortField: 'uri'
+        name: 'uri', title: Craft.t('vredirect', 'URI'), sortField: 'uri',
+        callback: function(value) {
+            return '<div class="vredirect_catch-all--truncate">'+value+'</div>';
+        }
     },
     {
         name: 'hitCount', title: Craft.t('vredirect', 'Hit Count'), sortField: 'hitCount'
     },
     {
-        name: 'referrer', title: Craft.t('vredirect', 'Last Referrer'), sortField: 'referrer'
+        name: 'referrer', title: Craft.t('vredirect', 'Last Referrer'), sortField: 'referrer',
+        callback: function(value) {
+            return '<div class="vredirect_catch-all--truncate">'+value+'</div>';
+        }
     },
     {
         name: 'dateCreated', title: Craft.t('vredirect', 'First Hit'), sortField: 'dateCreated'
