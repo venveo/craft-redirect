@@ -1,6 +1,6 @@
 # Redirect Changelog
 
-## Unreleased
+## 3.0.4 - 2020-02-22
 ## Fixed
 - Fixed issue where external redirects would not show the correct value in the destination site dropdown
 - Issue with "page" query string not getting removed from redirect logic
