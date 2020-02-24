@@ -230,12 +230,7 @@ class Redirect extends Element
                 'orderBy' => 'venveo_redirects.hitAt',
                 'attribute' => 'hitAt'
             ],
-            'venveo_redirects.statusCode' => Craft::t('vredirect', 'Redirect Type'),
-            [
-                'label' => Craft::t('vredirect', 'Hit Count'),
-                'orderBy' => 'venveo_redirects.hitCount',
-                'attribute' => 'hitCount'
-            ],
+            'venveo_redirects.hitCount' => Craft::t('vredirect', 'Hit Count'),
             [
                 'label' => Craft::t('app', 'Date Created'),
                 'orderBy' => 'elements.dateCreated',
