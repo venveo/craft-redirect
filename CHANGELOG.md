@@ -4,6 +4,9 @@
 ### Added
 - Added support support for specifying a post date and expiry date on redirects
 
+### Changed
+- Don't show the site picker on the edit redirect screen if there's only one editable site
+
 ### Security
 - Missing permission check on 404s table
 

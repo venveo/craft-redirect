@@ -74,9 +74,12 @@
     {% endif %}
 
     <div>
+        {% if editableSitesOptions|length == 1 %}
+            <input type="hidden" id="sourceSiteId" name="siteId" value="{{ sourceSiteId }}" />
+        {% else %}
         {{ forms.selectField({
             label: "Source Site"|t('vredirect'),
-            first: true,
+            first: editableSitesOptions|length > 1,
             name: 'siteId',
             id: 'sourceSiteId',
             options: editableSitesOptions,
@@ -84,10 +87,12 @@
             toggle: true,
             errors: redirect.getErrors('siteId')
         }) }}
+        {% endif %}
 
 
         {{ self.siteUrlField({
             label: "Source URI"|t('vredirect'),
+            first: editableSitesOptions|length == 1,
             id: 'sourceUri',
             name: 'sourceUrl',
             value: redirect.sourceUrl ?? catchAllUrl ?? '',
