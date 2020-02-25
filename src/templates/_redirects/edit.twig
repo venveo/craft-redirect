@@ -52,7 +52,7 @@
     {{ actionInput('vredirect/redirects/save-redirect') }}
 
     {% if catchAllRecord is defined %}
-    <p class="first">{{"You're creating a redirect from a registered 404. Once you save this redirect, that 404 entry will be deleted."|t('vredirect')}}</p>
+        <p class="first">{{ "You're creating a redirect from a registered 404. Once you save this redirect, that 404 entry will be deleted."|t('vredirect') }}</p>
     {% endif %}
 
     {% set catchAllUrl = null %}
@@ -73,62 +73,75 @@
         {% set sourceSiteId = catchAllRecord.siteId %}
     {% endif %}
 
-        <div>
-            {{ forms.selectField({
-                label: "Source Site"|t('vredirect'),
-                first: true,
-                name: 'siteId',
-                id: 'sourceSiteId',
-                options: editableSitesOptions,
-                value: sourceSiteId,
-                toggle: true,
-                errors: redirect.getErrors('siteId')
-            }) }}
+    <div>
+        {% if editableSitesOptions|length == 1 %}
+            <input type="hidden" id="sourceSiteId" name="siteId" value="{{ sourceSiteId }}" />
+        {% else %}
+        {{ forms.selectField({
+            label: "Source Site"|t('vredirect'),
+            first: editableSitesOptions|length > 1,
+            name: 'siteId',
+            id: 'sourceSiteId',
+            options: editableSitesOptions,
+            value: sourceSiteId,
+            toggle: true,
+            errors: redirect.getErrors('siteId')
+        }) }}
+        {% endif %}
 
 
-            {{ self.siteUrlField({
-                label: "Source URI"|t('vredirect'),
-                id: 'sourceUri',
-                name: 'sourceUrl',
-                value: redirect.sourceUrl ?? catchAllUrl ?? '',
-                errors: redirect.getErrors('sourceUrl'),
-                required: true
-            }) }}
+        {{ self.siteUrlField({
+            label: "Source URI"|t('vredirect'),
+            first: editableSitesOptions|length == 1,
+            id: 'sourceUri',
+            name: 'sourceUrl',
+            value: redirect.sourceUrl ?? catchAllUrl ?? '',
+            errors: redirect.getErrors('sourceUrl'),
+            required: true
+        }) }}
 
-            {% if redirect.destinationElementId %}
-                <div class="field">
-                    <div class="heading">
-                        <label class="required">{{ 'Target Element'|t('vredirect') }}</label>
-                        <div class="instructions"><p>{{ 'This redirect is tied to an element and may not be edited.'|t('vredirect') }}</p>
-                        </div>
-                    </div>
-                    <div class="input ltr">
-                        {% include '_elements/element' with {
-                            element: craft.app.elements.elementById(redirect.destinationElementId, null, redirect.destinationSiteId),
-                        } %}
+        {% if redirect.destinationElementId %}
+            <div class="field">
+                <div class="heading">
+                    <label class="required">{{ 'Target Element'|t('vredirect') }}</label>
+                    <div class="instructions">
+                        <p>{{ 'This redirect is tied to an element and may not be edited.'|t('vredirect') }}</p>
                     </div>
                 </div>
-            {% else %}
-                {{ forms.selectField({
-                    label: "Destination Site"|t('vredirect'),
-                    name: 'destinationSiteId',
-                    id: 'destinationSiteId',
-                    options: editableSitesOptions|merge([{label: 'External URL'|t('vredirect'), value: null}]),
-                    value: redirect.destinationSiteId ?? (redirect.id ? null : craft.app.sites.currentSite.id),
-                    toggle: true,
-                    errors: redirect.getErrors('destinationSiteId')
-                }) }}
+                <div class="input ltr">
+                    <div class="elementselect">
+                        <div class="elements">
+                            {% include "_elements/element" with {
+                                context: 'field',
+                                element: craft.app.elements.elementById(redirect.destinationElementId, null, redirect.destinationSiteId),
+                            } %}
+                        </div>
+                    </div>
 
-                {{ self.siteUrlField({
-                    label: "Destination URL"|t('vredirect'),
-                    name: 'destinationUrl',
-                    id: 'destinationUrl',
-                    value: redirect.destinationUrl,
-                    errors: redirect.getErrors('destinationUrl'),
-                    required: true
-                }) }}
-            {% endif %}
-        </div>
+                </div>
+            </div>
+        {% else %}
+            {{ forms.selectField({
+                label: "Destination Site"|t('vredirect'),
+                name: 'destinationSiteId',
+                id: 'destinationSiteId',
+                options: editableSitesOptions|merge([{label: 'External URL'|t('vredirect'), value: null}]),
+                value: redirect.destinationSiteId ?? (redirect.id ? null : craft.app.sites.currentSite.id),
+                toggle: true,
+                errors: redirect.getErrors('destinationSiteId')
+            }) }}
+
+            {{ self.siteUrlField({
+                label: "Destination URL"|t('vredirect'),
+                name: 'destinationUrl',
+                id: 'destinationUrl',
+                value: redirect.destinationUrl,
+                errors: redirect.getErrors('destinationUrl'),
+                required: true
+            }) }}
+            <hr>
+        {% endif %}
+    </div>
 
     {% js %}
         window.redirectSourceUriField = new Craft.UrlFieldInput('sourceSiteId', 'sourceUri-field');
@@ -144,6 +157,24 @@
             id: 'enabled',
             name: 'enabled',
             on: redirect.enabled
+        }) }}
+
+        {{ forms.dateTimeField({
+            status: redirect.getAttributeStatus('postDate'),
+            label: "Post Date"|t('app'),
+            id: 'postDate',
+            name: 'postDate',
+            value: (redirect.postDate ? redirect.postDate : null),
+            errors: redirect.getErrors('postDate')
+        }) }}
+
+        {{ forms.dateTimeField({
+            status: redirect.getAttributeStatus('expiryDate'),
+            label: "Expiry Date"|t('app'),
+            id: 'expiryDate',
+            name: 'expiryDate',
+            value: (redirect.expiryDate ? redirect.expiryDate : null),
+            errors: redirect.getErrors('expiryDate')
         }) }}
 
         {{ forms.selectField({
@@ -163,25 +194,25 @@
             errors: redirect.getErrors('statusCode')
         }) }}
     </div>
-{% if redirect.id %}
-<div class="meta read-only">
-    <div class="data">
-        <h5 class="heading">{{ "Date Created"|t('app') }}</h5>
-        <div class="value">{{ redirect.dateCreated|datetime }}</div>
-    </div>
-    <div class="data">
-        <h5 class="heading">{{ "Date Updated"|t('app') }}</h5>
-        <div class="value">{{ redirect.dateUpdated|datetime('short') }}</div>
-    </div>
-    <div class="data">
-        <h5 class="heading">{{ "Last Hit"|t('app') }}</h5>
-        <div class="value">{{ redirect.hitAt|datetime('short') }}</div>
-    </div>
-    <div class="data">
-        <h5 class="heading">{{'Hit Count'|t('vredirect')}}</h5>
-        <div class="value">{{ redirect.hitCount }}</div>
-    </div>
-</div>
-{% endif %}
+    {% if redirect.id %}
+        <div class="meta read-only">
+            <div class="data">
+                <h5 class="heading">{{ "Date Created"|t('app') }}</h5>
+                <div class="value">{{ redirect.dateCreated|datetime }}</div>
+            </div>
+            <div class="data">
+                <h5 class="heading">{{ "Date Updated"|t('app') }}</h5>
+                <div class="value">{{ redirect.dateUpdated|datetime('short') }}</div>
+            </div>
+            <div class="data">
+                <h5 class="heading">{{ "Last Hit"|t('app') }}</h5>
+                <div class="value">{{ redirect.hitAt|datetime('short') }}</div>
+            </div>
+            <div class="data">
+                <h5 class="heading">{{ 'Hit Count'|t('vredirect') }}</h5>
+                <div class="value">{{ redirect.hitCount }}</div>
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}
 
