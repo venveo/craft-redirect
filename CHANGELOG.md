@@ -1,6 +1,6 @@
 # Redirect Changelog
 
-## Unreleased
+## 3.0.5 - 2020-02-25
 ### Added
 - Added support support for specifying a post date and expiry date on redirects
 
