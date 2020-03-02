@@ -10,7 +10,6 @@
 namespace venveo\redirect\migrations;
 
 use craft\db\Migration;
-use craft\mail\transportadapters\Php;
 
 class Install extends Migration
 {
@@ -34,10 +33,12 @@ class Install extends Migration
             'sourceUrl' => $this->string(255),
             'destinationUrl' => $this->string(255),
             'destinationElementId' => $this->integer()->null()->defaultValue(null),
-            'destinationElementSiteId' => $this->integer()->null()->defaultValue(null),
+            'destinationSiteId' => $this->integer()->null()->defaultValue(null),
             'statusCode' => $this->string(3),
             'hitCount' => $this->integer()->unsigned()->notNull()->defaultValue(0),
             'hitAt' => $this->dateTime(),
+            'postDate' => $this->dateTime(),
+            'expiryDate' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'dateDeleted' => $this->dateTime()->null(),
@@ -70,6 +71,9 @@ class Install extends Migration
         $this->createIndex($this->db->getIndexName('{{%venveo_redirects}}', ['sourceUrl'], false), '{{%venveo_redirects}}', ['sourceUrl'], false);
         $this->createIndex($this->db->getIndexName('{{%venveo_redirects_catch_all_urls}}', 'uri', false), '{{%venveo_redirects_catch_all_urls}}', 'uri', false);
         $this->createIndex($this->db->getIndexName('{{%venveo_redirects}}', 'type'), '{{%venveo_redirects}}', 'type');
+
+        $this->createIndex(null, '{{%venveo_redirects}}', ['postDate'], false);
+        $this->createIndex(null, '{{%venveo_redirects}}', ['expiryDate'], false);
     }
 
     // Protected Methods

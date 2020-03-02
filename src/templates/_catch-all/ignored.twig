@@ -3,30 +3,53 @@
 {% set title = "Ignored 404 URIs"|t('vredirect') %}
 
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+{% do view.registerAssetBundle('venveo\\redirect\\assetbundles\\admintablesiteswitcher\\AdminTableSiteSwitcher') -%}
 
 {% block contextMenu %}
+    <div id="redirect-site-menu">
     {% set siteIds = craft.app.sites.getEditableSiteIds() %}
     {% if siteIds|length > 1 %}
-    {% include '_elements/sitemenu' with {
-        urlFormat: cpUrl('redirect/catch-all/ignored/{id}')
-    } only %}
+    {% include '_elements/sitemenu' %}
     {% endif %}
+    </div>
 {% endblock %}
 
 {% set content %}
     <div id="ignored-vue-admin-table"></div>
 {% endset %}
 
+{% css %}
+.vredirect_catch-all--truncate {
+    max-width: 300px;
+    margin: 0;
+    overflow: hidden;
+    position: relative;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.vuetable-body tr:hover .vredirect_catch-all--truncate {
+    -webkit-line-clamp: initial;
+}
+{% endcss %}
+
 {% js %}
 var columns = [
     {
-        name: '__slot:title', title: Craft.t('vredirect', 'URI'), sortField: 'uri'
+        name: 'uri', title: Craft.t('vredirect', 'URI'), sortField: 'uri',
+        callback: function(value) {
+            return '<div class="vredirect_catch-all--truncate">'+value+'</div>';
+        }
     },
     {
         name: 'hitCount', title: Craft.t('vredirect', 'Hit Count'), sortField: 'hitCount'
     },
     {
-        name: 'referrer', title: Craft.t('vredirect', 'Last Referrer'), sortField: 'referrer'
+        name: 'referrer', title: Craft.t('vredirect', 'Last Referrer'), sortField: 'referrer',
+        callback: function(value) {
+            return '<div class="vredirect_catch-all--truncate">'+value+'</div>';
+        }
     },
     {
         name: 'dateCreated', title: Craft.t('vredirect', 'First Hit'), sortField: 'dateCreated'
@@ -64,7 +87,7 @@ var actions = [
 ];
 
 
-new Craft.VueAdminTable({
+window.adminTableVm = new Craft.VueAdminTable().init({
     deleteAction: Craft.getActionUrl('vredirect/catch-all/delete-one'),
     columns: columns,
     actions: actions,
@@ -76,4 +99,6 @@ new Craft.VueAdminTable({
     searchPlaceholder: Craft.t('vredirect', 'Search for ignored 404s'),
     tableDataEndpoint: Craft.getActionUrl('vredirect/catch-all/hits-table?siteId='+ Craft.siteId + '&ignored=true')
 });
+
+new Craft.AdminTableSiteSwitcher('#redirect-site-menu', adminTableVm, Craft.siteId);
 {% endjs %}

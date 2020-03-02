@@ -43,6 +43,11 @@ class CatchAll extends Component
 
         $query = $queryString != '' ? $queryString : null;
 
+        // Not interested in storing giant requests.
+        if (strlen($uri) > CatchAllUrlRecord::MAX_URI_LENGTH || strlen($query) > CatchAllUrlRecord::MAX_QUERY_LENGTH) {
+            return true;
+        }
+
         // See if this URI already exists
         $params = [
             'uri' => $uri,

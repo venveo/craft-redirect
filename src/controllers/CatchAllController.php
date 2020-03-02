@@ -97,6 +97,7 @@ class CatchAllController extends Controller
 
     public function actionHitsTable()
     {
+        $this->requirePermission(Plugin::PERMISSION_MANAGE_404S);
         $this->requireAcceptsJson();
         $request = Craft::$app->getRequest();
 
@@ -149,15 +150,15 @@ class CatchAllController extends Controller
 
         $rows = [];
         foreach ($registered404s as $item) {
-            $title = $item['uri'];
+            $uri = $item['uri'];
             if (isset($item['query']) && $item['query']) {
-                $title .= '?' . $item['query'];
+                $uri .= '?' . $item['query'];
             }
             $rows[] = [
                 'id' => $item['id'],
                 'siteId' => $item['siteId'],
                 'ignored' => $item['ignored'],
-                'title' => Html::encode($title),
+                'uri' => Html::encode($uri),
                 'referrer' => Html::encode($item['referrer']),
                 'hitCount' => $item['hitCount'],
                 'dateCreated' => $item['dateCreated'],
