@@ -1,0 +1,18 @@
+{% extends 'vredirect/_layouts/cp' %}
+{% set selectedSubnavItem = 'tools' %}
+{% set title = 'Redirect Tools'|t('vredirect') %}
+
+{% block sidebar %}
+    <nav>
+        <ul>
+            {% for tool in tools %}
+                {% set selected = tool.id == id %}
+                <li>
+                    <a class="{% if selected %}sel{% endif %}" href="{{ url('redirect/tools/'~tool.id) }}">
+                        <span class="label">{{ tool.displayName }}</span>
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </nav>
+{% endblock %}

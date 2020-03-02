@@ -1,0 +1,15 @@
+{% extends 'vredirect/_layouts/tools' %}
+
+{% block content %}
+    <p>
+        Enter a list of absolute or relative URLs to validate against. One per line
+    </p>
+    <form method="post" action="">
+        {{ actionInput('vredirect/tools/run-url-validator') }}
+        {{ csrfInput() }}
+        <div>
+        <textarea name="urls" class="input text flex fullwidth"></textarea>
+        </div>
+        <input type="submit" class="btn primary" value="Validate URLs"/>
+    </form>
+{% endblock %}

@@ -163,6 +163,13 @@ class Plugin extends BasePlugin
             ];
         }
 
+        if ($currentUser->can('vredirect:404s:tools')) {
+            $subnavItems['tools'] = [
+                'label' => Craft::t('vredirect', 'Tools'),
+                'url' => 'redirect/tools'
+            ];
+        }
+
         return [
             'url' => 'redirect',
             'label' => Craft::t('vredirect', 'Site Redirects'),
@@ -217,6 +224,24 @@ class Plugin extends BasePlugin
         );
     }
 
+    protected function createSettingsModel(): Settings
+    {
+        return new Settings();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function settingsHtml(): string
+    {
+        return Craft::$app->view->renderTemplate(
+            'vredirect/settings',
+            [
+                'settings' => $this->getSettings()
+            ]
+        );
+    }
+
     private function registerCpRoutes()
     {
         Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function (RegisterUrlRulesEvent $event) {
@@ -234,6 +259,9 @@ class Plugin extends BasePlugin
                 'redirect/redirects' => 'vredirect/redirects/index',
                 'redirect/redirects/new' => 'vredirect/redirects/edit-redirect',
                 'redirect/redirects/<redirectId:\d+>' => 'vredirect/redirects/edit-redirect',
+
+                'redirect/tools' => 'vredirect/tools/index',
+                'redirect/tools/<toolId:{slug}>' => 'vredirect/tools/index',
             ]);
         });
     }
@@ -262,24 +290,6 @@ class Plugin extends BasePlugin
                 ]
             ];
         });
-    }
-
-    protected function createSettingsModel(): Settings
-    {
-        return new Settings();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function settingsHtml(): string
-    {
-        return Craft::$app->view->renderTemplate(
-            'vredirect/settings',
-            [
-                'settings' => $this->getSettings()
-            ]
-        );
     }
 
     private function registerWidgets()
