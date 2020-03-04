@@ -137,6 +137,10 @@ class Plugin extends BasePlugin
     */
     public function getCpNavItem()
     {
+        $ret = parent::getCpNavItem();
+
+        $ret['label'] = self::t('Site Redirects');
+
         $subnavItems = [];
         $currentUser = Craft::$app->getUser()->getIdentity();
         if ($currentUser->can('vredirect:redirects:manage')) {
@@ -163,12 +167,9 @@ class Plugin extends BasePlugin
             ];
         }
 
-        return [
-            'url' => 'redirect',
-            'label' => Craft::t('vredirect', 'Site Redirects'),
-            'fontIcon' => 'share',
-            'subnav' => $subnavItems
-        ];
+        $ret['subnav'] = $subnavItems;
+        $ret['url'] = 'redirect';
+        return $ret;
     }
 
     public function init()
@@ -313,5 +314,19 @@ class Plugin extends BasePlugin
         Event::on(\craft\services\Elements::class, \craft\services\Elements::EVENT_AFTER_RESTORE_ELEMENT, function (ElementEvent $e) {
             Plugin::getInstance()->redirects->handleElementRestored($e);
         });
+    }
+
+    /**
+     * @param $message
+     * @param array $params
+     * @param null $language
+     * @return string
+     * @see Craft::t()
+     *
+     * @since 2.2.0
+     */
+    public static function t($message, $params = [], $language = null)
+    {
+        return Craft::t('vredirect', $message, $params, $language);
     }
 }
