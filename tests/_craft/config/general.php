@@ -1,6 +1,5 @@
 <?php
 return [
-    '*' => [
-        'omitScriptNameInUrls' => true,
-    ],
+    'devMode' => true,
+    'omitScriptNameInUrls' => true
 ];

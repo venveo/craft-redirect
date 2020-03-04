@@ -3,9 +3,16 @@
 # Suite for unit or integration tests.
 
 actor: UnitTester
+coverage:
+    enabled: true
+    include:
+        - src/*
+    exclude:
+        - src/icon.svg
+        - src/templates/*
 modules:
     enabled:
-        - \craft\test\Craft
         - Asserts
         - \Helper\Unit
-    step_decorators: ~        
+        - \craft\test\Craft
+    step_decorators: ~

@@ -16,10 +16,6 @@ modules:
             entryScript: 'index.php'
             projectConfig: {}
             migrations: []
-            plugins:
-                vredirect:
-                    class: '\venveo\redirect\Plugin'
-                    handle: vredirect
-            cleanup: false
-            transaction: true
-            dbSetup: {clean: true, setupCraft: true}
+            cleanup: true
+            transaction: false
+            dbSetup: {clean: false, setupCraft: false}
