@@ -13,6 +13,9 @@
 
             init: function(siteMenuSelector, adminTableVm, siteId) {
                 this.$siteMenuBtn = $(siteMenuSelector).find('.sitemenubtn:first');
+                if (!this.$siteMenuBtn.length) {
+                    return;
+                }
                 this.adminTableVm = adminTableVm;
 
                 this.siteMenu = this.$siteMenuBtn.menubtn().data('menubtn').menu;

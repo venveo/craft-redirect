@@ -1,5 +1,9 @@
 # Redirect Changelog
 
+## Unreleased
+### Fixed
+- Console error when viewing 404s on a single-site install
+
 ## 3.0.6 - 2020-03-04
 ### Changed
 - New icons
