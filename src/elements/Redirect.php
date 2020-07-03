@@ -52,8 +52,8 @@ class Redirect extends Element
     const STATUS_EXPIRED = 'expired';
 
     const STATUS_CODE_OPTIONS = [
-        '301' => 'Permanent redirect (301)',
-        '302' => 'Temporarily redirect (302)'
+        '301' => 'Permanent (301)',
+        '302' => 'Temporarily (302)'
     ];
 
     const TYPE_OPTIONS = [
