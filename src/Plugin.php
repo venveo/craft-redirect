@@ -292,7 +292,7 @@ class Plugin extends BasePlugin
 
     private function registerElementEvents()
     {
-        if (!Plugin::getInstance()->getSettings()->createElementRedirects) {
+        if (!self::getInstance()->getSettings()->createElementRedirects) {
             return;
         }
 
@@ -300,7 +300,7 @@ class Plugin extends BasePlugin
             /** @var Element $element */
             $element = $e->element;
 
-            if ($e->isNew || !$element->getUrl() || ElementHelper::isDraftOrRevision($element)) {
+            if ($e->isNew || ElementHelper::isDraftOrRevision($element) || !$element->getUrl()) {
                 return;
             }
 
