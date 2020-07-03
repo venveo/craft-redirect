@@ -194,7 +194,7 @@ class RedirectsController extends Controller
 
         // If the requested site ID isn't valid, we'll consider it an absolute URL
         $allowedSiteIds = ArrayHelper::getColumn(Plugin::getInstance()->redirects->getValidSites(), 'id');
-        $destinationSiteId = $request->getBodyParam('destinationSiteId', $redirect->destinationSiteId);
+        $destinationSiteId = (int)$request->getBodyParam('destinationSiteId', $redirect->destinationSiteId);
         if (!in_array($destinationSiteId, $allowedSiteIds, true)) {
             $destinationSiteId = null;
         }

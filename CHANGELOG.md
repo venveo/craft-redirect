@@ -3,6 +3,7 @@
 ## Unreleased
 ### Fixed
 - Console error when viewing 404s on a single-site install
+- Bug that could prevent redirects from being saved
 
 ## 3.0.6 - 2020-03-04
 ### Changed
