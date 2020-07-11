@@ -1,6 +1,10 @@
 # Redirect Changelog
 
 ## Unreleased
+
+### Added
+- Console controller for bulk-resaving redirects (vredirect/resave/redirects)
+
 ### Fixed
 - Console error when viewing 404s on a single-site install
 - Bug that could prevent redirects from being saved

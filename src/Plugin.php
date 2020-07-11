@@ -178,7 +178,11 @@ class Plugin extends BasePlugin
         self::$plugin = $this;
         $settings = self::$plugin->getSettings();
 
-        $this->registerCpRoutes();
+        if (Craft::$app->request->isConsoleRequest) {
+            $this->controllerNamespace = 'venveo\redirect\controllers\console';
+        } else {
+            $this->registerCpRoutes();
+        }
         $this->registerFeedMeElement();
         $this->registerElementEvents();
         $this->registerWidgets();
