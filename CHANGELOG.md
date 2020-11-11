@@ -1,6 +1,6 @@
 # Redirect Changelog
 
-## Unreleased
+## 3.0.7 - 2020-11-11
 
 ### Added
 - Console controller for bulk-resaving redirects (vredirect/resave/redirects)
