@@ -176,6 +176,7 @@ class Plugin extends BasePlugin
     {
         parent::init();
         self::$plugin = $this;
+        /** @var Settings $settings */
         $settings = self::$plugin->getSettings();
 
         if (Craft::$app->request->isConsoleRequest) {
