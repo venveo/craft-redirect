@@ -1,5 +1,10 @@
 # Redirect Changelog
 
+## 3.0.8 - 2021-06-17
+
+### Changed
+- Remove php constraint to allow PHP 8 installations
+
 ## 3.0.7 - 2020-11-11
 
 ### Added
