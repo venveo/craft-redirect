@@ -1,5 +1,15 @@
 # Redirect Changelog
 
+## 3.0.9 - Unreleased
+### Added
+- Automatic redirects will now get created when an entry is moved in the structure.
+
+### Fixed
+- Fixed automatic-redirect creation not working on Craft 3.7+
+
+### Changed
+- Requires Craft 3.7.5+
+
 ## 3.0.8 - 2021-06-17
 
 ### Changed

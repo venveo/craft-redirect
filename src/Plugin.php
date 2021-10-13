@@ -21,9 +21,9 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\feedme\events\RegisterFeedMeElementsEvent;
-use craft\feedme\services\Elements;
-use craft\helpers\ElementHelper;
+use craft\feedme\services\Elements as FeedMeElementsService;
 use craft\services\Dashboard;
+use craft\services\Elements;
 use craft\services\Gc;
 use craft\services\UserPermissions;
 use craft\web\ErrorHandler;
@@ -250,7 +250,7 @@ class Plugin extends BasePlugin
     private function registerFeedMeElement()
     {
         if (Craft::$app->plugins->isPluginEnabled('feed-me') && class_exists(\craft\feedme\Plugin::class)) {
-            Event::on(Elements::class, Elements::EVENT_REGISTER_FEED_ME_ELEMENTS, function (RegisterFeedMeElementsEvent $e) {
+            Event::on(FeedMeElementsService::class, FeedMeElementsService::EVENT_REGISTER_FEED_ME_ELEMENTS, function (RegisterFeedMeElementsEvent $e) {
                 $e->elements[] = FeedMeRedirect::class;
             });
         }
@@ -301,22 +301,56 @@ class Plugin extends BasePlugin
             return;
         }
 
-        Event::on(\craft\services\Elements::class, \craft\services\Elements::EVENT_BEFORE_SAVE_ELEMENT, function (ElementEvent $e) {
+        Event::on(Elements::class, Elements::EVENT_BEFORE_SAVE_ELEMENT, function (ElementEvent $e) {
             /** @var Element $element */
             $element = $e->element;
 
-            if ($e->isNew || ElementHelper::isDraftOrRevision($element) || !$element->getUrl()) {
+            $shouldProcess = !$element->getIsDraft() && !$element->isProvisionalDraft && $element->isCanonical && !$element->firstSave;
+            if (!$shouldProcess) {
                 return;
             }
 
-            Plugin::getInstance()->redirects->handleElementSaved($e);
+            Plugin::getInstance()->redirects->handleBeforeElementSaved($e);
+        });
+        Event::on(Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT, function (ElementEvent $e) {
+            /** @var Element $element */
+            $element = $e->element;
+
+            $shouldProcess = !$element->getIsDraft() && !$element->isProvisionalDraft && $element->isCanonical && !$element->firstSave;
+            if (!$shouldProcess) {
+                return;
+            }
+
+            Plugin::getInstance()->redirects->handleAfterElementSaved($e);
+        });
+        Event::on(Elements::class, Elements::EVENT_BEFORE_UPDATE_SLUG_AND_URI, function (ElementEvent $e) {
+            /** @var Element $element */
+            $element = $e->element;
+
+            $shouldProcess = !$element->getIsDraft() && !$element->isProvisionalDraft && $element->isCanonical && !$element->firstSave;
+            if (!$shouldProcess) {
+                return;
+            }
+            Plugin::getInstance()->redirects->handleBeforeElementSaved($e);
+        });
+        Event::on(Elements::class, Elements::EVENT_AFTER_UPDATE_SLUG_AND_URI, function (ElementEvent $e) {
+            /** @var Element $element */
+            $element = $e->element;
+
+            $shouldProcess = !$element->getIsDraft() && !$element->isProvisionalDraft && $element->isCanonical && !$element->firstSave;
+            if (!$shouldProcess) {
+                return;
+            }
+            Plugin::getInstance()->redirects->handleAfterElementSaved($e);
         });
 
-        Event::on(\craft\services\Elements::class, \craft\services\Elements::EVENT_BEFORE_DELETE_ELEMENT, function (DeleteElementEvent $e) {
+
+
+        Event::on(Elements::class, Elements::EVENT_BEFORE_DELETE_ELEMENT, function (DeleteElementEvent $e) {
             Plugin::getInstance()->redirects->handleElementDeleted($e);
         });
 
-        Event::on(\craft\services\Elements::class, \craft\services\Elements::EVENT_AFTER_RESTORE_ELEMENT, function (ElementEvent $e) {
+        Event::on(Elements::class, Elements::EVENT_AFTER_RESTORE_ELEMENT, function (ElementEvent $e) {
             Plugin::getInstance()->redirects->handleElementRestored($e);
         });
     }

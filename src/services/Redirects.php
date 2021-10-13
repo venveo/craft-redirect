@@ -10,6 +10,7 @@ namespace venveo\redirect\services;
 
 use Craft;
 use craft\base\Element;
+use craft\errors\ElementNotFoundException;
 use craft\events\DeleteElementEvent;
 use craft\events\ElementEvent;
 use craft\helpers\Db;
@@ -34,9 +35,12 @@ use yii\web\HttpException;
 /**
  * Class Redirects service.
  *
+ *
+ * @property-read \craft\models\Site[] $validSites
  */
 class Redirects extends Component
 {
+    private static array $elementUrisChanging = [];
     /**
      * Returns a redirect by its ID.
      *
@@ -176,14 +180,23 @@ class Redirects extends Component
      *
      * @param ElementEvent $e
      */
-    public function handleElementSaved(ElementEvent $e)
+    public function handleBeforeElementSaved(ElementEvent $e): void
     {
         $element = $e->element;
         $elementId = $element->id;
         $siteId = $element->siteId;
-        $oldUri = $element->uri;
+        if (!isset(static::$elementUrisChanging[$siteId])) {
+            static::$elementUrisChanging[$siteId] = [];
+        }
+        // Grab the current URI from the database and store it
+        $oldUri = Craft::$app->elements->getElementById($elementId, null, $siteId)->uri;
+        if ($oldUri) {
+            static::$elementUrisChanging[$siteId][$elementId] = $oldUri;
+        }
+    }
 
-        Event::on(Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT, function (ElementEvent $e) use ($oldUri, $siteId, $elementId) {
+    public function handleAfterElementSaved(ElementEvent $e): void
+    {
             /** @var Element $savedElement */
             $savedElement = $e->element;
             if ($savedElement instanceof Redirect) {
@@ -192,31 +205,45 @@ class Redirects extends Component
             if ($e->isNew || $savedElement->propagating || ElementHelper::isDraftOrRevision($savedElement)) {
                 return;
             }
-
-            if ($savedElement->id !== $elementId || $savedElement->siteId !== $siteId) {
+            $siteId = $savedElement->siteId;
+            $elementId = $savedElement->id;
+            $oldUri = static::$elementUrisChanging[$siteId][$elementId] ?? null;
+            $newUri = $savedElement->uri;
+            // If there were no URI changes, let's bail
+            if (!$oldUri || !$newUri || $oldUri === $newUri) {
+                return;
+            }
+            // If there's already a redirect for this, bail
+            $exists = Redirect::find()
+                ->destinationElementId($elementId)
+                ->siteId($siteId)
+                ->destinationSiteId($siteId)
+                ->sourceUrl($oldUri)->exists();
+            if ($exists) {
+                unset(static::$elementUrisChanging[$siteId][$elementId]);
                 return;
             }
 
-            if ($oldUri !== $savedElement->uri) {
-                $exists = Redirect::find()
-                    ->destinationElementId($savedElement->getSourceId())
-                    ->siteId($siteId)
-                    ->destinationSiteId($siteId)
-                    ->sourceUrl($oldUri)->exists();
-                if ($exists) {
-                    return;
-                }
+            $redirect = new Redirect();
+            $redirect->siteId = $siteId;
+            $redirect->sourceUrl = $oldUri;
+            $redirect->destinationElementId = $elementId;
+            $redirect->destinationSiteId = $siteId;
+            $redirect->type = Redirect::TYPE_STATIC;
+            $redirect->statusCode = '301';
 
-                $redirect = new Redirect();
-                $redirect->siteId = $siteId;
-                $redirect->sourceUrl = $oldUri;
-                $redirect->destinationElementId = $savedElement->getSourceId();
-                $redirect->destinationSiteId = $siteId;
-                $redirect->type = Redirect::TYPE_STATIC;
-                $redirect->statusCode = '301';
-                Craft::$app->elements->saveElement($redirect);
-            }
-        });
+        try {
+            Craft::$app->elements->saveElement($redirect);
+            unset(static::$elementUrisChanging[$siteId][$elementId]);
+        } catch (ElementNotFoundException $e) {
+            // This can't happen in this scenario.
+        } catch (\yii\base\Exception $e) {
+            Craft::error('Failed to save auto-redirect: '. $e->getMessage(), __METHOD__);
+            Craft::error($e->getTraceAsString(), __METHOD__);
+        } catch (Throwable $e) {
+            Craft::error('Failed to save auto-redirect: '. $e->getMessage(), __METHOD__);
+            Craft::error($e->getTraceAsString(), __METHOD__);
+        }
     }
 
     /**
