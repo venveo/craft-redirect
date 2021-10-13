@@ -13,6 +13,7 @@ namespace venveo\redirect;
 use Craft;
 use craft\base\Element;
 use craft\base\Plugin as BasePlugin;
+use craft\elements\Entry;
 use craft\errors\MigrationException;
 use craft\events\DeleteElementEvent;
 use craft\events\ElementEvent;
@@ -20,16 +21,21 @@ use craft\events\ExceptionEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
+use craft\events\TemplateEvent;
 use craft\feedme\events\RegisterFeedMeElementsEvent;
 use craft\feedme\services\Elements as FeedMeElementsService;
+use craft\helpers\Json;
 use craft\services\Dashboard;
 use craft\services\Elements;
 use craft\services\Gc;
 use craft\services\UserPermissions;
 use craft\web\ErrorHandler;
 use craft\web\UrlManager;
+use craft\web\View;
 use Twig\Error\RuntimeError;
+use venveo\redirect\assetbundles\elementredirectslideout\ElementRedirectSlideout;
 use venveo\redirect\elements\FeedMeRedirect;
+use venveo\redirect\elements\Redirect;
 use venveo\redirect\models\Settings;
 use venveo\redirect\records\CatchAllUrl;
 use venveo\redirect\services\CatchAll;
@@ -172,6 +178,20 @@ class Plugin extends BasePlugin
         return $ret;
     }
 
+    /**
+     * @param $message
+     * @param array $params
+     * @param null $language
+     * @return string
+     * @see Craft::t()
+     *
+     * @since 2.2.0
+     */
+    public static function t($message, $params = [], $language = null)
+    {
+        return Craft::t('vredirect', $message, $params, $language);
+    }
+
     public function init()
     {
         parent::init();
@@ -188,6 +208,11 @@ class Plugin extends BasePlugin
         $this->registerElementEvents();
         $this->registerWidgets();
         $this->registerPermissions();
+
+        if (Craft::$app->request->isCpRequest) {
+            $this->attachTemplateHooks();
+            $this->registerWidgets();
+        }
 
         // Remove our soft-deleted redirects when Craft is ready
         Event::on(Gc::class, Gc::EVENT_RUN, function () {
@@ -250,49 +275,11 @@ class Plugin extends BasePlugin
     private function registerFeedMeElement()
     {
         if (Craft::$app->plugins->isPluginEnabled('feed-me') && class_exists(\craft\feedme\Plugin::class)) {
-            Event::on(FeedMeElementsService::class, FeedMeElementsService::EVENT_REGISTER_FEED_ME_ELEMENTS, function (RegisterFeedMeElementsEvent $e) {
-                $e->elements[] = FeedMeRedirect::class;
-            });
+            Event::on(FeedMeElementsService::class, FeedMeElementsService::EVENT_REGISTER_FEED_ME_ELEMENTS,
+                function (RegisterFeedMeElementsEvent $e) {
+                    $e->elements[] = FeedMeRedirect::class;
+                });
         }
-    }
-
-    private function registerPermissions()
-    {
-        Event::on(UserPermissions::class, UserPermissions::EVENT_REGISTER_PERMISSIONS, function (RegisterUserPermissionsEvent $event) {
-            $event->permissions[Craft::t('vredirect', 'Redirects')] = [
-                'vredirect:redirects:manage' => [
-                    'label' => Craft::t('vredirect', 'Manage Redirects on Editable Sites'),
-                ],
-                'vredirect:404s:manage' => [
-                    'label' => Craft::t('vredirect', 'Manage Registered 404s')
-                ]
-            ];
-        });
-    }
-
-    protected function createSettingsModel(): Settings
-    {
-        return new Settings();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function settingsHtml(): string
-    {
-        return Craft::$app->view->renderTemplate(
-            'vredirect/settings',
-            [
-                'settings' => $this->getSettings()
-            ]
-        );
-    }
-
-    private function registerWidgets()
-    {
-        Event::on(Dashboard::class, Dashboard::EVENT_REGISTER_WIDGET_TYPES, function (RegisterComponentTypesEvent $event) {
-            $event->types[] = LatestErrors::class;
-        });
     }
 
     private function registerElementEvents()
@@ -355,17 +342,82 @@ class Plugin extends BasePlugin
         });
     }
 
-    /**
-     * @param $message
-     * @param array $params
-     * @param null $language
-     * @return string
-     * @see Craft::t()
-     *
-     * @since 2.2.0
-     */
-    public static function t($message, $params = [], $language = null)
+    private function registerPermissions()
     {
-        return Craft::t('vredirect', $message, $params, $language);
+        Event::on(UserPermissions::class, UserPermissions::EVENT_REGISTER_PERMISSIONS,
+            function (RegisterUserPermissionsEvent $event) {
+                $event->permissions[Craft::t('vredirect', 'Redirects')] = [
+                    'vredirect:redirects:manage' => [
+                        'label' => Craft::t('vredirect', 'Manage Redirects on Editable Sites'),
+                    ],
+                    'vredirect:404s:manage' => [
+                        'label' => Craft::t('vredirect', 'Manage Registered 404s')
+                    ]
+                ];
+            });
+    }
+
+    protected function attachTemplateHooks()
+    {
+        Event::on(View::class, View::EVENT_BEFORE_RENDER_PAGE_TEMPLATE, function (TemplateEvent $e) {
+            $currentUser = \Craft::$app->getUser()->getIdentity();
+            if (!$currentUser->can('vredirect:redirects:manage')) {
+                return;
+            }
+            if ($e->template === 'entries/_edit') {
+                Craft::$app->view->registerAssetBundle(ElementRedirectSlideout::class);
+            }
+        });
+        Craft::$app->view->hook('cp.entries.edit.meta', function (array &$context) {
+            $currentUser = \Craft::$app->getUser()->getIdentity();
+            if (!$currentUser->can('vredirect:redirects:manage')) {
+                return '';
+            }
+            /** @var Entry $element */
+            $element = $context['element'] ?? null;
+            if (!$element || !$element->getCanonicalId()) {
+                return '';
+            }
+            $elementId = $element->getCanonicalId();
+            $idJs = Json::encode($elementId);
+            $siteIdJs = Json::encode($element->siteId);
+            Craft::$app->view->registerJs("Craft.elementRedirectSlideout = (new Craft.ElementRedirectSlideout($idJs, $siteIdJs))");
+            $redirectCount = Redirect::find()->destinationElementId($elementId)->count();
+            if ($redirectCount) {
+                $word = $redirectCount > 1 ? Redirect::pluralDisplayName() : Redirect::displayName();
+                return '
+            <div class="data">
+                <h5 class="heading">' . Redirect::pluralDisplayName() . '</h5>
+                <div id="redirect-slideout-trigger" class="value"><button class="btn small">View ' . $redirectCount . ' ' . $word . '</button></div>
+            </div>
+            ';
+            }
+        });
+    }
+
+    private function registerWidgets()
+    {
+        Event::on(Dashboard::class, Dashboard::EVENT_REGISTER_WIDGET_TYPES,
+            function (RegisterComponentTypesEvent $event) {
+                $event->types[] = LatestErrors::class;
+            });
+    }
+
+    protected function createSettingsModel(): Settings
+    {
+        return new Settings();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function settingsHtml(): string
+    {
+        return Craft::$app->view->renderTemplate(
+            'vredirect/settings',
+            [
+                'settings' => $this->getSettings()
+            ]
+        );
     }
 }

@@ -1,0 +1,18 @@
+<table class="data fullwidth">
+    <thead>
+    <tr>
+        <th>{{ 'Original URL'|t('vredirect') }}</th>
+        <th>{{ 'Hit Count'|t('vredirect') }}</th>
+        <th>{{ 'Date Created'|t('vredirect') }}</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for redirect in redirects %}
+        <tr>
+            <td>{{ redirect.sourceUrl }}</td>
+            <td>{{ redirect.hitCount }}</td>
+            <td>{{ redirect.dateCreated|datetime('short') }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

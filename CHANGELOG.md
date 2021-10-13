@@ -3,6 +3,7 @@
 ## 3.0.9 - Unreleased
 ### Added
 - Automatic redirects will now get created when an entry is moved in the structure.
+- Added the ability to view redirects pointing to an entry on the entry edit page
 
 ### Fixed
 - Fixed automatic-redirect creation not working on Craft 3.7+
