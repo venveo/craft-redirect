@@ -236,8 +236,10 @@ class Plugin extends BasePlugin
                 }
                 $exception = $event->exception;
 
-                if ($exception instanceof RuntimeError &&
-                    ($previousException = $exception->getPrevious()) !== null) {
+                if (
+                    $exception instanceof RuntimeError &&
+                    ($previousException = $exception->getPrevious()) !== null
+                ) {
                     $exception = $previousException;
                 }
 
@@ -275,10 +277,13 @@ class Plugin extends BasePlugin
     private function registerFeedMeElement()
     {
         if (Craft::$app->plugins->isPluginEnabled('feed-me') && class_exists(\craft\feedme\Plugin::class)) {
-            Event::on(FeedMeElementsService::class, FeedMeElementsService::EVENT_REGISTER_FEED_ME_ELEMENTS,
+            Event::on(
+                FeedMeElementsService::class,
+                FeedMeElementsService::EVENT_REGISTER_FEED_ME_ELEMENTS,
                 function (RegisterFeedMeElementsEvent $e) {
                     $e->elements[] = FeedMeRedirect::class;
-                });
+                }
+            );
         }
     }
 
@@ -344,7 +349,9 @@ class Plugin extends BasePlugin
 
     private function registerPermissions()
     {
-        Event::on(UserPermissions::class, UserPermissions::EVENT_REGISTER_PERMISSIONS,
+        Event::on(
+            UserPermissions::class,
+            UserPermissions::EVENT_REGISTER_PERMISSIONS,
             function (RegisterUserPermissionsEvent $event) {
                 $event->permissions[Craft::t('vredirect', 'Redirects')] = [
                     'vredirect:redirects:manage' => [
@@ -354,14 +361,15 @@ class Plugin extends BasePlugin
                         'label' => Craft::t('vredirect', 'Manage Registered 404s')
                     ]
                 ];
-            });
+            }
+        );
     }
 
     protected function attachTemplateHooks()
     {
         Event::on(View::class, View::EVENT_BEFORE_RENDER_PAGE_TEMPLATE, function (TemplateEvent $e) {
             $currentUser = \Craft::$app->getUser()->getIdentity();
-            if (!$currentUser->can('vredirect:redirects:manage')) {
+            if (!$currentUser || !$currentUser->can('vredirect:redirects:manage')) {
                 return;
             }
             if ($e->template === 'entries/_edit') {
@@ -370,7 +378,7 @@ class Plugin extends BasePlugin
         });
         Craft::$app->view->hook('cp.entries.edit.meta', function (array &$context) {
             $currentUser = \Craft::$app->getUser()->getIdentity();
-            if (!$currentUser->can('vredirect:redirects:manage')) {
+            if (!$currentUser || !$currentUser->can('vredirect:redirects:manage')) {
                 return '';
             }
             /** @var Entry $element */
@@ -397,10 +405,13 @@ class Plugin extends BasePlugin
 
     private function registerWidgets()
     {
-        Event::on(Dashboard::class, Dashboard::EVENT_REGISTER_WIDGET_TYPES,
+        Event::on(
+            Dashboard::class,
+            Dashboard::EVENT_REGISTER_WIDGET_TYPES,
             function (RegisterComponentTypesEvent $event) {
                 $event->types[] = LatestErrors::class;
-            });
+            }
+        );
     }
 
     protected function createSettingsModel(): Settings
