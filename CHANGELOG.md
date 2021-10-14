@@ -1,6 +1,6 @@
 # Redirect Changelog
 
-## 3.0.9 - Unreleased
+## 3.0.9 - 2021-10-14
 ### Added
 - Automatic redirects will now get created when an entry is moved in the structure.
 - Added the ability to view redirects pointing to an entry on the entry edit page
