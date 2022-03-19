@@ -44,19 +44,19 @@ use yii\db\StaleObjectException;
  */
 class Redirect extends Element
 {
-    const TYPE_STATIC = 'static';
-    const TYPE_DYNAMIC = 'dynamic';
+    public const TYPE_STATIC = 'static';
+    public const TYPE_DYNAMIC = 'dynamic';
 
-    const STATUS_LIVE = 'live';
-    const STATUS_PENDING = 'pending';
-    const STATUS_EXPIRED = 'expired';
+    public const STATUS_LIVE = 'live';
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_EXPIRED = 'expired';
 
-    const STATUS_CODE_OPTIONS = [
+    public const STATUS_CODE_OPTIONS = [
         '301' => 'Permanent (301)',
         '302' => 'Temporarily (302)',
     ];
 
-    const TYPE_OPTIONS = [
+    public const TYPE_OPTIONS = [
         'static' => 'Static',
         'dynamic' => 'Dynamic (RegExp)',
     ];

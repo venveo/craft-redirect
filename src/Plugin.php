@@ -22,8 +22,8 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\events\TemplateEvent;
-use craft\feedme\events\RegisterFeedMeElementsEvent;
-use craft\feedme\services\Elements as FeedMeElementsService;
+//use craft\feedme\events\RegisterFeedMeElementsEvent;
+//use craft\feedme\services\Elements as FeedMeElementsService;
 use craft\helpers\Json;
 use craft\services\Dashboard;
 use craft\services\Elements;
@@ -34,7 +34,7 @@ use craft\web\UrlManager;
 use craft\web\View;
 use Twig\Error\RuntimeError;
 use venveo\redirect\assetbundles\elementredirectslideout\ElementRedirectSlideout;
-use venveo\redirect\elements\FeedMeRedirect;
+//use venveo\redirect\elements\FeedMeRedirect;
 use venveo\redirect\elements\Redirect;
 use venveo\redirect\models\Settings;
 use venveo\redirect\records\CatchAllUrl;
@@ -54,14 +54,14 @@ use yii\web\HttpException;
  */
 class Plugin extends BasePlugin
 {
-    const PERMISSION_MANAGE_REDIRECTS = 'vredirect:redirects:manage';
-    const PERMISSION_MANAGE_404S = 'vredirect:404s:manage';
+    public const PERMISSION_MANAGE_REDIRECTS = 'vredirect:redirects:manage';
+    public const PERMISSION_MANAGE_404S = 'vredirect:404s:manage';
     /** @var self $plugin */
     public static $plugin;
-    public $schemaVersion = '3.0.5';
+    public string $schemaVersion = '3.0.5';
 
-    public $hasCpSection = true;
-    public $hasCpSettings = true;
+    public bool $hasCpSection = true;
+    public bool $hasCpSettings = true;
     protected $_redirectsService;
     protected $_catchAllService;
 
@@ -87,10 +87,10 @@ class Plugin extends BasePlugin
         return $this->_catchAllService;
     }
 
-    public function install()
+    public function install(): void
     {
         if ($this->beforeInstall() === false) {
-            return false;
+            return;
         }
 
         $migrator = $this->getMigrator();
@@ -110,16 +110,12 @@ class Plugin extends BasePlugin
 
             $this->isInstalled = true;
             $this->afterInstall();
-            return null;
+            return;
         }
 
         // Run the install migration, if there is one
         if (($migration = $this->createInstallMigration()) !== null) {
-            try {
-                $migrator->migrateUp($migration);
-            } catch (MigrationException $e) {
-                return false;
-            }
+            $migrator->migrateUp($migration);
         }
 
         // Mark all existing migrations as applied
@@ -130,8 +126,6 @@ class Plugin extends BasePlugin
         $this->isInstalled = true;
 
         $this->afterInstall();
-
-        return null;
     }
 
     /*
@@ -140,7 +134,7 @@ class Plugin extends BasePlugin
     *  The getCpNavItem was found in the source and will check the user privilages already.
     *
     */
-    public function getCpNavItem()
+    public function getCpNavItem(): ?array
     {
         $ret = parent::getCpNavItem();
 
@@ -203,7 +197,7 @@ class Plugin extends BasePlugin
         } else {
             $this->registerCpRoutes();
         }
-        $this->registerFeedMeElement();
+//        $this->registerFeedMeElement();
         $this->registerElementEvents();
         $this->registerWidgets();
         $this->registerPermissions();
@@ -275,15 +269,15 @@ class Plugin extends BasePlugin
      */
     private function registerFeedMeElement()
     {
-        if (Craft::$app->plugins->isPluginEnabled('feed-me') && class_exists(\craft\feedme\Plugin::class)) {
-            Event::on(
-                FeedMeElementsService::class,
-                FeedMeElementsService::EVENT_REGISTER_FEED_ME_ELEMENTS,
-                function(RegisterFeedMeElementsEvent $e) {
-                    $e->elements[] = FeedMeRedirect::class;
-                }
-            );
-        }
+//        if (Craft::$app->plugins->isPluginEnabled('feed-me') && class_exists(\craft\feedme\Plugin::class)) {
+//            Event::on(
+//                FeedMeElementsService::class,
+//                FeedMeElementsService::EVENT_REGISTER_FEED_ME_ELEMENTS,
+//                function(RegisterFeedMeElementsEvent $e) {
+//                    $e->elements[] = FeedMeRedirect::class;
+//                }
+//            );
+//        }
     }
 
     private function registerElementEvents()
@@ -413,7 +407,7 @@ class Plugin extends BasePlugin
         );
     }
 
-    protected function createSettingsModel(): Settings
+    protected function createSettingsModel(): ?\craft\base\Model
     {
         return new Settings();
     }
@@ -421,7 +415,7 @@ class Plugin extends BasePlugin
     /**
      * @inheritdoc
      */
-    protected function settingsHtml(): string
+    protected function settingsHtml(): ?string
     {
         return Craft::$app->view->renderTemplate(
             'vredirect/settings',
