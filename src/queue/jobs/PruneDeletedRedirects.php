@@ -16,7 +16,7 @@ class PruneDeletedRedirects extends BaseJob
     /**
      * @inheritdoc
      */
-    public function execute($queue)
+    public function execute($queue): void
     {
         if ($this->deletedElementId) {
             $redirects = Redirect::find()->siteId($this->siteId)->destinationElementId($this->deletedElementId)->all();
@@ -36,7 +36,7 @@ class PruneDeletedRedirects extends BaseJob
     /**
      * @inheritdoc
      */
-    protected function defaultDescription(): string
+    protected function defaultDescription(): ?string
     {
         return Craft::t('vredirect', 'Pruning redirects for deleted elements');
     }

@@ -87,7 +87,7 @@ class Redirect extends Element
     /**
      * @var int|null siteId
      */
-    public $siteId;
+    public ?int $siteId;
 
     /**
      * @var int|null destinationElementId
@@ -128,7 +128,7 @@ class Redirect extends Element
     /**
      * @inheritdoc
      */
-    public static function refHandle()
+    public static function refHandle(): ?string
     {
         return 'redirect';
     }
@@ -317,7 +317,7 @@ class Redirect extends Element
     /**
      * @inheritdoc
      */
-    public function getCpEditUrl()
+    public function getCpEditUrl(): ?string
     {
         return UrlHelper::cpUrl('redirect/redirects/' . $this->id . '?siteId=' . $this->siteId);
     }
@@ -384,7 +384,7 @@ class Redirect extends Element
     /**
      * @inheritdoc
      */
-    public function getStatus()
+    public function getStatus(): ?string
     {
         $status = parent::getStatus();
 
@@ -478,7 +478,7 @@ class Redirect extends Element
      * @inheritdoc
      * @throws Exception
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         if (!$this->propagating) {
             if (!$isNew) {

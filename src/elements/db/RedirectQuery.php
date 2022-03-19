@@ -101,7 +101,7 @@ class RedirectQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected $defaultOrderBy = ['venveo_redirects.postDate' => SORT_DESC];
+    protected array $defaultOrderBy = ['venveo_redirects.postDate' => SORT_DESC];
 
 
     // Public Methods
@@ -277,7 +277,7 @@ class RedirectQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected function statusCondition(string $status)
+    protected function statusCondition(string $status): mixed
     {
         $currentTimeDb = Db::prepareDateForDb(new \DateTime(), true);
 
