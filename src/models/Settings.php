@@ -69,7 +69,7 @@ class Settings extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [[
@@ -79,7 +79,7 @@ class Settings extends Model
                 'deleteStale404s',
                 'storeReferrer',
                 'stripQueryParameters',
-                'createElementRedirects'
+                'createElementRedirects',
             ], 'boolean'],
             [['deleteStale404sHours'], 'integer'],
         ];

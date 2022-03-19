@@ -84,7 +84,7 @@ class Redirects extends Component
         }
 
         // Make sure we handle static redirects first
-        usort($matchedRedirects, function ($a, $b) {
+        usort($matchedRedirects, function($a, $b) {
             if ($a->type === 'static' && $b->type === 'dynamic') {
                 return -1;
             }
@@ -197,40 +197,40 @@ class Redirects extends Component
 
     public function handleAfterElementSaved(ElementEvent $e): void
     {
-            /** @var Element $savedElement */
-            $savedElement = $e->element;
-            if ($savedElement instanceof Redirect) {
-                return;
-            }
-            if ($e->isNew || $savedElement->propagating || ElementHelper::isDraftOrRevision($savedElement)) {
-                return;
-            }
-            $siteId = $savedElement->siteId;
-            $elementId = $savedElement->id;
-            $oldUri = static::$elementUrisChanging[$siteId][$elementId] ?? null;
-            $newUri = $savedElement->uri;
-            // If there were no URI changes, let's bail
-            if (!$oldUri || !$newUri || $oldUri === $newUri) {
-                return;
-            }
-            // If there's already a redirect for this, bail
-            $exists = Redirect::find()
+        /** @var Element $savedElement */
+        $savedElement = $e->element;
+        if ($savedElement instanceof Redirect) {
+            return;
+        }
+        if ($e->isNew || $savedElement->propagating || ElementHelper::isDraftOrRevision($savedElement)) {
+            return;
+        }
+        $siteId = $savedElement->siteId;
+        $elementId = $savedElement->id;
+        $oldUri = static::$elementUrisChanging[$siteId][$elementId] ?? null;
+        $newUri = $savedElement->uri;
+        // If there were no URI changes, let's bail
+        if (!$oldUri || !$newUri || $oldUri === $newUri) {
+            return;
+        }
+        // If there's already a redirect for this, bail
+        $exists = Redirect::find()
                 ->destinationElementId($elementId)
                 ->siteId($siteId)
                 ->destinationSiteId($siteId)
                 ->sourceUrl($oldUri)->exists();
-            if ($exists) {
-                unset(static::$elementUrisChanging[$siteId][$elementId]);
-                return;
-            }
+        if ($exists) {
+            unset(static::$elementUrisChanging[$siteId][$elementId]);
+            return;
+        }
 
-            $redirect = new Redirect();
-            $redirect->siteId = $siteId;
-            $redirect->sourceUrl = $oldUri;
-            $redirect->destinationElementId = $elementId;
-            $redirect->destinationSiteId = $siteId;
-            $redirect->type = Redirect::TYPE_STATIC;
-            $redirect->statusCode = '301';
+        $redirect = new Redirect();
+        $redirect->siteId = $siteId;
+        $redirect->sourceUrl = $oldUri;
+        $redirect->destinationElementId = $elementId;
+        $redirect->destinationSiteId = $siteId;
+        $redirect->type = Redirect::TYPE_STATIC;
+        $redirect->statusCode = '301';
 
         try {
             Craft::$app->elements->saveElement($redirect);
@@ -238,10 +238,10 @@ class Redirects extends Component
         } catch (ElementNotFoundException $e) {
             // This can't happen in this scenario.
         } catch (\yii\base\Exception $e) {
-            Craft::error('Failed to save auto-redirect: '. $e->getMessage(), __METHOD__);
+            Craft::error('Failed to save auto-redirect: ' . $e->getMessage(), __METHOD__);
             Craft::error($e->getTraceAsString(), __METHOD__);
         } catch (Throwable $e) {
-            Craft::error('Failed to save auto-redirect: '. $e->getMessage(), __METHOD__);
+            Craft::error('Failed to save auto-redirect: ' . $e->getMessage(), __METHOD__);
             Craft::error($e->getTraceAsString(), __METHOD__);
         }
     }
@@ -267,7 +267,7 @@ class Redirects extends Component
             'deletedElementId' => $element->id,
             'deletedElementUri' => $element->uri,
             'siteId' => $element->siteId,
-            'hardDelete' => $e->hardDelete
+            'hardDelete' => $e->hardDelete,
         ]);
         Craft::$app->queue->push($job);
     }

@@ -44,19 +44,19 @@ use yii\db\StaleObjectException;
  */
 class Redirect extends Element
 {
-    const TYPE_STATIC = 'static';
-    const TYPE_DYNAMIC = 'dynamic';
+    public const TYPE_STATIC = 'static';
+    public const TYPE_DYNAMIC = 'dynamic';
 
-    const STATUS_LIVE = 'live';
-    const STATUS_PENDING = 'pending';
-    const STATUS_EXPIRED = 'expired';
+    public const STATUS_LIVE = 'live';
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_EXPIRED = 'expired';
 
-    const STATUS_CODE_OPTIONS = [
+    public const STATUS_CODE_OPTIONS = [
         '301' => 'Permanent (301)',
-        '302' => 'Temporarily (302)'
+        '302' => 'Temporarily (302)',
     ];
 
-    const TYPE_OPTIONS = [
+    public const TYPE_OPTIONS = [
         'static' => 'Static',
         'dynamic' => 'Dynamic (RegExp)',
     ];
@@ -87,7 +87,7 @@ class Redirect extends Element
     /**
      * @var int|null siteId
      */
-    public $siteId;
+    public ?int $siteId;
 
     /**
      * @var int|null destinationElementId
@@ -128,7 +128,7 @@ class Redirect extends Element
     /**
      * @inheritdoc
      */
-    public static function refHandle()
+    public static function refHandle(): ?string
     {
         return 'redirect';
     }
@@ -171,23 +171,23 @@ class Redirect extends Element
                 [
                     'key' => '*',
                     'label' => Craft::t('vredirect', 'All Redirects'),
-                    'criteria' => []
+                    'criteria' => [],
                 ],
                 [
                     'key' => 'static',
                     'label' => Craft::t('vredirect', 'Static Redirects'),
-                    'criteria' => ['type' => Redirect::TYPE_STATIC]
+                    'criteria' => ['type' => Redirect::TYPE_STATIC],
                 ],
                 [
                     'key' => 'dynamic',
                     'label' => Craft::t('vredirect', 'Dynamic Redirects'),
-                    'criteria' => ['type' => Redirect::TYPE_DYNAMIC]
+                    'criteria' => ['type' => Redirect::TYPE_DYNAMIC],
                 ],
                 [
                     'key' => 'stale',
                     'label' => Craft::t('vredirect', 'Stale Redirects'),
-                    'criteria' => ['hitAt' => '< ' . Db::prepareDateForDb($staleDate)]
-                ]
+                    'criteria' => ['hitAt' => '< ' . Db::prepareDateForDb($staleDate)],
+                ],
             ];
         }
         return $sources;
@@ -217,29 +217,29 @@ class Redirect extends Element
             [
                 'label' => Craft::t('vredirect', 'Source URL'),
                 'orderBy' => 'venveo_redirects.sourceUrl',
-                'attribute' => 'sourceUrl'
+                'attribute' => 'sourceUrl',
             ],
             'venveo_redirects.type' => Craft::t('vredirect', 'Type'),
             [
                 'label' => Craft::t('vredirect', 'Destination URL'),
                 'orderBy' => 'venveo_redirects.destinationUrl',
-                'attribute' => 'destinationUrl'
+                'attribute' => 'destinationUrl',
             ],
             [
                 'label' => Craft::t('vredirect', 'Last Hit'),
                 'orderBy' => 'venveo_redirects.hitAt',
-                'attribute' => 'hitAt'
+                'attribute' => 'hitAt',
             ],
             'venveo_redirects.hitCount' => Craft::t('vredirect', 'Hit Count'),
             [
                 'label' => Craft::t('app', 'Date Created'),
                 'orderBy' => 'elements.dateCreated',
-                'attribute' => 'dateCreated'
+                'attribute' => 'dateCreated',
             ],
             [
                 'label' => Craft::t('app', 'Date Updated'),
                 'orderBy' => 'elements.dateUpdated',
-                'attribute' => 'dateUpdated'
+                'attribute' => 'dateUpdated',
             ],
         ];
         return $attributes;
@@ -317,7 +317,7 @@ class Redirect extends Element
     /**
      * @inheritdoc
      */
-    public function getCpEditUrl()
+    public function getCpEditUrl(): ?string
     {
         return UrlHelper::cpUrl('redirect/redirects/' . $this->id . '?siteId=' . $this->siteId);
     }
@@ -360,7 +360,7 @@ class Redirect extends Element
             'isNewRedirect' => false,
             'meta' => false,
             'statusCodeOptions' => self::STATUS_CODE_OPTIONS,
-            'typeOptions' => self::TYPE_OPTIONS
+            'typeOptions' => self::TYPE_OPTIONS,
         ]);
 
         $html .= parent::getEditorHtml();
@@ -384,7 +384,7 @@ class Redirect extends Element
     /**
      * @inheritdoc
      */
-    public function getStatus()
+    public function getStatus(): ?string
     {
         $status = parent::getStatus();
 
@@ -423,16 +423,16 @@ class Redirect extends Element
 
         $rules[] = [['destinationSiteId'], SiteIdValidator::class];
         $rules[] = ['destinationElementId', 'exist', 'targetClass' => \craft\records\Element::class, 'targetAttribute' => ['destinationElementId' => 'id']];
-        $rules[] = ['destinationSiteId', 'required', 'when' => function ($model) {
+        $rules[] = ['destinationSiteId', 'required', 'when' => function($model) {
             return !empty($model->destinationElementId);
         }];
-        $rules[] = ['destinationUrl', 'required', 'when' => function ($model) {
+        $rules[] = ['destinationUrl', 'required', 'when' => function($model) {
             return empty($model->destinationElementId);
         }];
-        $rules[] = ['destinationUrl', UrlValidator::class, 'when' => function ($model) {
+        $rules[] = ['destinationUrl', UrlValidator::class, 'when' => function($model) {
             return empty($model->destinationSiteId);
         }];
-        $rules[] = ['destinationUrl', UriValidator::class, 'when' => function ($model) {
+        $rules[] = ['destinationUrl', UriValidator::class, 'when' => function($model) {
             return !empty($model->destinationSiteId);
         }];
 
@@ -463,7 +463,6 @@ class Redirect extends Element
      */
     public function beforeSave(bool $isNew): bool
     {
-
         if ($this->enabled && !$this->postDate) {
             // Default the post date to the current date/time
             $this->postDate = new \DateTime();
@@ -478,7 +477,7 @@ class Redirect extends Element
      * @inheritdoc
      * @throws Exception
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         if (!$this->propagating) {
             if (!$isNew) {
@@ -667,7 +666,8 @@ class Redirect extends Element
     /**
      * Attempt to figure out if the destination URL can be converted to an element
      */
-    public function refreshDestinationElement() {
+    public function refreshDestinationElement()
+    {
         if (!isset($this->destinationUrl)) {
             return;
         }

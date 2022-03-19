@@ -15,7 +15,6 @@ class m180104_143118_c_redirects_catch_all_urls extends Migration
     public function safeUp()
     {
         if (!$this->db->tableExists('{{%dolphiq_redirects_catch_all_urls}}')) {
-
             $this->createTable(
                 '{{%dolphiq_redirects_catch_all_urls}}',
                 [

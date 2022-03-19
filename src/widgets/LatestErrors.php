@@ -19,7 +19,6 @@ use venveo\redirect\Plugin;
  */
 class LatestErrors extends Widget
 {
-
     public $count = 25;
 
     /**
@@ -46,7 +45,7 @@ class LatestErrors extends Widget
     /**
      * @inheritdoc
      */
-    public static function icon(): string
+    public static function icon(): ?string
     {
         return '';
     }
@@ -54,7 +53,7 @@ class LatestErrors extends Widget
     /**
      * @inheritDoc
      */
-    public function init()
+    public function init(): void
     {
         $this->_title = Craft::t('vredirect', 'Latest 404s');
 
@@ -64,7 +63,7 @@ class LatestErrors extends Widget
     /**
      * @inheritdoc
      */
-    public function getTitle(): string
+    public function getTitle(): ?string
     {
         return $this->_title;
     }
@@ -72,7 +71,7 @@ class LatestErrors extends Widget
     /**
      * @inheritDoc
      */
-    public function getSubtitle()
+    public function getSubtitle(): ?string
     {
         return null;
     }
@@ -80,7 +79,7 @@ class LatestErrors extends Widget
     /**
      * @inheritdoc
      */
-    public function getBodyHtml()
+    public function getBodyHtml(): ?string
     {
         $view = Craft::$app->getView();
         $view->registerAssetBundle(AdminTableAsset::class);
@@ -93,7 +92,7 @@ class LatestErrors extends Widget
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml(): string
+    public function getSettingsHtml(): ?string
     {
         $id = 'latest-errors' . StringHelper::randomString();
         $namespaceId = Craft::$app->getView()->namespaceInputId($id);

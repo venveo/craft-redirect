@@ -66,7 +66,7 @@ class ResaveController extends Controller
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
         $options[] = 'elementId';
@@ -116,7 +116,7 @@ class ResaveController extends Controller
 
         if ($this->status === 'any') {
             $query->anyStatus();
-        } else if ($this->status) {
+        } elseif ($this->status) {
             $query->status(explode(',', $this->status));
         }
 
@@ -145,20 +145,20 @@ class ResaveController extends Controller
         $elementsService = Craft::$app->getElements();
         $fail = false;
 
-        $beforeCallback = function (BatchElementActionEvent $e) use ($query) {
+        $beforeCallback = function(BatchElementActionEvent $e) use ($query) {
             if ($e->query === $query) {
                 $element = $e->element;
                 $this->stdout("    - Resaving {$element} ({$element->id}) ... ");
             }
         };
 
-        $afterCallback = function (BatchElementActionEvent $e) use ($query, &$fail) {
+        $afterCallback = function(BatchElementActionEvent $e) use ($query, &$fail) {
             if ($e->query === $query) {
                 $element = $e->element;
                 if ($e->exception) {
                     $this->stderr('error: ' . $e->exception->getMessage() . PHP_EOL, Console::FG_RED);
                     $fail = true;
-                } else if ($element->hasErrors()) {
+                } elseif ($element->hasErrors()) {
                     $this->stderr('failed: ' . implode(', ', $element->getErrorSummary(true)) . PHP_EOL, Console::FG_RED);
                     $fail = true;
                 } else {

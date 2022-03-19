@@ -2,7 +2,6 @@
 
 namespace venveo\redirect\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\db\Table;
 use venveo\redirect\elements\Redirect;

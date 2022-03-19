@@ -42,7 +42,7 @@ class DeleteRedirects extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getConfirmationMessage()
+    public function getConfirmationMessage(): ?string
     {
         return Craft::t('vredirect', 'Are you sure you want to delete the selected redirects?');
     }
@@ -58,9 +58,7 @@ class DeleteRedirects extends ElementAction
     {
         try {
             foreach ($query->all() as $redirect) {
-
                 Craft::$app->getElements()->deleteElement($redirect);
-
             }
         } catch (Exception $exception) {
             $this->setMessage($exception->getMessage());

@@ -2,9 +2,7 @@
 
 namespace venveo\redirect\migrations;
 
-use Craft;
 use craft\db\Migration;
-use craft\db\Table;
 
 /**
  * m200223_232039_add_post_and_expiry_dates migration.

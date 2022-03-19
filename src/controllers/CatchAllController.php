@@ -20,7 +20,6 @@ use yii\web\Response;
 
 class CatchAllController extends Controller
 {
-
     // Public Methods
     // =========================================================================
 
@@ -121,7 +120,7 @@ class CatchAllController extends Controller
                 [$likeOperator, '[[query]]', $search],
                 [$likeOperator, '[[referrer]]', $search],
                 [$likeOperator, '[[dateUpdated]]', $search],
-                [$likeOperator, '[[dateCreated]]', $search]
+                [$likeOperator, '[[dateCreated]]', $search],
             ]);
         }
 
@@ -163,7 +162,7 @@ class CatchAllController extends Controller
                 'hitCount' => $item['hitCount'],
                 'dateCreated' => $item['dateCreated'],
                 'dateUpdated' => $item['dateUpdated'],
-                'menu' => ['createUrl' => UrlHelper::cpUrl('redirect/redirects/new', ['from' => $item['id']])]
+                'menu' => ['createUrl' => UrlHelper::cpUrl('redirect/redirects/new', ['from' => $item['id']])],
             ];
         }
 

@@ -1,5 +1,11 @@
 # Redirect Changelog
 
+## 4.0.0-beta.1 - 2021-3-19
+
+### Changed
+- Added support for Craft 4
+- Dropped support for Feed Me (plugin is not available for Craft 4 yet)
+
 ## 3.0.9.1 - 2021-10-14
 
 ### Fixed
