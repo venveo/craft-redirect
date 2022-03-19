@@ -14,7 +14,6 @@ use Craft;
 use craft\base\Element;
 use craft\base\Plugin as BasePlugin;
 use craft\elements\Entry;
-use craft\errors\MigrationException;
 use craft\events\DeleteElementEvent;
 use craft\events\ElementEvent;
 use craft\events\ExceptionEvent;
