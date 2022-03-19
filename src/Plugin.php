@@ -345,16 +345,14 @@ class Plugin extends BasePlugin
             UserPermissions::class,
             UserPermissions::EVENT_REGISTER_PERMISSIONS,
             function(RegisterUserPermissionsEvent $event) {
-                $event->permissions[Craft::t('vredirect', 'Redirects')] = [
-                    'vredirect:redirects:manage' => [
-                        'label' => Craft::t('vredirect', 'Manage Redirects on Editable Sites'),
-                    ],
-                    'vredirect:404s:manage' => [
-                        'label' => Craft::t('vredirect', 'Manage Registered 404s'),
-                    ],
+                $event->permissions[] = [
+                    'heading' => Craft::t('vredirect', 'Redirects'),
+                    'permissions' => [
+                            'vredirect:redirects:manage' => ['label' => Craft::t('vredirect', 'Manage Redirects on Editable Sites')],
+                            'vredirect:404s:manage' => ['label' => Craft::t('vredirect', 'Manage Registered 404s')],
+                        ],
                 ];
-            }
-        );
+            });
     }
 
     protected function attachTemplateHooks()

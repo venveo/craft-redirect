@@ -1,5 +1,10 @@
 # Redirect Changelog
 
+## 4.0.0-beta.2 - Unreleased
+
+### Fixed
+- Fixed error caused by permissions & use new element permissions interface
+
 ## 4.0.0-beta.1 - 2021-3-19
 
 ### Changed

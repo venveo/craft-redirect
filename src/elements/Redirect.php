@@ -14,6 +14,7 @@ use craft\base\Element;
 use craft\elements\actions\Restore;
 use craft\elements\actions\SetStatus;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\User;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Html;
@@ -676,5 +677,38 @@ class Redirect extends Element
         if ($element) {
             $this->destinationElementId = $element->id;
         }
+    }
+
+    public function canView(User $user): bool
+    {
+        if (parent::canView($user)) {
+            return true;
+        }
+
+        return $user->can(Plugin::PERMISSION_MANAGE_REDIRECTS) && (Craft::$app->getIsMultiSite() && $user->can('editSite:' . $this->site->uid));
+    }
+
+    public function canDelete(User $user): bool
+    {
+        if (parent::canDelete($user)) {
+            return true;
+        }
+        return $user->can(Plugin::PERMISSION_MANAGE_REDIRECTS) && (Craft::$app->getIsMultiSite() && $user->can('editSite:' . $this->site->uid));
+    }
+
+    public function canSave(User $user): bool
+    {
+        if (parent::canSave($user)) {
+            return true;
+        }
+        return $user->can(Plugin::PERMISSION_MANAGE_REDIRECTS) && (Craft::$app->getIsMultiSite() && $user->can('editSite:' . $this->site->uid));
+    }
+
+    public function canDeleteForSite(User $user): bool
+    {
+        if (parent::canDeleteForSite($user)) {
+            return true;
+        }
+        return $user->can(Plugin::PERMISSION_MANAGE_REDIRECTS) && (Craft::$app->getIsMultiSite() && $user->can('editSite:' . $this->site->uid));
     }
 }

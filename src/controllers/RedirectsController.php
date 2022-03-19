@@ -29,6 +29,7 @@ use venveo\redirect\records\CatchAllUrl;
 use yii\base\Exception;
 use yii\db\StaleObjectException;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 
 class RedirectsController extends Controller
@@ -38,6 +39,7 @@ class RedirectsController extends Controller
      *
      * @return Response
      * @throws SiteNotFoundException
+     * @throws \yii\web\ForbiddenHttpException
      */
     public function actionIndex(): craft\web\Response
     {
@@ -63,10 +65,14 @@ class RedirectsController extends Controller
      * @param Redirect $redirect The redirect being edited, if there were any validation errors
      *
      * @return Response
+     * @throws \yii\web\ForbiddenHttpException
      */
     public function actionEditRedirect(int $redirectId = null, Redirect $redirect = null): craft\web\Response
     {
         $this->requirePermission(Plugin::PERMISSION_MANAGE_REDIRECTS);
+        if ($redirect && !$redirect->canView(Craft::$app->getUser()->getIdentity())) {
+            throw new ForbiddenHttpException("You're not allowed to edit this redirect");
+        }
 
         $fromCatchAllId = Craft::$app->request->getQueryParam('from');
         $catchAllRecord = null;
@@ -165,7 +171,7 @@ class RedirectsController extends Controller
      * @throws StaleObjectException
      * @throws BadRequestHttpException
      */
-    public function actionSaveRedirect()
+    public function actionSaveRedirect(): ?\yii\web\Response
     {
         $isNew = false;
         $this->requirePermission(Plugin::PERMISSION_MANAGE_REDIRECTS);
@@ -175,9 +181,14 @@ class RedirectsController extends Controller
         $this->requirePostRequest();
 
         $siteId = $request->getBodyParam('siteId');
+        $site = $siteId ? Craft::$app->sites->getSiteById($siteId) : null;
 
-        if ($siteId == null) {
-            $siteId = Craft::$app->getSites()->currentSite->id;
+        if ($site == null) {
+            $site = Craft::$app->getSites()->currentSite;
+        }
+        $siteId = $site->id;
+        if (!in_array($siteId, Craft::$app->sites->getEditableSiteIds(), true)) {
+            throw new ForbiddenHttpException("You can't edit that site.");
         }
 
 
@@ -262,14 +273,15 @@ class RedirectsController extends Controller
     /**
      * Deletes a route.
      *
-     * @return Response
+     * @return \yii\web\Response
      * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
      */
-    public function actionDeleteRedirect()
+    public function actionDeleteRedirect(): \yii\web\Response
     {
         $currentUser = Craft::$app->getUser()->getIdentity();
         if (!$currentUser->can(Plugin::PERMISSION_MANAGE_REDIRECTS)) {
-            return Craft::$app->response->setStatusCode('403', Craft::t('vredirect', 'You lack the required permissions to manage redirects'));
+            throw new ForbiddenHttpException(Craft::t('vredirect', 'You lack the required permissions to manage redirects'));
         }
 
         $this->requirePostRequest();
@@ -277,6 +289,10 @@ class RedirectsController extends Controller
         $request = Craft::$app->getRequest();
 
         $redirectId = $request->getRequiredBodyParam('id');
+        $redirect = Plugin::$plugin->getRedirects()->getRedirectById($redirectId);
+        if (!$redirect || !$redirect->canDelete($currentUser)) {
+            throw new ForbiddenHttpException(Craft::t('vredirect', 'Redirect not found or lacking permissions'));
+        }
         Plugin::$plugin->getRedirects()->deleteRedirectById($redirectId);
 
         return $this->asJson(['success' => true]);

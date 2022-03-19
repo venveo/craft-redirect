@@ -49,7 +49,7 @@ class Redirects extends Component
      *
      * @return Redirect|null
      */
-    public function getRedirectById(int $redirectId, int $siteId = null)
+    public function getRedirectById(int $redirectId, int $siteId = null): ?Redirect
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($redirectId, Redirect::class, $siteId);
