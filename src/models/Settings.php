@@ -79,7 +79,7 @@ class Settings extends Model
                 'deleteStale404s',
                 'storeReferrer',
                 'stripQueryParameters',
-                'createElementRedirects'
+                'createElementRedirects',
             ], 'boolean'],
             [['deleteStale404sHours'], 'integer'],
         ];

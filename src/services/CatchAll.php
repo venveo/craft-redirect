@@ -23,7 +23,6 @@ use yii\db\StaleObjectException;
  */
 class CatchAll extends Component
 {
-
     /**
      * Register a hit to the catch all uri by its uri.
      *
@@ -36,7 +35,6 @@ class CatchAll extends Component
      */
     public function registerHitByUri(string $uri, $queryString = null, $siteId = null): bool
     {
-
         if ($siteId === null) {
             $siteId = Craft::$app->getSites()->currentSite->id;
         }
@@ -160,6 +158,4 @@ class CatchAll extends Component
             'uid' => $uid,
         ]);
     }
-
-
 }

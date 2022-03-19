@@ -12,7 +12,6 @@ namespace venveo\redirect\elements\db;
 use Craft;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
-use DateTime;
 use venveo\redirect\elements\Redirect;
 
 /**
@@ -253,19 +252,19 @@ class RedirectQuery extends ElementQuery
         if ($this->matchingUri) {
             $this->subQuery->andWhere(['and',
                 ['[[venveo_redirects.type]]' => 'static'],
-                ['[[venveo_redirects.sourceUrl]]' => $this->matchingUri]
+                ['[[venveo_redirects.sourceUrl]]' => $this->matchingUri],
             ]);
             if (Craft::$app->db->getIsPgsql()) {
                 $this->subQuery->orWhere([
                     'and',
                     ['[[venveo_redirects.type]]' => 'dynamic'],
-                    ':uri SIMILAR TO [[venveo_redirects.sourceUrl]]'
+                    ':uri SIMILAR TO [[venveo_redirects.sourceUrl]]',
                 ], ['uri' => $this->matchingUri]);
             } else {
                 $this->subQuery->orWhere([
                     'and',
                     ['[[venveo_redirects.type]]' => 'dynamic'],
-                    ':uri RLIKE [[venveo_redirects.sourceUrl]]'
+                    ':uri RLIKE [[venveo_redirects.sourceUrl]]',
                 ], ['uri' => $this->matchingUri]);
             }
         }
@@ -287,14 +286,14 @@ class RedirectQuery extends ElementQuery
                     'and',
                     [
                         'elements.enabled' => true,
-                        'elements_sites.enabled' => true
+                        'elements_sites.enabled' => true,
                     ],
                     ['<=', 'venveo_redirects.postDate', $currentTimeDb],
                     [
                         'or',
                         ['venveo_redirects.expiryDate' => null],
-                        ['>', 'venveo_redirects.expiryDate', $currentTimeDb]
-                    ]
+                        ['>', 'venveo_redirects.expiryDate', $currentTimeDb],
+                    ],
                 ];
             case Redirect::STATUS_PENDING:
                 return [
@@ -303,17 +302,17 @@ class RedirectQuery extends ElementQuery
                         'elements.enabled' => true,
                         'elements_sites.enabled' => true,
                     ],
-                    ['>', 'venveo_redirects.postDate', $currentTimeDb]
+                    ['>', 'venveo_redirects.postDate', $currentTimeDb],
                 ];
             case Redirect::STATUS_EXPIRED:
                 return [
                     'and',
                     [
                         'elements.enabled' => true,
-                        'elements_sites.enabled' => true
+                        'elements_sites.enabled' => true,
                     ],
                     ['not', ['venveo_redirects.expiryDate' => null]],
-                    ['<=', 'venveo_redirects.expiryDate', $currentTimeDb]
+                    ['<=', 'venveo_redirects.expiryDate', $currentTimeDb],
                 ];
             default:
                 return parent::statusCondition($status);
@@ -322,6 +321,4 @@ class RedirectQuery extends ElementQuery
 
     // Private Methods
     // =========================================================================
-
-
 }

@@ -16,7 +16,6 @@ use craft\web\Response;
 
 class DashboardController extends Controller
 {
-
     // Public Methods
     // =========================================================================
 

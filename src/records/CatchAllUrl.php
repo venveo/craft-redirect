@@ -39,5 +39,4 @@ class CatchAllUrl extends ActiveRecord
         $rules[] = [['query'], 'string', 'max' => self::MAX_QUERY_LENGTH];
         return $rules;
     }
-
 }

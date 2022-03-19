@@ -84,8 +84,8 @@ class RedirectsController extends Controller
         $variables['crumbs'] = [
             [
                 'label' => Craft::t('vredirect', 'Redirects'),
-                'url' => UrlHelper::cpUrl('redirect/redirects')
-            ]
+                'url' => UrlHelper::cpUrl('redirect/redirects'),
+            ],
         ];
 
         $editableSitesOptions = [];
@@ -94,14 +94,14 @@ class RedirectsController extends Controller
         foreach (Plugin::getInstance()->redirects->getValidSites() as $site) {
             $editableSitesOptions[$site->id] = [
                 'value' => $site->id,
-                'label' => $site->name
+                'label' => $site->name,
             ];
 
             $editableSiteData[] = [
                 'id' => $site->id,
                 'baseUrl' => $site->getBaseUrl(),
                 'name' => $site->name,
-                'handle' => $site->handle
+                'handle' => $site->handle,
             ];
         }
 
@@ -148,7 +148,7 @@ class RedirectsController extends Controller
         }
 
         $variables['redirect'] = $redirect;
-        Craft::$app->view->registerJs('window.redirectEditableSiteData = '. Json::encode($editableSiteData) . ';', View::POS_HEAD);
+        Craft::$app->view->registerJs('window.redirectEditableSiteData = ' . Json::encode($editableSiteData) . ';', View::POS_HEAD);
         Craft::$app->view->registerAssetBundle(UrlFieldInputAsset::class);
         return $this->renderTemplate('vredirect/_redirects/edit', $variables);
     }
@@ -222,14 +222,14 @@ class RedirectsController extends Controller
         if (!$res) {
             if ($request->getAcceptsJson()) {
                 return $this->asJson([
-                    'success' => false
+                    'success' => false,
                 ]);
             }
             // else, normal result
             Craft::$app->getSession()->setError(Craft::t('vredirect', 'Couldn’t save the redirect.'));
 
             Craft::$app->getUrlManager()->setRouteParams([
-                'redirect' => $redirect
+                'redirect' => $redirect,
             ]);
 
             return null;
@@ -246,7 +246,7 @@ class RedirectsController extends Controller
         if ($request->getAcceptsJson()) {
             return $this->asJson([
                 'success' => true,
-                'id' => $redirect->id
+                'id' => $redirect->id,
             ]);
         }
         // else, normal result

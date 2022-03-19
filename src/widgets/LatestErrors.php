@@ -19,7 +19,6 @@ use venveo\redirect\Plugin;
  */
 class LatestErrors extends Widget
 {
-
     public $count = 25;
 
     /**

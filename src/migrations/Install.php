@@ -42,11 +42,10 @@ class Install extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'dateDeleted' => $this->dateTime()->null(),
-            'uid' => $this->uid()
+            'uid' => $this->uid(),
         ]);
 
         if (!$this->db->tableExists('{{%venveo_redirects_catch_all_urls}}')) {
-
             $this->createTable(
                 '{{%venveo_redirects_catch_all_urls}}',
                 [
