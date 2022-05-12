@@ -3,7 +3,7 @@
 {% set title = "Registered 404 entries"|t('vredirect') %}
 
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
-{% do view.registerAssetBundle('venveo\\redirect\\assetbundles\\admintablesiteswitcher\\AdminTableSiteSwitcher') -%}
+{% do view.registerAssetBundle('venveo\\redirect\\assetbundles\\AdminTableSiteSwitcher') -%}
 
 {% block contextMenu %}
     <div id="redirect-site-menu">

@@ -1,6 +1,6 @@
 <?php
 
-namespace venveo\redirect\assetbundles\urlfieldinput;
+namespace venveo\redirect\assetbundles;
 
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
@@ -15,8 +15,7 @@ class UrlFieldInputAsset extends AssetBundle
      */
     public function init()
     {
-        // define the path that your publishable resources live
-        $this->sourcePath = __DIR__ . '/dist';
+        $this->sourcePath = "@venveo/redirect/resources/dist";
 
         // define the dependencies
         $this->depends = [

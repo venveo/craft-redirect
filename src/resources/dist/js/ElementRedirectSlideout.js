@@ -1,13 +1,16 @@
 /** global: Craft */
 /** global: Garnish */
 /** global: $ */
+if (typeof Craft.Redirects === typeof undefined) {
+    Craft.Redirects = {};
+}
 
-Craft.ElementRedirectSlideout = Garnish.Base.extend({
+Craft.Redirects.ElementRedirectSlideout = Garnish.Base.extend({
     elementId: null,
     siteId: null,
     $openDialogButton: null,
 
-    init: function(elementId, siteId, settings) {
+    init: function (elementId, siteId, settings) {
         // Param mapping
         if (typeof settings === 'undefined' && $.isPlainObject(elementId)) {
             // (settings)

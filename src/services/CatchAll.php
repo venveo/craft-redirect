@@ -70,14 +70,14 @@ class CatchAll extends Component
             ++$catchAllURL->hitCount;
         }
 
-        if (Craft::$app->request->referrer && Plugin::$plugin->getSettings()->storeReferrer) {
+        if (Craft::$app->request->referrer && Plugin::getInstance()->getSettings()->storeReferrer) {
             $catchAllURL->referrer = Craft::$app->request->referrer;
         }
 
         $catchAllURL->save();
 
         // Give the plugin an opportunity to do some garbage collection
-        if (Plugin::$plugin->getSettings()->deleteStale404s === true) {
+        if (Plugin::getInstance()->getSettings()->deleteStale404s === true) {
             // Let's only delete a few at a time to prevent flooding. Especially after initial feature roll-out
             $this->deleteStale404s(100);
         }
@@ -91,9 +91,9 @@ class CatchAll extends Component
      * @throws Throwable
      * @throws StaleObjectException
      */
-    public function deleteStale404s($limit = null)
+    public function deleteStale404s($limit = null): void
     {
-        $hours = Plugin::$plugin->getSettings()->deleteStale404sHours;
+        $hours = Plugin::getInstance()->getSettings()->deleteStale404sHours;
 
         $interval = DateTimeHelper::secondsToInterval($hours * 60 * 60);
         $expire = DateTimeHelper::currentUTCDateTime();
@@ -118,7 +118,7 @@ class CatchAll extends Component
      * @param int $id
      * @return bool
      */
-    public function ignoreUrlById(int $id)
+    public function ignoreUrlById(int $id): bool
     {
         $catchAllURL = CatchAllUrlRecord::findOne($id);
 
@@ -150,9 +150,9 @@ class CatchAll extends Component
 
     /**
      * @param string $uid
-     * @return CatchAllUrlRecord
+     * @return CatchAllUrlRecord|null
      */
-    public function getUrlByUid(string $uid): CatchAllUrlRecord
+    public function getUrlByUid(string $uid): CatchAllUrlRecord|null
     {
         return CatchAllUrlRecord::findOne([
             'uid' => $uid,

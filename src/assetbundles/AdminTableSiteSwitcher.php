@@ -1,11 +1,11 @@
 <?php
 
-namespace venveo\redirect\assetbundles\elementredirectslideout;
+namespace venveo\redirect\assetbundles;
 
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 
-class ElementRedirectSlideout extends AssetBundle
+class AdminTableSiteSwitcher extends AssetBundle
 {
     // Public Methods
     // =========================================================================
@@ -15,8 +15,7 @@ class ElementRedirectSlideout extends AssetBundle
      */
     public function init()
     {
-        // define the path that your publishable resources live
-        $this->sourcePath = __DIR__ . '/dist';
+        $this->sourcePath = "@venveo/redirect/resources/dist";
 
         // define the dependencies
         $this->depends = [
@@ -26,7 +25,7 @@ class ElementRedirectSlideout extends AssetBundle
         // define the relative path to CSS/JS files that should be registered with the page
         // when this asset bundle is registered
         $this->js = [
-            'js/ElementRedirectSlideout.js',
+            'js/AdminTableSiteSwitcher.js',
         ];
 
         parent::init();

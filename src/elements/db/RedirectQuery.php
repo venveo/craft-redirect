@@ -22,80 +22,67 @@ use venveo\redirect\elements\Redirect;
  */
 class RedirectQuery extends ElementQuery
 {
-    // Properties
-    // =========================================================================
-
-    // General parameters
-    // -------------------------------------------------------------------------
-
-    /**
-     * @var bool Whether to only return global sets that the user has permission to edit.
-     */
-    public $editable = false;
+    public ?bool $editable = null;
 
     /**
      * @var string|string[]|null The handle(s) that the resulting global sets must have.
      */
-    public $sourceUrl;
+    public ?string $sourceUrl = null;
 
     /**
      * @var string|string[]|null The handle(s) that the resulting global sets must have.
      */
-    public $destinationUrl;
+    public ?string $destinationUrl = null;
 
-    /**
-     * @var string|string[]|null The handle(s) that the resulting global sets must have.
-     */
-    public $statusCode;
-    /**
-     * @var string|null hitAt
-     */
-    public $hitAt;
+    public mixed $statusCode = null;
+
+
+    public mixed $hitAt = null;
 
     /**
      * @var string|null The type of redirect (static/dynamic)
      */
-    public $type;
+    public ?string $type = null;
 
     /**
      * @var string|null A URI you're trying to match against
      */
-    public $matchingUri;
+    public ?string $matchingUri = null;
 
     /**
      * @var int|null An element ID
      */
-    public $destinationElementId;
+    public ?int $destinationElementId = null;
 
     /**
      * @var int|null site id for the destination
      */
-    public $destinationSiteId;
+    public ?int $destinationSiteId = null;
 
 
     /**
      * @var mixed The Post Date that the resulting redirects must have.
      * @used-by postDate()
      */
-    public $postDate;
+    public mixed $postDate = null;
 
     /**
      * @var string|array|\DateTime The maximum Post Date that resulting redirects can have.
      * @used-by before()
      */
-    public $before;
+    public mixed $before = null;
 
     /**
      * @var string|array|\DateTime The minimum Post Date that resulting redirects can have.
      * @used-by after()
      */
-    public $after;
+    public mixed $after = null;
 
     /**
      * @var mixed The Expiry Date that the resulting redirects must have.
      * @used-by expiryDate()
      */
-    public $expiryDate;
+    public mixed $expiryDate = null;
 
     /**
      * @inheritdoc
@@ -103,24 +90,22 @@ class RedirectQuery extends ElementQuery
     protected array $defaultOrderBy = ['venveo_redirects.postDate' => SORT_DESC];
 
 
-    // Public Methods
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function __construct($elementType, array $config = [])
-    {
-        // Default orderBy
-        if (!isset($config['orderBy'])) {
-            $config['orderBy'] = 'sourceUrl';
-        }
-        if (!isset($config['status'])) {
-            $config['status'] = ['live'];
-        }
-
-        parent::__construct($elementType, $config);
-    }
+//
+//    /**
+//     * @inheritdoc
+//     */
+//    public function __construct($elementType, array $config = [])
+//    {
+//        // Default orderBy
+//        if (!isset($config['orderBy'])) {
+//            $config['orderBy'] = 'sourceUrl';
+//        }
+//        if (!isset($config['status'])) {
+//            $config['status'] = ['live'];
+//        }
+//
+//        parent::__construct($elementType, $config);
+//    }
 
     /**
      * Sets the [[editable]] property.
@@ -136,13 +121,13 @@ class RedirectQuery extends ElementQuery
         return $this;
     }
 
-    public function expiryDate($value)
+    public function expiryDate(mixed $value)
     {
         $this->expiryDate = $value;
         return $this;
     }
 
-    public function postDate($value)
+    public function postDate(mixed $value)
     {
         $this->postDate = $value;
         return $this;

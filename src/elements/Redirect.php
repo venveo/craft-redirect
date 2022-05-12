@@ -11,37 +11,38 @@ namespace venveo\redirect\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\elements\actions\Delete;
+use craft\elements\actions\Edit;
 use craft\elements\actions\Restore;
-use craft\elements\actions\SetStatus;
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
+use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
+use craft\models\FieldLayout;
+use craft\models\FieldLayoutTab;
 use craft\models\Site;
 use craft\validators\DateTimeValidator;
 use craft\validators\SiteIdValidator;
-use craft\validators\UriValidator;
-use craft\validators\UrlValidator;
-use craft\web\ErrorHandler;
 use DateTime;
 use Throwable;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
-use venveo\redirect\elements\actions\DeleteRedirects;
 use venveo\redirect\elements\db\RedirectQuery;
+use venveo\redirect\fieldlayoutelements\ChangeSuggestion;
+use venveo\redirect\fieldlayoutelements\RedirectDestinationField;
+use venveo\redirect\fieldlayoutelements\RedirectSourceField;
 use venveo\redirect\models\Settings;
 use venveo\redirect\Plugin;
 use venveo\redirect\records\Redirect as RedirectRecord;
 use yii\db\Exception;
 use yii\db\StaleObjectException;
+use yii\i18n\Formatter;
 
 /**
- *
- * @property null|Site $destinationSite
- * @property string $name
+ * @property-read null|\craft\models\Site $destinationSite
  */
 class Redirect extends Element
 {
@@ -52,63 +53,57 @@ class Redirect extends Element
     public const STATUS_PENDING = 'pending';
     public const STATUS_EXPIRED = 'expired';
 
-    public const STATUS_CODE_OPTIONS = [
-        '301' => 'Permanent (301)',
-        '302' => 'Temporarily (302)',
-    ];
+    public const STATUS_CODE_TEMPORARY = 302;
+    public const STATUS_CODE_PERMANENT = 301;
 
-    public const TYPE_OPTIONS = [
-        'static' => 'Static',
-        'dynamic' => 'Dynamic (RegExp)',
-    ];
     /**
      * @var string sourceUrl
      */
-    public $sourceUrl;
+    public ?string $sourceUrl = null;
     /**
      * @var string|null destinationUrl
      */
-    public $destinationUrl;
+    public ?string $destinationUrl = null;
     /**
-     * @var string|null hitAt
+     * @var DateTime|null
      */
-    public $hitAt;
+    public ?DateTime $hitAt = null;
     /**
-     * @var string|null hitCount
+     * @var int hitCount
      */
-    public $hitCount;
+    public int $hitCount = 0;
     /**
      * @var string|null statusCode
      */
-    public $statusCode;
+    public ?string $statusCode = null;
     /**
-     * @var string type
+     * @var string|null type
      */
-    public $type;
+    public ?string $type = null;
     /**
      * @var int|null siteId
      */
-    public ?int $siteId;
+    public ?int $siteId = null;
 
     /**
      * @var int|null destinationElementId
      */
-    public $destinationElementId;
+    public ?int $destinationElementId = null;
 
     /**
      * @var int|null destinationSiteId
      */
-    public $destinationSiteId;
+    public ?int $destinationSiteId = null;
 
     /**
-     * @var DateTime
+     * @var DateTime|null
      */
-    public $postDate;
+    public ?DateTime $postDate = null;
 
     /**
-     * @var DateTime
+     * @var DateTime|null
      */
-    public $expiryDate;
+    public ?DateTime $expiryDate = null;
 
     /**
      * @inheritdoc
@@ -152,10 +147,20 @@ class Redirect extends Element
 
     /**
      * @inheritdoc
-     *
-     * @return RedirectQuery The newly created [[RedirectQuery]] instance.
      */
-    public static function find(): ElementQueryInterface
+    public static function statuses(): array
+    {
+        return parent::statuses() + [
+                self::STATUS_LIVE => Craft::t('vredirect', 'Live'),
+                self::STATUS_EXPIRED => Craft::t('vredirect', 'Expired'),
+                self::STATUS_PENDING => Craft::t('vredirect', 'Pending')
+            ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function find(): RedirectQuery
     {
         return new RedirectQuery(static::class);
     }
@@ -166,6 +171,7 @@ class Redirect extends Element
     protected static function defineSources(string $context = null): array
     {
         $staleDate = new DateTime('2 months ago');
+
         $sources = [];
         if ($context === 'index') {
             $sources = [
@@ -175,50 +181,62 @@ class Redirect extends Element
                     'criteria' => [],
                 ],
                 [
-                    'key' => 'static',
-                    'label' => Craft::t('vredirect', 'Static Redirects'),
-                    'criteria' => ['type' => Redirect::TYPE_STATIC],
-                ],
-                [
-                    'key' => 'dynamic',
-                    'label' => Craft::t('vredirect', 'Dynamic Redirects'),
-                    'criteria' => ['type' => Redirect::TYPE_DYNAMIC],
-                ],
-                [
                     'key' => 'stale',
                     'label' => Craft::t('vredirect', 'Stale Redirects'),
                     'criteria' => ['hitAt' => '< ' . Db::prepareDateForDb($staleDate)],
                 ],
             ];
+            // TODO: Add redirect groups
         }
         return $sources;
     }
 
+
     /**
      * @inheritdoc
      */
-    protected static function defineSearchableAttributes(): array
+    protected static function defineActions(string $source = null): array
     {
-        return ['sourceUrl', 'destinationUrl'];
+        $actions = [];
+        $elementsService = Craft::$app->getElements();
+
+        // Edit
+        $actions[] = $elementsService->createAction([
+            'type' => Edit::class,
+            'label' => Craft::t('vredirect', 'Edit Redirect'),
+        ]);
+
+        // Delete
+        $actions[] = $elementsService->createAction([
+            'type' => Delete::class,
+            'confirmationMessage' => Craft::t('vredirect', 'Are you sure you want to delete the selected redirects?'),
+            'successMessage' => Craft::t('vredirect', 'Redirects deleted.'),
+        ]);
+
+        // Restore
+        $actions[] = $elementsService->createAction([
+            'type' => Restore::class,
+            'successMessage' => Craft::t('vredirect', 'Redirects restored.'),
+            'partialSuccessMessage' => Craft::t('vredirect', 'Some redirects restored.'),
+            'failMessage' => Craft::t('vredirect', 'Redirects not restored.'),
+        ]);
+
+//        $actions[] = SetStatus::class;
+
+        return $actions;
     }
 
-    public function getSupportedSites(): array
-    {
-        $supportedSites = [];
-        $supportedSites[] = ['siteId' => $this->siteId, 'enabledByDefault' => true];
-        return $supportedSites;
-    }
 
     /**
      * @inheritdoc
      */
     protected static function defineSortOptions(): array
     {
-        $attributes = [
+        return [
             [
-                'label' => Craft::t('vredirect', 'Source URL'),
+                'label' => Craft::t('vredirect', 'Redirect'),
                 'orderBy' => 'venveo_redirects.sourceUrl',
-                'attribute' => 'sourceUrl',
+                'attribute' => 'title',
             ],
             'venveo_redirects.type' => Craft::t('vredirect', 'Type'),
             [
@@ -243,7 +261,6 @@ class Redirect extends Element
                 'attribute' => 'dateUpdated',
             ],
         ];
-        return $attributes;
     }
 
     /**
@@ -251,8 +268,7 @@ class Redirect extends Element
      */
     protected static function defineTableAttributes(): array
     {
-        $attributes = [
-            'sourceUrl' => ['label' => Craft::t('vredirect', 'Source URL')],
+        return [
             'type' => ['label' => Craft::t('vredirect', 'Type')],
             'destinationUrl' => ['label' => Craft::t('vredirect', 'Destination URL')],
             'hitAt' => ['label' => Craft::t('vredirect', 'Last Hit')],
@@ -260,41 +276,8 @@ class Redirect extends Element
             'postDate' => ['label' => Craft::t('app', 'Post Date')],
             'expiryDate' => ['label' => Craft::t('app', 'Expiry Date')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
-            'statusCode' => ['label' => Craft::t('vredirect', 'Redirect Type')],
+            'statusCode' => ['label' => Craft::t('vredirect', 'Status Code')],
         ];
-
-        return $attributes;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected static function defineActions(string $source = null): array
-    {
-        $actions = [];
-
-        // Edit
-//        $actions[] = Craft::$app->getElements()->createAction(
-//            [
-//                'type' => Edit::class,
-//                'label' => Craft::t('vredirect', 'Edit redirect'),
-//            ]
-//        );
-
-        // Delete
-        $actions[] = DeleteRedirects::class;
-
-        // Restore
-        $actions[] = Craft::$app->getElements()->createAction([
-            'type' => Restore::class,
-            'successMessage' => Craft::t('vredirect', 'Redirects restored.'),
-            'partialSuccessMessage' => Craft::t('vredirect', 'Some redirects restored.'),
-            'failMessage' => Craft::t('vredirect', 'Redirects not restored.'),
-        ]);
-
-        $actions[] = SetStatus::class;
-
-        return $actions;
     }
 
     /**
@@ -302,17 +285,190 @@ class Redirect extends Element
      */
     protected static function defineDefaultTableAttributes(string $source): array
     {
-        $attributes = ['sourceUrl', 'destinationUrl', 'statusCode', 'hitAt', 'hitCount', 'dateCreated'];
-
-        return $attributes;
+        return ['destinationUrl', 'statusCode', 'hitAt', 'hitCount', 'dateCreated'];
     }
+
 
     /**
      * @inheritdoc
      */
-    public function getIsEditable(): bool
+    protected static function defineSearchableAttributes(): array
     {
-        return Craft::$app->getUser()->checkPermission('editSite:' . $this->getSite()->uid);
+        return ['sourceUrl', 'destinationUrl'];
+    }
+
+    public function getSupportedSites(): array
+    {
+        $supportedSites = [];
+        $supportedSites[] = ['siteId' => $this->siteId, 'enabledByDefault' => true];
+        return $supportedSites;
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public function getPostEditUrl(): ?string
+    {
+        return UrlHelper::cpUrl("redirect/redirects");
+    }
+
+
+    /**
+     * @return array
+     */
+    public static function getRedirectTypes(): array
+    {
+        return [
+            self::TYPE_STATIC => Craft::t('vredirect', 'Static'),
+            self::TYPE_DYNAMIC => Craft::t('vredirect', 'Dynamic (RegExp)'),
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function getRedirectStatusCodes(): array
+    {
+        return [
+            self::STATUS_CODE_PERMANENT => Craft::t('vredirect', 'Permanent (301)'),
+            self::STATUS_CODE_TEMPORARY => Craft::t('vredirect', 'Temporary (302)'),
+        ];
+    }
+
+    /**
+     * @return FieldLayout
+     */
+    public function getFieldLayout(): FieldLayout
+    {
+        $layoutElements = [];
+        $layoutElements[] =
+            new RedirectSourceField([
+                'label' => 'Source URI',
+                'attribute' => 'sourceUrl',
+                'mandatory' => true,
+                'instructions' => 'Enter the URI to redirect',
+            ]);
+        $layoutElements[] =
+            new RedirectDestinationField([
+                'label' => 'Redirect Destination',
+                'instructions' => 'Configure the element or external URL to send this request to',
+            ]);
+
+        $fieldLayout = new FieldLayout();
+
+        $tab = new FieldLayoutTab();
+        $tab->name = 'Settings';
+        $tab->setLayout($fieldLayout);
+
+        $tab->setElements($layoutElements);
+
+        $fieldLayout->setTabs([$tab]);
+
+        return $fieldLayout;
+    }
+
+    public function metaFieldsHtml(bool $static): string
+    {
+        $fields = [];
+
+        $fields[] = (function () use ($static) {
+            $redirectTypes = Redirect::getRedirectTypes();
+
+            $redirectTypeOptions = [];
+
+            foreach ($redirectTypes as $redirectType => $redirectTypeLabel) {
+                $redirectTypeOptions[] = [
+                    'label' => $redirectTypeLabel,
+                    'value' => $redirectType,
+                ];
+            }
+
+            if (!$static) {
+                $view = Craft::$app->getView();
+                $typeInputId = $view->namespaceInputId('type');
+                $js = <<<EOD
+(() => {
+    const \$typeInput = $('#$typeInputId');
+    const editor = \$typeInput.closest('form').data('elementEditor');
+    if (editor) {
+        editor.checkForm();
+    }
+})();
+EOD;
+                $view->registerJs($js);
+            }
+
+            return Cp::selectFieldHtml([
+                'label' => Craft::t('vredirect', 'Redirect Type'),
+                'id' => 'type',
+                'name' => 'type',
+                'value' => $this->type,
+                'options' => $redirectTypeOptions,
+                'disabled' => $static,
+            ]);
+        })();
+
+        $fields[] = (function () use ($static) {
+            $statusCodes = self::getRedirectStatusCodes();
+            $statusCodeOptions = [];
+
+            foreach ($statusCodes as $statusCode => $statusCodeLabel) {
+                $statusCodeOptions[] = [
+                    'label' => $statusCodeLabel,
+                    'value' => $statusCode,
+                ];
+            }
+
+            if (!$static) {
+                $view = Craft::$app->getView();
+                $statusInputId = $view->namespaceInputId('statusCode');
+                $js = <<<EOD
+(() => {
+    const \$typeInput = $('#$statusInputId');
+    const editor = \$typeInput.closest('form').data('elementEditor');
+    if (editor) {
+        editor.checkForm();
+    }
+})();
+EOD;
+                $view->registerJs($js);
+            }
+
+            return Cp::selectFieldHtml([
+                'label' => Craft::t('vredirect', 'Status Code'),
+                'id' => 'statusCode',
+                'name' => 'statusCode',
+                'value' => $this->statusCode,
+                'options' => $statusCodeOptions,
+                'disabled' => $static,
+            ]);
+        })();
+
+        $fields[] = parent::metaFieldsHtml($static);
+
+        return implode("\n", $fields);
+    }
+
+    protected function metadata(): array
+    {
+        $formatter = Craft::$app->getFormatter();
+        $metadata = parent::metadata();
+
+        if ($this->hitCount) {
+            $metadata[Craft::t('vredirect', 'Total Hits')] = $formatter->asInteger($this->hitCount);
+        }
+
+        if ($syncedElement = $this->getDestinationElement()) {
+            $metadata[Craft::t('vredirect', 'Linked Element')] = Cp::elementHtml($syncedElement);
+        }
+        if ($this->hitAt) {
+            $metadata[Craft::t('vredirect', 'Last Hit')] = $formatter->asDatetime($this->hitAt,
+                Formatter::FORMAT_WIDTH_SHORT);
+        }
+
+
+        return $metadata;
     }
 
     /**
@@ -320,20 +476,21 @@ class Redirect extends Element
      */
     public function getCpEditUrl(): ?string
     {
-        return UrlHelper::cpUrl('redirect/redirects/' . $this->id . '?siteId=' . $this->siteId);
+        return UrlHelper::cpUrl('redirect/redirects/' . $this->id);
     }
 
     /**
      * Gets the actual final absolute destination URL
      *
-     * @return string
-     * @throws \yii\base\Exception
+     * @return string|null
+     * @throws \yii\base\InvalidConfigException
      */
-    public function getDestinationUrl()
+    public function getDestinationUrl(): ?string
     {
         // Redirect to a site element
         if ($this->destinationElementId) {
-            $element = Craft::$app->elements->getElementById($this->destinationElementId, null, $this->destinationSiteId ?? $this->siteId);
+            $element = Craft::$app->elements->getElementById($this->destinationElementId, null,
+                $this->destinationSiteId ?? $this->siteId);
             if ($element && $element->getUrl()) {
                 return $element->getUrl();
             }
@@ -349,24 +506,7 @@ class Redirect extends Element
             // It's not absolute, so use the site the redirect was saved in
             return $this->getSite()->getBaseUrl() . $this->destinationUrl;
         }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getEditorHtml(): string
-    {
-        $html = Craft::$app->getView()->renderTemplate('vredirect/_redirects/redirectfields', [
-            'redirect' => $this,
-            'isNewRedirect' => false,
-            'meta' => false,
-            'statusCodeOptions' => self::STATUS_CODE_OPTIONS,
-            'typeOptions' => self::TYPE_OPTIONS,
-        ]);
-
-        $html .= parent::getEditorHtml();
-
-        return $html;
+        return null;
     }
 
     /**
@@ -374,7 +514,7 @@ class Redirect extends Element
      *
      * @return Site|null
      */
-    public function getDestinationSite()
+    public function getDestinationSite(): ?Site
     {
         if ($this->destinationSiteId === null) {
             return null;
@@ -417,25 +557,53 @@ class Redirect extends Element
         $rules[] = [['hitAt'], DateTimeValidator::class];
         $rules[] = [['hitCount', 'destinationElementId', 'destinationSiteId'], 'number', 'integerOnly' => true];
         $rules[] = [['sourceUrl', 'destinationUrl'], 'string', 'max' => 255];
-        $rules[] = [['sourceUrl', 'type'], 'required'];
+        $rules[] = [['sourceUrl', 'type'], 'required', 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
 
-        $rules[] = [['type'], 'in', 'range' => [self::TYPE_STATIC, self::TYPE_DYNAMIC]];
-        $rules[] = [['statusCode'], 'in', 'range' => array_keys(self::STATUS_CODE_OPTIONS)];
+        $rules[] = [
+            ['type'],
+            'in',
+            'range' => [self::TYPE_STATIC, self::TYPE_DYNAMIC],
+            'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]
+        ];
+        $rules[] = [['statusCode'], 'in', 'range' => array_keys(self::getRedirectStatusCodes())];
 
         $rules[] = [['destinationSiteId'], SiteIdValidator::class];
-        $rules[] = ['destinationElementId', 'exist', 'targetClass' => \craft\records\Element::class, 'targetAttribute' => ['destinationElementId' => 'id']];
-        $rules[] = ['destinationSiteId', 'required', 'when' => function($model) {
-            return !empty($model->destinationElementId);
-        }];
-        $rules[] = ['destinationUrl', 'required', 'when' => function($model) {
-            return empty($model->destinationElementId);
-        }];
-        $rules[] = ['destinationUrl', UrlValidator::class, 'when' => function($model) {
-            return empty($model->destinationSiteId);
-        }];
-        $rules[] = ['destinationUrl', UriValidator::class, 'when' => function($model) {
-            return !empty($model->destinationSiteId);
-        }];
+        $rules[] = [
+            'destinationElementId',
+            'exist',
+            'targetClass' => \craft\records\Element::class,
+            'targetAttribute' => ['destinationElementId' => 'id']
+        ];
+        $rules[] = [
+            'destinationSiteId',
+            'required',
+            'when' => function ($model) {
+                return !empty($model->destinationElementId);
+            }
+        ];
+        $rules[] = [
+            'destinationUrl',
+            'required',
+            'when' => function ($model) {
+                return empty($model->destinationElementId);
+            },
+            'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]
+        ];
+        // TODO: Re-add validation for URLs
+//        $rules[] = [
+//            'destinationUrl',
+//            UrlValidator::class,
+//            'when' => function ($model) {
+//                return empty($model->destinationSiteId);
+//            }
+//        ];
+//        $rules[] = [
+//            'destinationUrl',
+//            UriValidator::class,
+//            'when' => function ($model) {
+//                return !empty($model->destinationSiteId);
+//            }
+//        ];
 
         $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
 
@@ -452,9 +620,7 @@ class Redirect extends Element
     public function beforeDelete(): bool
     {
         $record = RedirectRecord::findOne($this->id);
-        if ($record) {
-            $record->softDelete();
-        }
+        $record?->softDelete();
         return parent::beforeDelete();
     }
 
@@ -471,81 +637,86 @@ class Redirect extends Element
             $this->postDate->setTimestamp($this->postDate->getTimestamp() - ($this->postDate->getTimestamp() % 60));
         }
 
+        if (!$this->type) {
+            $this->type = self::TYPE_STATIC;
+        }
+
         return parent::beforeSave($isNew);
     }
 
     /**
      * @inheritdoc
-     * @throws Exception
      */
     public function afterSave(bool $isNew): void
     {
-        if (!$this->propagating) {
-            if (!$isNew) {
-                $record = RedirectRecord::findOne($this->id);
-
-                if (!$record) {
-                    throw new Exception('Invalid redirect ID: ' . $this->id);
-                }
-            } else {
-                $record = new RedirectRecord();
-                $record->id = (int)$this->id;
+        // TODO: Deal with redirects from 404 list
+        /*
+         *      $fromCatchAllId = Craft::$app->request->getBodyParam('catchAllRecordId');
+        if ($fromCatchAllId) {
+            $catchAllRecord = CatchAllUrl::findOne($fromCatchAllId);
+            if ($catchAllRecord) {
+                $catchAllRecord->delete();
             }
-
-            if ($this->hitCount > 0) {
-                $record->hitCount = $this->hitCount;
-            } else {
-                $record->hitCount = 0;
-            }
-
-            if ($record->hitAt != null) {
-                $record->hitAt = $this->hitAt;
-            } else {
-                $record->hitAt = null;
-            }
-
-            $record->sourceUrl = $this->formatUrl(trim($this->sourceUrl), true);
-
-            // Don't overwrite an existing destinationUrl, just in case...
-            if ($this->destinationUrl) {
-                $record->destinationUrl = $this->formatUrl(trim($this->destinationUrl), false);
-            }
-
-            $record->destinationElementId = $this->destinationElementId;
-            $record->destinationSiteId = $this->destinationSiteId;
-
-            $record->statusCode = $this->statusCode;
-            $record->type = $this->type;
-            if ($this->dateCreated) {
-                $record->dateCreated = $this->dateCreated;
-            }
-            if ($this->dateUpdated) {
-                $record->dateUpdated = $this->dateUpdated;
-            }
-            $record->postDate = $this->postDate;
-            $record->expiryDate = $this->expiryDate;
-
-            if ($this->enabled && !$this->postDate) {
-                // Default the post date to the current date/time
-                $this->postDate = new \DateTime();
-                // ...without the seconds
-                $this->postDate->setTimestamp($this->postDate->getTimestamp() - ($this->postDate->getTimestamp() % 60));
-            }
-
-
-            $record->save(false);
         }
+         */
+        if ($this->propagating) {
+            parent::afterSave($isNew);
+            return;
+        }
+        if ($isNew) {
+            $record = new RedirectRecord();
+            $record->id = (int)$this->id;
+        } else {
+            $record = RedirectRecord::findOne($this->id);
+        }
+        if (!$record) {
+            Craft::warning('Unable to create record model for Redirect Element', __METHOD__);
+            parent::afterSave($isNew);
+        }
+
+        $record->hitCount = $this->hitCount;
+        $record->hitAt = $this->hitAt;
+        $record->sourceUrl = $this->formatUrl(trim($this->sourceUrl), true);
+
+        // Don't overwrite an existing destinationUrl, just in case...
+        if ($this->destinationUrl) {
+            $record->destinationUrl = $this->formatUrl(trim($this->destinationUrl), false);
+        }
+
+        $record->destinationElementId = $this->destinationElementId;
+        $record->destinationSiteId = $this->destinationSiteId;
+
+        $record->statusCode = $this->statusCode;
+        $record->type = $this->type;
+        if ($this->dateCreated) {
+            $record->dateCreated = $this->dateCreated;
+        }
+        if ($this->dateUpdated) {
+            $record->dateUpdated = $this->dateUpdated;
+        }
+        $record->postDate = $this->postDate;
+        $record->expiryDate = $this->expiryDate;
+
+        if ($this->enabled && !$this->postDate) {
+            // Default the post date to the current date/time
+            $this->postDate = new \DateTime();
+            // ...without the seconds
+            $this->postDate->setTimestamp($this->postDate->getTimestamp() - ($this->postDate->getTimestamp() % 60));
+        }
+
+        $record->save(false);
         parent::afterSave($isNew);
     }
 
     /**
      * Cleans a URL by removing its base URL if it's a relative one
      * Also strip leading slashes from absolute URLs
+     *
      * @param string $url
      * @param bool $isSource
      * @return string
      */
-    public function formatUrl(string $url, $isSource = false): string
+    public function formatUrl(string $url, bool $isSource = false): string
     {
         /** @var Settings $settings */
         $settings = Plugin::getInstance()->getSettings();
@@ -565,8 +736,8 @@ class Redirect extends Element
                 $urlInfo['path'] = ltrim($urlInfo['path'], '/');
             }
 
-            // Remove the trailing slash from the path if enabled
-            if (isset($urlInfo['path']) && $settings->trimTrailingSlashFromPath) {
+            // Remove the trailing slash from the path if enabled (only for sourceUrls)
+            if ($isSource && isset($urlInfo['path']) && $settings->trimTrailingSlashFromPath) {
                 $urlInfo['path'] = rtrim($urlInfo['path'], '/');
             }
 
@@ -578,43 +749,28 @@ class Redirect extends Element
 
     /**
      * Source: https://www.php.net/manual/en/function.parse-url.php#106731
-     * @param array $parsed_url
+     *
+     * @param array $parsedUrl
      * @return string
      */
-    private static function unparseUrl($parsed_url): string
+    private static function unparseUrl(array $parsedUrl): string
     {
-        $scheme = isset($parsed_url['scheme']) ? $parsed_url['scheme'] . '://' : '';
-        $host = $parsed_url['host'] ?? '';
-        $port = isset($parsed_url['port']) ? ':' . $parsed_url['port'] : '';
-        $user = $parsed_url['user'] ?? '';
-        $pass = isset($parsed_url['pass']) ? ':' . $parsed_url['pass'] : '';
+        $scheme = isset($parsedUrl['scheme']) ? $parsedUrl['scheme'] . '://' : '';
+        $host = $parsedUrl['host'] ?? '';
+        $port = isset($parsedUrl['port']) ? ':' . $parsedUrl['port'] : '';
+        $user = $parsedUrl['user'] ?? '';
+        $pass = isset($parsedUrl['pass']) ? ':' . $parsedUrl['pass'] : '';
         $pass = ($user || $pass) ? "$pass@" : '';
-        $path = $parsed_url['path'] ?? '';
-        $query = isset($parsed_url['query']) ? '?' . $parsed_url['query'] : '';
-        $fragment = isset($parsed_url['fragment']) ? '#' . $parsed_url['fragment'] : '';
+        $path = $parsedUrl['path'] ?? '';
+        $query = isset($parsedUrl['query']) ? '?' . $parsedUrl['query'] : '';
+        $fragment = isset($parsedUrl['fragment']) ? '#' . $parsedUrl['fragment'] : '';
         return "$scheme$user$pass$host$port$path$query$fragment";
     }
 
 
-    public function __toString()
+    public function __toString(): string
     {
-        try {
-            return $this->sourceUrl;
-        } catch (Throwable $e) {
-            ErrorHandler::convertExceptionToError($e);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function datetimeAttributes(): array
-    {
-        $attributes = parent::datetimeAttributes();
-        $attributes[] = 'hitAt';
-        $attributes[] = 'postDate';
-        $attributes[] = 'expiryDate';
-        return $attributes;
+        return $this->sourceUrl;
     }
 
     /**
@@ -624,7 +780,9 @@ class Redirect extends Element
     {
         switch ($attribute) {
             case 'statusCode':
-                return $this->statusCode ? Html::encodeParams('{statusCode}', ['statusCode' => Craft::t('vredirect', self::STATUS_CODE_OPTIONS[$this->statusCode])]) : '';
+                return $this->statusCode ? Html::encodeParams('{statusCode}', [
+                    'statusCode' => Craft::t('vredirect', self::getRedirectStatusCodes()[$this->statusCode])
+                ]) : '';
 
             case 'destinationUrl':
                 if ($this->type === self::TYPE_STATIC) {
@@ -639,17 +797,18 @@ class Redirect extends Element
     }
 
     /**
-     * @return string|null
+     * @return string
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
      * @throws \yii\base\Exception
      */
-    private function renderDestinationUrl()
+    private function renderDestinationUrl(): string
     {
         if (isset($this->destinationElementId)) {
             return Craft::$app->getView()->renderTemplate('_elements/element', [
-                'element' => Craft::$app->elements->getElementById($this->destinationElementId, null, $this->destinationSiteId),
+                'element' => Craft::$app->elements->getElementById($this->destinationElementId, null,
+                    $this->destinationSiteId),
             ]);
         }
         if ($this->destinationUrl) {
@@ -664,10 +823,18 @@ class Redirect extends Element
         return '';
     }
 
+    public function getDestinationElement(): ?Element
+    {
+        if ($this->destinationElementId !== null) {
+            return Craft::$app->getElements()->getElementById($this->destinationElementId, null, $this->siteId);
+        }
+        return null;
+    }
+
     /**
      * Attempt to figure out if the destination URL can be converted to an element
      */
-    public function refreshDestinationElement()
+    public function refreshDestinationElement(): void
     {
         if (!isset($this->destinationUrl)) {
             return;
@@ -686,6 +853,16 @@ class Redirect extends Element
         }
 
         return $user->can(Plugin::PERMISSION_MANAGE_REDIRECTS) && (Craft::$app->getIsMultiSite() && $user->can('editSite:' . $this->site->uid));
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public function canCreateDrafts(User $user): bool
+    {
+        // Everyone with view permissions can create drafts
+        return true;
     }
 
     public function canDelete(User $user): bool
@@ -710,5 +887,12 @@ class Redirect extends Element
             return true;
         }
         return $user->can(Plugin::PERMISSION_MANAGE_REDIRECTS) && (Craft::$app->getIsMultiSite() && $user->can('editSite:' . $this->site->uid));
+    }
+
+    protected static function defineExporters(string $source): array
+    {
+        $exporters = parent::defineExporters($source);
+        // TODO: Add custom exporter
+        return $exporters;
     }
 }

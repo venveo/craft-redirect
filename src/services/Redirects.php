@@ -17,7 +17,6 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Site;
-use craft\services\Elements;
 use DateTime;
 use Exception;
 use Throwable;
@@ -27,7 +26,6 @@ use venveo\redirect\Plugin;
 use venveo\redirect\queue\jobs\PruneDeletedRedirects;
 use venveo\redirect\records\Redirect as RedirectRecord;
 use yii\base\Component;
-use yii\base\Event;
 use yii\base\ExitException;
 use yii\db\StaleObjectException;
 use yii\web\HttpException;
@@ -77,7 +75,7 @@ class Redirects extends Component
         $query->matchingUri = $searchUri;
         $matchedRedirects = $query->all();
         if (empty($matchedRedirects)) {
-            if (Plugin::$plugin->getSettings()->catchAllActive) {
+            if (Plugin::getInstance()->getSettings()->catchAllActive) {
                 $this->register404();
             }
             return;
@@ -111,7 +109,7 @@ class Redirects extends Component
      */
     public function register404()
     {
-        $catchAllService = Plugin::$plugin->catchAll;
+        $catchAllService = Plugin::getInstance()->catchAll;
         $settings = Plugin::getInstance()->getSettings();
 
         $fullPath = Craft::$app->request->getFullPath();
@@ -304,7 +302,7 @@ class Redirects extends Component
      *
      * @return Site[]
      */
-    public function getValidSites()
+    public function getValidSites(): array
     {
         $sites = [];
         foreach (Craft::$app->getSites()->getEditableSites() as $site) {

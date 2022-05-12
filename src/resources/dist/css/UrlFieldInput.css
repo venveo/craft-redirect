@@ -1,0 +1,19 @@
+
+
+.destinationUrlWrapper {
+    display: flex;
+    align-items: center;
+    margin-top: 24px;
+    gap: 8px;
+}
+.destinationUrlWrapper .prefix {
+}
+.destinationUrlWrapper .field {
+    flex: 1;
+    margin-top: 0;
+}
+.sourceUri > input {
+    flex: 1;
+    /*display: flex;*/
+    /*align-items: center;*/
+}

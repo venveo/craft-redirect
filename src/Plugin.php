@@ -21,8 +21,8 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\events\TemplateEvent;
-//use craft\feedme\events\RegisterFeedMeElementsEvent;
-//use craft\feedme\services\Elements as FeedMeElementsService;
+use craft\feedme\events\RegisterFeedMeElementsEvent;
+use craft\feedme\services\Elements as FeedMeElementsService;
 use craft\helpers\Json;
 use craft\services\Dashboard;
 use craft\services\Elements;
@@ -32,8 +32,8 @@ use craft\web\ErrorHandler;
 use craft\web\UrlManager;
 use craft\web\View;
 use Twig\Error\RuntimeError;
-use venveo\redirect\assetbundles\elementredirectslideout\ElementRedirectSlideout;
-//use venveo\redirect\elements\FeedMeRedirect;
+use venveo\redirect\assetbundles\ElementRedirectSlideout;
+use venveo\redirect\elements\FeedMeRedirect;
 use venveo\redirect\elements\Redirect;
 use venveo\redirect\models\Settings;
 use venveo\redirect\records\CatchAllUrl;
@@ -55,43 +55,14 @@ class Plugin extends BasePlugin
 {
     public const PERMISSION_MANAGE_REDIRECTS = 'vredirect:redirects:manage';
     public const PERMISSION_MANAGE_404S = 'vredirect:404s:manage';
-    /** @var self $plugin */
-    public static $plugin;
+
     public string $schemaVersion = '3.0.5';
 
     public bool $hasCpSection = true;
     public bool $hasCpSettings = true;
-    protected $_redirectsService;
-    protected $_catchAllService;
-
-    /**
-     * Returns the Redirects service.
-     *
-     * @return Redirects The Redirects service
-     */
-    public function getRedirects(): Redirects
-    {
-        if ($this->_redirectsService == null) {
-            $this->_redirectsService = new Redirects();
-        }
-        return $this->_redirectsService;
-    }
-
-    public function getCatchAll()
-    {
-        if ($this->_catchAllService == null) {
-            $this->_catchAllService = new CatchAll();
-        }
-
-        return $this->_catchAllService;
-    }
 
     public function install(): void
     {
-        if ($this->beforeInstall() === false) {
-            return;
-        }
-
         $migrator = $this->getMigrator();
 
         $oldPlugin = Craft::$app->plugins->getPlugin('redirect');
@@ -170,6 +141,16 @@ class Plugin extends BasePlugin
         return $ret;
     }
 
+    public static function config(): array
+    {
+        return [
+            'components' => [
+                'catchAll' => CatchAll::class,
+                'redirects' => Redirects::class
+            ]
+        ];
+    }
+
     /**
      * @param $message
      * @param array $params
@@ -187,9 +168,8 @@ class Plugin extends BasePlugin
     public function init()
     {
         parent::init();
-        self::$plugin = $this;
         /** @var Settings $settings */
-        $settings = self::$plugin->getSettings();
+        $settings = $this->getSettings();
 
         if (Craft::$app->request->isConsoleRequest) {
             $this->controllerNamespace = 'venveo\redirect\controllers\console';
@@ -207,7 +187,7 @@ class Plugin extends BasePlugin
         }
 
         // Remove our soft-deleted redirects when Craft is ready
-        Event::on(Gc::class, Gc::EVENT_RUN, function() {
+        Event::on(Gc::class, Gc::EVENT_RUN, function () {
             Craft::$app->gc->hardDelete('{{%venveo_redirects}}');
         });
 
@@ -220,7 +200,7 @@ class Plugin extends BasePlugin
         Event::on(
             ErrorHandler::class,
             ErrorHandler::EVENT_BEFORE_HANDLE_EXCEPTION,
-            static function(ExceptionEvent $event) {
+            function (ExceptionEvent $event) {
                 $request = Craft::$app->request;
                 // We don't care about requests that aren't on our site frontend
                 if (!$request->getIsSiteRequest() || $request->getIsLivePreview()) {
@@ -236,7 +216,7 @@ class Plugin extends BasePlugin
                 }
 
                 if ($exception instanceof HttpException && $exception->statusCode === 404) {
-                    self::$plugin->redirects->handle404($exception);
+                    $this->redirects->handle404($exception);
                 }
             }
         );
@@ -244,7 +224,7 @@ class Plugin extends BasePlugin
 
     private function registerCpRoutes()
     {
-        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $event) {
+        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function (RegisterUrlRulesEvent $event) {
             $event->rules = array_merge($event->rules, [
                 'redirect' => ['template' => 'vredirect/index'],
 
@@ -258,7 +238,7 @@ class Plugin extends BasePlugin
 
                 'redirect/redirects' => 'vredirect/redirects/index',
                 'redirect/redirects/new' => 'vredirect/redirects/edit-redirect',
-                'redirect/redirects/<redirectId:\d+>' => 'vredirect/redirects/edit-redirect',
+                'redirect/redirects/<elementId:\d+>' => 'elements/edit'
             ]);
         });
     }
@@ -268,15 +248,15 @@ class Plugin extends BasePlugin
      */
     private function registerFeedMeElement()
     {
-//        if (Craft::$app->plugins->isPluginEnabled('feed-me') && class_exists(\craft\feedme\Plugin::class)) {
-//            Event::on(
-//                FeedMeElementsService::class,
-//                FeedMeElementsService::EVENT_REGISTER_FEED_ME_ELEMENTS,
-//                function(RegisterFeedMeElementsEvent $e) {
-//                    $e->elements[] = FeedMeRedirect::class;
-//                }
-//            );
-//        }
+        if (Craft::$app->plugins->isPluginEnabled('feed-me') && class_exists(\craft\feedme\Plugin::class)) {
+            Event::on(
+                FeedMeElementsService::class,
+                FeedMeElementsService::EVENT_REGISTER_FEED_ME_ELEMENTS,
+                function (RegisterFeedMeElementsEvent $e) {
+                    $e->elements[] = FeedMeRedirect::class;
+                }
+            );
+        }
     }
 
     private function registerElementEvents()
@@ -285,7 +265,7 @@ class Plugin extends BasePlugin
             return;
         }
 
-        Event::on(Elements::class, Elements::EVENT_BEFORE_SAVE_ELEMENT, function(ElementEvent $e) {
+        Event::on(Elements::class, Elements::EVENT_BEFORE_SAVE_ELEMENT, function (ElementEvent $e) {
             /** @var Element $element */
             $element = $e->element;
 
@@ -296,7 +276,7 @@ class Plugin extends BasePlugin
 
             Plugin::getInstance()->redirects->handleBeforeElementSaved($e);
         });
-        Event::on(Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT, function(ElementEvent $e) {
+        Event::on(Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT, function (ElementEvent $e) {
             /** @var Element $element */
             $element = $e->element;
 
@@ -307,7 +287,7 @@ class Plugin extends BasePlugin
 
             Plugin::getInstance()->redirects->handleAfterElementSaved($e);
         });
-        Event::on(Elements::class, Elements::EVENT_BEFORE_UPDATE_SLUG_AND_URI, function(ElementEvent $e) {
+        Event::on(Elements::class, Elements::EVENT_BEFORE_UPDATE_SLUG_AND_URI, function (ElementEvent $e) {
             /** @var Element $element */
             $element = $e->element;
 
@@ -317,7 +297,7 @@ class Plugin extends BasePlugin
             }
             Plugin::getInstance()->redirects->handleBeforeElementSaved($e);
         });
-        Event::on(Elements::class, Elements::EVENT_AFTER_UPDATE_SLUG_AND_URI, function(ElementEvent $e) {
+        Event::on(Elements::class, Elements::EVENT_AFTER_UPDATE_SLUG_AND_URI, function (ElementEvent $e) {
             /** @var Element $element */
             $element = $e->element;
 
@@ -329,12 +309,11 @@ class Plugin extends BasePlugin
         });
 
 
-
-        Event::on(Elements::class, Elements::EVENT_BEFORE_DELETE_ELEMENT, function(DeleteElementEvent $e) {
+        Event::on(Elements::class, Elements::EVENT_BEFORE_DELETE_ELEMENT, function (DeleteElementEvent $e) {
             Plugin::getInstance()->redirects->handleElementDeleted($e);
         });
 
-        Event::on(Elements::class, Elements::EVENT_AFTER_RESTORE_ELEMENT, function(ElementEvent $e) {
+        Event::on(Elements::class, Elements::EVENT_AFTER_RESTORE_ELEMENT, function (ElementEvent $e) {
             Plugin::getInstance()->redirects->handleElementRestored($e);
         });
     }
@@ -344,20 +323,22 @@ class Plugin extends BasePlugin
         Event::on(
             UserPermissions::class,
             UserPermissions::EVENT_REGISTER_PERMISSIONS,
-            function(RegisterUserPermissionsEvent $event) {
+            function (RegisterUserPermissionsEvent $event) {
                 $event->permissions[] = [
                     'heading' => Craft::t('vredirect', 'Redirects'),
                     'permissions' => [
-                            'vredirect:redirects:manage' => ['label' => Craft::t('vredirect', 'Manage Redirects on Editable Sites')],
-                            'vredirect:404s:manage' => ['label' => Craft::t('vredirect', 'Manage Registered 404s')],
+                        'vredirect:redirects:manage' => [
+                            'label' => Craft::t('vredirect', 'Manage Redirects on Editable Sites')
                         ],
+                        'vredirect:404s:manage' => ['label' => Craft::t('vredirect', 'Manage Registered 404s')],
+                    ],
                 ];
             });
     }
 
     protected function attachTemplateHooks()
     {
-        Event::on(View::class, View::EVENT_BEFORE_RENDER_PAGE_TEMPLATE, function(TemplateEvent $e) {
+        Event::on(View::class, View::EVENT_BEFORE_RENDER_PAGE_TEMPLATE, function (TemplateEvent $e) {
             $currentUser = \Craft::$app->getUser()->getIdentity();
             if (!$currentUser || !$currentUser->can('vredirect:redirects:manage')) {
                 return;
@@ -366,7 +347,7 @@ class Plugin extends BasePlugin
                 Craft::$app->view->registerAssetBundle(ElementRedirectSlideout::class);
             }
         });
-        Craft::$app->view->hook('cp.entries.edit.meta', function(array &$context) {
+        Craft::$app->view->hook('cp.entries.edit.meta', function (array &$context) {
             $currentUser = \Craft::$app->getUser()->getIdentity();
             if (!$currentUser || !$currentUser->can('vredirect:redirects:manage')) {
                 return '';
@@ -398,7 +379,7 @@ class Plugin extends BasePlugin
         Event::on(
             Dashboard::class,
             Dashboard::EVENT_REGISTER_WIDGET_TYPES,
-            function(RegisterComponentTypesEvent $event) {
+            function (RegisterComponentTypesEvent $event) {
                 $event->types[] = LatestErrors::class;
             }
         );
