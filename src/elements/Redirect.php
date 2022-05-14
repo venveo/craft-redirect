@@ -379,14 +379,14 @@ class Redirect extends Element
         $layoutElements = [];
         $layoutElements[] =
             new RedirectSourceField([
-                'label' => 'Source URI',
+                'label' => Plugin::t('Source URI'),
                 'attribute' => 'sourceUrl',
-                'instructions' => 'Enter the URI to redirect',
+                'instructions' =>  Plugin::t('Enter the URI to redirect'),
             ]);
         $layoutElements[] =
             new RedirectDestinationField([
-                'label' => 'Redirect Destination: ' . $this->type,
-                'instructions' => 'Configure the element or external URL to send this request to',
+                'label' =>  Plugin::t('Redirect Destination'),
+                'instructions' =>  Plugin::t('Configure the element or external URL to send this request to'),
             ]);
 
         $fieldLayout = new FieldLayout();
