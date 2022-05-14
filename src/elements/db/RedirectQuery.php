@@ -133,8 +133,24 @@ class RedirectQuery extends ElementQuery
         return $this;
     }
 
+
     /**
-     * Sets the [[handle]] property.
+     * Sets the [[type]] property.
+     *
+     * @param string|string[]|null $value The property value
+     *
+     * @return static self reference
+     */
+    public function type($value): RedirectQuery
+    {
+        $this->type = $value;
+
+        return $this;
+    }
+
+
+    /**
+     * Sets the [[sourceUrl]] property.
      *
      * @param string|string[]|null $value The property value
      *

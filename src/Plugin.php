@@ -48,8 +48,6 @@ use yii\web\HttpException;
  * @property Redirects $redirects
  * @property array $cpNavItem
  * @property CatchAll $catchAll
- * @property mixed _redirectsService
- * @property mixed _catchAllService
  */
 class Plugin extends BasePlugin
 {

@@ -14,6 +14,7 @@ use craft\base\Element;
 use craft\elements\actions\Delete;
 use craft\elements\actions\Edit;
 use craft\elements\actions\Restore;
+use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\User;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
@@ -25,23 +26,28 @@ use craft\models\FieldLayoutTab;
 use craft\models\Site;
 use craft\validators\DateTimeValidator;
 use craft\validators\SiteIdValidator;
+use craft\web\CpScreenResponseBehavior;
 use DateTime;
 use Throwable;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
+use venveo\redirect\elements\conditions\RedirectCondition;
 use venveo\redirect\elements\db\RedirectQuery;
-use venveo\redirect\fieldlayoutelements\ChangeSuggestion;
 use venveo\redirect\fieldlayoutelements\RedirectDestinationField;
 use venveo\redirect\fieldlayoutelements\RedirectSourceField;
 use venveo\redirect\models\Settings;
 use venveo\redirect\Plugin;
 use venveo\redirect\records\Redirect as RedirectRecord;
+use yii\base\InvalidConfigException;
 use yii\db\Exception;
 use yii\db\StaleObjectException;
 use yii\i18n\Formatter;
+use yii\web\Response;
 
 /**
+ * @property-read null|\craft\base\Element $destinationElement
+ * @property-read null|string $postEditUrl
  * @property-read null|\craft\models\Site $destinationSite
  */
 class Redirect extends Element
@@ -165,6 +171,16 @@ class Redirect extends Element
         return new RedirectQuery(static::class);
     }
 
+
+    /**
+     * @inheritdoc
+     * @return RedirectCondition
+     */
+    public static function createCondition(): ElementConditionInterface
+    {
+        return Craft::createObject(RedirectCondition::class, [static::class]);
+    }
+
     /**
      * @inheritdoc
      */
@@ -177,7 +193,7 @@ class Redirect extends Element
             $sources = [
                 [
                     'key' => '*',
-                    'label' => Craft::t('vredirect', 'All Redirects'),
+                    'label' => Craft::t('vredirect', 'All redirects'),
                     'criteria' => [],
                 ],
                 [
@@ -190,6 +206,25 @@ class Redirect extends Element
         }
         return $sources;
     }
+
+
+    /**
+     * @inheritdoc
+     */
+    public function prepareEditScreen(Response $response, string $containerId): void
+    {
+
+        $crumbs = [
+            [
+                'label' => Craft::t('vredirect', 'Redirects'),
+                'url' => UrlHelper::url('redirect/redirects'),
+            ]
+        ];
+
+        /** @var Response|CpScreenResponseBehavior $response */
+        $response->crumbs($crumbs);
+    }
+
 
 
     /**
@@ -346,12 +381,11 @@ class Redirect extends Element
             new RedirectSourceField([
                 'label' => 'Source URI',
                 'attribute' => 'sourceUrl',
-                'mandatory' => true,
                 'instructions' => 'Enter the URI to redirect',
             ]);
         $layoutElements[] =
             new RedirectDestinationField([
-                'label' => 'Redirect Destination',
+                'label' => 'Redirect Destination: ' . $this->type,
                 'instructions' => 'Configure the element or external URL to send this request to',
             ]);
 
@@ -359,6 +393,7 @@ class Redirect extends Element
 
         $tab = new FieldLayoutTab();
         $tab->name = 'Settings';
+        $tab->uid = 'redirectSettings';
         $tab->setLayout($fieldLayout);
 
         $tab->setElements($layoutElements);
@@ -485,8 +520,9 @@ EOD;
      * @return string|null
      * @throws \yii\base\InvalidConfigException
      */
-    public function getDestinationUrl(): ?string
+    public function resolveDestinationUrl(string $requestUrl = null): ?string
     {
+
         // Redirect to a site element
         if ($this->destinationElementId) {
             $element = Craft::$app->elements->getElementById($this->destinationElementId, null,
@@ -611,6 +647,34 @@ EOD;
     }
 
     /**
+     * @inheritdoc
+     */
+    public function beforeValidate(): bool
+    {
+        if (
+            !$this->postDate &&
+            (
+                in_array($this->scenario, [self::SCENARIO_LIVE, self::SCENARIO_DEFAULT]) ||
+                (!$this->getIsDraft() && !$this->getIsRevision())
+            )
+        ) {
+            // Default the post date to the current date/time
+            $this->postDate = new DateTime();
+            // ...without the seconds
+            $this->postDate->setTimestamp($this->postDate->getTimestamp() - ($this->postDate->getTimestamp() % 60));
+            // ...unless an expiry date is set in the past
+            if ($this->expiryDate && $this->postDate >= $this->expiryDate) {
+                $this->postDate = (clone $this->expiryDate)->modify('-1 day');
+            }
+        }
+        if (!$this->type) {
+            $this->type = self::TYPE_STATIC;
+        }
+
+        return parent::beforeValidate();
+    }
+
+    /**
      * Soft-delete the record with the element
      *
      * @return bool
@@ -619,9 +683,12 @@ EOD;
      */
     public function beforeDelete(): bool
     {
+        if (!parent::beforeDelete()) {
+            return false;
+        }
+        
         $record = RedirectRecord::findOne($this->id);
-        $record?->softDelete();
-        return parent::beforeDelete();
+        return (bool)$record?->softDelete();
     }
 
     /**
@@ -630,17 +697,7 @@ EOD;
      */
     public function beforeSave(bool $isNew): bool
     {
-        if ($this->enabled && !$this->postDate) {
-            // Default the post date to the current date/time
-            $this->postDate = new \DateTime();
-            // ...without the seconds
-            $this->postDate->setTimestamp($this->postDate->getTimestamp() - ($this->postDate->getTimestamp() % 60));
-        }
-
-        if (!$this->type) {
-            $this->type = self::TYPE_STATIC;
-        }
-
+        
         return parent::beforeSave($isNew);
     }
 
@@ -669,9 +726,9 @@ EOD;
         } else {
             $record = RedirectRecord::findOne($this->id);
         }
+        
         if (!$record) {
-            Craft::warning('Unable to create record model for Redirect Element', __METHOD__);
-            parent::afterSave($isNew);
+            throw new InvalidConfigException("Invalid redirect ID: $this->id");
         }
 
         $record->hitCount = $this->hitCount;
@@ -688,23 +745,15 @@ EOD;
 
         $record->statusCode = $this->statusCode;
         $record->type = $this->type;
-        if ($this->dateCreated) {
-            $record->dateCreated = $this->dateCreated;
-        }
-        if ($this->dateUpdated) {
-            $record->dateUpdated = $this->dateUpdated;
-        }
-        $record->postDate = $this->postDate;
-        $record->expiryDate = $this->expiryDate;
 
-        if ($this->enabled && !$this->postDate) {
-            // Default the post date to the current date/time
-            $this->postDate = new \DateTime();
-            // ...without the seconds
-            $this->postDate->setTimestamp($this->postDate->getTimestamp() - ($this->postDate->getTimestamp() % 60));
-        }
+        $record->postDate = Db::prepareDateForDb($this->postDate);
+        $record->expiryDate = Db::prepareDateForDb($this->expiryDate);
+
+        // Capture the dirty attributes from the record
+        $dirtyAttributes = array_keys($record->getDirtyAttributes());
 
         $record->save(false);
+        $this->setDirtyAttributes($dirtyAttributes);
         parent::afterSave($isNew);
     }
 
@@ -723,11 +772,13 @@ EOD;
 
         $resultUrl = $url;
         $urlInfo = parse_url($resultUrl);
-        $siteUrlHost = parse_url($this->site->baseUrl, PHP_URL_HOST);
+        $siteUrlHost = parse_url($this->site->getBaseUrl(true), PHP_URL_HOST);
+        $siteBaseUrlParts = parse_url($this->site->getBaseUrl(true));
+
         // If we're the source and we're static or we're not the source, we should check for relative URLs
         if ($this->type === self::TYPE_STATIC || !$isSource) {
             // If our redirect source or destination has our site URL, let's strip it out
-            if (isset($urlInfo['host']) && $urlInfo['host'] === $siteUrlHost) {
+            if (isset($urlInfo['host']) && $urlInfo['host'] === $siteBaseUrlParts['host']) {
                 unset($urlInfo['scheme'], $urlInfo['host'], $urlInfo['port']);
             }
 
@@ -812,7 +863,7 @@ EOD;
             ]);
         }
         if ($this->destinationUrl) {
-            return Html::a(Html::tag('span', $this->destinationUrl, ['dir' => 'ltr']), $this->getDestinationUrl(), [
+            return Html::a(Html::tag('span', $this->destinationUrl, ['dir' => 'ltr']), $this->resolveDestinationUrl(), [
                 'href' => $this->destinationUrl,
                 'rel' => 'noopener',
                 'target' => '_blank',

@@ -133,7 +133,7 @@ class Redirects extends Component
         $destinationUrl = null;
 
         if ($redirect->type === Redirect::TYPE_STATIC) {
-            $processedUrl = $redirect->getDestinationUrl();
+            $processedUrl = $redirect->resolveDestinationUrl();
         } elseif ($redirect->type === Redirect::TYPE_DYNAMIC) {
             $sourceUrl = $redirect->sourceUrl;
             // Add leading and trailing slashes for RegEx
@@ -144,10 +144,10 @@ class Redirects extends Component
                 $sourceUrl .= '/';
             }
             // Only preg_replace if there are replacements available
-            if (preg_match('/\$[1-9]+/', $redirect->getDestinationUrl())) {
-                $processedUrl = preg_replace($sourceUrl, $redirect->getDestinationUrl(), $uri);
+            if (preg_match('/\$[1-9]+/', $redirect->resolveDestinationUrl())) {
+                $processedUrl = preg_replace($sourceUrl, $redirect->resolveDestinationUrl(), $uri);
             } else {
-                $processedUrl = $redirect->getDestinationUrl();
+                $processedUrl = $redirect->resolveDestinationUrl();
             }
         } else {
             return;
