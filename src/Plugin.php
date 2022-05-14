@@ -112,14 +112,14 @@ class Plugin extends BasePlugin
         $currentUser = Craft::$app->getUser()->getIdentity();
         if ($currentUser->can('vredirect:redirects:manage')) {
             $subnavItems['redirects'] = [
-                'label' => Craft::t('vredirect', 'Redirects'),
+                'label' => static::t('Redirects'),
                 'url' => 'redirect/redirects',
             ];
         }
 
         if ($currentUser->can('vredirect:404s:manage')) {
             $subnavItems['catch-all'] = [
-                'label' => Craft::t('vredirect', 'Registered 404s'),
+                'label' => static::t('Registered 404s'),
                 'url' => 'redirect/catch-all',
             ];
             $count = CatchAllUrl::find()->where(['=', 'ignored', false])->count();
@@ -129,7 +129,7 @@ class Plugin extends BasePlugin
             }
 
             $subnavItems['ignored'] = [
-                'label' => Craft::t('vredirect', 'Ignored 404s'),
+                'label' => static::t('Ignored 404s'),
                 'url' => 'redirect/catch-all/ignored',
             ];
         }
@@ -323,12 +323,12 @@ class Plugin extends BasePlugin
             UserPermissions::EVENT_REGISTER_PERMISSIONS,
             function (RegisterUserPermissionsEvent $event) {
                 $event->permissions[] = [
-                    'heading' => Craft::t('vredirect', 'Redirects'),
+                    'heading' => static::t('Redirects'),
                     'permissions' => [
                         'vredirect:redirects:manage' => [
-                            'label' => Craft::t('vredirect', 'Manage Redirects on Editable Sites')
+                            'label' => static::t('Manage Redirects on Editable Sites')
                         ],
-                        'vredirect:404s:manage' => ['label' => Craft::t('vredirect', 'Manage Registered 404s')],
+                        'vredirect:404s:manage' => ['label' => static::t('Manage Registered 404s')],
                     ],
                 ];
             });

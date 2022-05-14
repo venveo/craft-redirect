@@ -116,7 +116,7 @@ class Redirect extends Element
      */
     public static function displayName(): string
     {
-        return Craft::t('vredirect', 'Redirect');
+        return Plugin::t( 'Redirect');
     }
 
     /**
@@ -124,7 +124,7 @@ class Redirect extends Element
      */
     public static function pluralDisplayName(): string
     {
-        return Craft::t('vredirect', 'Redirects');
+        return Plugin::t( 'Redirects');
     }
 
     /**
@@ -157,9 +157,9 @@ class Redirect extends Element
     public static function statuses(): array
     {
         return parent::statuses() + [
-                self::STATUS_LIVE => Craft::t('vredirect', 'Live'),
-                self::STATUS_EXPIRED => Craft::t('vredirect', 'Expired'),
-                self::STATUS_PENDING => Craft::t('vredirect', 'Pending')
+                self::STATUS_LIVE => Plugin::t( 'Live'),
+                self::STATUS_EXPIRED => Plugin::t( 'Expired'),
+                self::STATUS_PENDING => Plugin::t( 'Pending')
             ];
     }
 
@@ -193,12 +193,12 @@ class Redirect extends Element
             $sources = [
                 [
                     'key' => '*',
-                    'label' => Craft::t('vredirect', 'All redirects'),
+                    'label' => Plugin::t( 'All redirects'),
                     'criteria' => [],
                 ],
                 [
                     'key' => 'stale',
-                    'label' => Craft::t('vredirect', 'Stale Redirects'),
+                    'label' => Plugin::t( 'Stale Redirects'),
                     'criteria' => ['hitAt' => '< ' . Db::prepareDateForDb($staleDate)],
                 ],
             ];
@@ -216,7 +216,7 @@ class Redirect extends Element
 
         $crumbs = [
             [
-                'label' => Craft::t('vredirect', 'Redirects'),
+                'label' => Plugin::t( 'Redirects'),
                 'url' => UrlHelper::url('redirect/redirects'),
             ]
         ];
@@ -238,22 +238,22 @@ class Redirect extends Element
         // Edit
         $actions[] = $elementsService->createAction([
             'type' => Edit::class,
-            'label' => Craft::t('vredirect', 'Edit Redirect'),
+            'label' => Plugin::t( 'Edit Redirect'),
         ]);
 
         // Delete
         $actions[] = $elementsService->createAction([
             'type' => Delete::class,
-            'confirmationMessage' => Craft::t('vredirect', 'Are you sure you want to delete the selected redirects?'),
-            'successMessage' => Craft::t('vredirect', 'Redirects deleted.'),
+            'confirmationMessage' => Plugin::t( 'Are you sure you want to delete the selected redirects?'),
+            'successMessage' => Plugin::t( 'Redirects deleted.'),
         ]);
 
         // Restore
         $actions[] = $elementsService->createAction([
             'type' => Restore::class,
-            'successMessage' => Craft::t('vredirect', 'Redirects restored.'),
-            'partialSuccessMessage' => Craft::t('vredirect', 'Some redirects restored.'),
-            'failMessage' => Craft::t('vredirect', 'Redirects not restored.'),
+            'successMessage' => Plugin::t( 'Redirects restored.'),
+            'partialSuccessMessage' => Plugin::t( 'Some redirects restored.'),
+            'failMessage' => Plugin::t( 'Redirects not restored.'),
         ]);
 
 //        $actions[] = SetStatus::class;
@@ -269,22 +269,22 @@ class Redirect extends Element
     {
         return [
             [
-                'label' => Craft::t('vredirect', 'Redirect'),
+                'label' => Plugin::t( 'Redirect'),
                 'orderBy' => 'venveo_redirects.sourceUrl',
                 'attribute' => 'title',
             ],
-            'venveo_redirects.type' => Craft::t('vredirect', 'Type'),
+            'venveo_redirects.type' => Plugin::t( 'Type'),
             [
-                'label' => Craft::t('vredirect', 'Destination URL'),
+                'label' => Plugin::t( 'Destination URL'),
                 'orderBy' => 'venveo_redirects.destinationUrl',
                 'attribute' => 'destinationUrl',
             ],
             [
-                'label' => Craft::t('vredirect', 'Last Hit'),
+                'label' => Plugin::t( 'Last Hit'),
                 'orderBy' => 'venveo_redirects.hitAt',
                 'attribute' => 'hitAt',
             ],
-            'venveo_redirects.hitCount' => Craft::t('vredirect', 'Hit Count'),
+            'venveo_redirects.hitCount' => Plugin::t( 'Hit Count'),
             [
                 'label' => Craft::t('app', 'Date Created'),
                 'orderBy' => 'elements.dateCreated',
@@ -304,14 +304,14 @@ class Redirect extends Element
     protected static function defineTableAttributes(): array
     {
         return [
-            'type' => ['label' => Craft::t('vredirect', 'Type')],
-            'destinationUrl' => ['label' => Craft::t('vredirect', 'Destination URL')],
-            'hitAt' => ['label' => Craft::t('vredirect', 'Last Hit')],
-            'hitCount' => ['label' => Craft::t('vredirect', 'Hit Count')],
+            'type' => ['label' => Plugin::t( 'Type')],
+            'destinationUrl' => ['label' => Plugin::t( 'Destination URL')],
+            'hitAt' => ['label' => Plugin::t( 'Last Hit')],
+            'hitCount' => ['label' => Plugin::t( 'Hit Count')],
             'postDate' => ['label' => Craft::t('app', 'Post Date')],
             'expiryDate' => ['label' => Craft::t('app', 'Expiry Date')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
-            'statusCode' => ['label' => Craft::t('vredirect', 'Status Code')],
+            'statusCode' => ['label' => Plugin::t( 'Status Code')],
         ];
     }
 
@@ -355,8 +355,8 @@ class Redirect extends Element
     public static function getRedirectTypes(): array
     {
         return [
-            self::TYPE_STATIC => Craft::t('vredirect', 'Static'),
-            self::TYPE_DYNAMIC => Craft::t('vredirect', 'Dynamic (RegExp)'),
+            self::TYPE_STATIC => Plugin::t( 'Static'),
+            self::TYPE_DYNAMIC => Plugin::t( 'Dynamic (RegExp)'),
         ];
     }
 
@@ -366,8 +366,8 @@ class Redirect extends Element
     public static function getRedirectStatusCodes(): array
     {
         return [
-            self::STATUS_CODE_PERMANENT => Craft::t('vredirect', 'Permanent (301)'),
-            self::STATUS_CODE_TEMPORARY => Craft::t('vredirect', 'Temporary (302)'),
+            self::STATUS_CODE_PERMANENT => Plugin::t( 'Permanent (301)'),
+            self::STATUS_CODE_TEMPORARY => Plugin::t( 'Temporary (302)'),
         ];
     }
 
@@ -435,7 +435,7 @@ EOD;
             }
 
             return Cp::selectFieldHtml([
-                'label' => Craft::t('vredirect', 'Redirect Type'),
+                'label' => Plugin::t( 'Redirect Type'),
                 'id' => 'type',
                 'name' => 'type',
                 'value' => $this->type,
@@ -471,7 +471,7 @@ EOD;
             }
 
             return Cp::selectFieldHtml([
-                'label' => Craft::t('vredirect', 'Status Code'),
+                'label' => Plugin::t( 'Status Code'),
                 'id' => 'statusCode',
                 'name' => 'statusCode',
                 'value' => $this->statusCode,
@@ -491,14 +491,14 @@ EOD;
         $metadata = parent::metadata();
 
         if ($this->hitCount) {
-            $metadata[Craft::t('vredirect', 'Total Hits')] = $formatter->asInteger($this->hitCount);
+            $metadata[Plugin::t( 'Total Hits')] = $formatter->asInteger($this->hitCount);
         }
 
         if ($syncedElement = $this->getDestinationElement()) {
-            $metadata[Craft::t('vredirect', 'Linked Element')] = Cp::elementHtml($syncedElement);
+            $metadata[Plugin::t( 'Linked Element')] = Cp::elementHtml($syncedElement);
         }
         if ($this->hitAt) {
-            $metadata[Craft::t('vredirect', 'Last Hit')] = $formatter->asDatetime($this->hitAt,
+            $metadata[Plugin::t( 'Last Hit')] = $formatter->asDatetime($this->hitAt,
                 Formatter::FORMAT_WIDTH_SHORT);
         }
 
@@ -832,7 +832,7 @@ EOD;
         switch ($attribute) {
             case 'statusCode':
                 return $this->statusCode ? Html::encodeParams('{statusCode}', [
-                    'statusCode' => Craft::t('vredirect', self::getRedirectStatusCodes()[$this->statusCode])
+                    'statusCode' => Plugin::t( self::getRedirectStatusCodes()[$this->statusCode])
                 ]) : '';
 
             case 'destinationUrl':
