@@ -116,7 +116,7 @@ class Redirect extends Element
      */
     public static function displayName(): string
     {
-        return Plugin::t( 'Redirect');
+        return Plugin::t('Redirect');
     }
 
     /**
@@ -124,7 +124,7 @@ class Redirect extends Element
      */
     public static function pluralDisplayName(): string
     {
-        return Plugin::t( 'Redirects');
+        return Plugin::t('Redirects');
     }
 
     /**
@@ -157,9 +157,9 @@ class Redirect extends Element
     public static function statuses(): array
     {
         return parent::statuses() + [
-                self::STATUS_LIVE => Plugin::t( 'Live'),
-                self::STATUS_EXPIRED => Plugin::t( 'Expired'),
-                self::STATUS_PENDING => Plugin::t( 'Pending')
+                self::STATUS_LIVE => Plugin::t('Live'),
+                self::STATUS_EXPIRED => Plugin::t('Expired'),
+                self::STATUS_PENDING => Plugin::t('Pending')
             ];
     }
 
@@ -193,12 +193,12 @@ class Redirect extends Element
             $sources = [
                 [
                     'key' => '*',
-                    'label' => Plugin::t( 'All redirects'),
+                    'label' => Plugin::t('All redirects'),
                     'criteria' => [],
                 ],
                 [
                     'key' => 'stale',
-                    'label' => Plugin::t( 'Stale Redirects'),
+                    'label' => Plugin::t('Stale Redirects'),
                     'criteria' => ['hitAt' => '< ' . Db::prepareDateForDb($staleDate)],
                 ],
             ];
@@ -216,7 +216,7 @@ class Redirect extends Element
 
         $crumbs = [
             [
-                'label' => Plugin::t( 'Redirects'),
+                'label' => Plugin::t('Redirects'),
                 'url' => UrlHelper::url('redirect/redirects'),
             ]
         ];
@@ -224,7 +224,6 @@ class Redirect extends Element
         /** @var Response|CpScreenResponseBehavior $response */
         $response->crumbs($crumbs);
     }
-
 
 
     /**
@@ -238,22 +237,22 @@ class Redirect extends Element
         // Edit
         $actions[] = $elementsService->createAction([
             'type' => Edit::class,
-            'label' => Plugin::t( 'Edit Redirect'),
+            'label' => Plugin::t('Edit Redirect'),
         ]);
 
         // Delete
         $actions[] = $elementsService->createAction([
             'type' => Delete::class,
-            'confirmationMessage' => Plugin::t( 'Are you sure you want to delete the selected redirects?'),
-            'successMessage' => Plugin::t( 'Redirects deleted.'),
+            'confirmationMessage' => Plugin::t('Are you sure you want to delete the selected redirects?'),
+            'successMessage' => Plugin::t('Redirects deleted.'),
         ]);
 
         // Restore
         $actions[] = $elementsService->createAction([
             'type' => Restore::class,
-            'successMessage' => Plugin::t( 'Redirects restored.'),
-            'partialSuccessMessage' => Plugin::t( 'Some redirects restored.'),
-            'failMessage' => Plugin::t( 'Redirects not restored.'),
+            'successMessage' => Plugin::t('Redirects restored.'),
+            'partialSuccessMessage' => Plugin::t('Some redirects restored.'),
+            'failMessage' => Plugin::t('Redirects not restored.'),
         ]);
 
 //        $actions[] = SetStatus::class;
@@ -269,22 +268,22 @@ class Redirect extends Element
     {
         return [
             [
-                'label' => Plugin::t( 'Redirect'),
+                'label' => Plugin::t('Redirect'),
                 'orderBy' => 'venveo_redirects.sourceUrl',
                 'attribute' => 'title',
             ],
-            'venveo_redirects.type' => Plugin::t( 'Type'),
+            'venveo_redirects.type' => Plugin::t('Type'),
             [
-                'label' => Plugin::t( 'Destination URL'),
+                'label' => Plugin::t('Destination URL'),
                 'orderBy' => 'venveo_redirects.destinationUrl',
                 'attribute' => 'destinationUrl',
             ],
             [
-                'label' => Plugin::t( 'Last Hit'),
+                'label' => Plugin::t('Last Hit'),
                 'orderBy' => 'venveo_redirects.hitAt',
                 'attribute' => 'hitAt',
             ],
-            'venveo_redirects.hitCount' => Plugin::t( 'Hit Count'),
+            'venveo_redirects.hitCount' => Plugin::t('Hit Count'),
             [
                 'label' => Craft::t('app', 'Date Created'),
                 'orderBy' => 'elements.dateCreated',
@@ -304,14 +303,14 @@ class Redirect extends Element
     protected static function defineTableAttributes(): array
     {
         return [
-            'type' => ['label' => Plugin::t( 'Type')],
-            'destinationUrl' => ['label' => Plugin::t( 'Destination URL')],
-            'hitAt' => ['label' => Plugin::t( 'Last Hit')],
-            'hitCount' => ['label' => Plugin::t( 'Hit Count')],
+            'type' => ['label' => Plugin::t('Type')],
+            'destinationUrl' => ['label' => Plugin::t('Destination URL')],
+            'hitAt' => ['label' => Plugin::t('Last Hit')],
+            'hitCount' => ['label' => Plugin::t('Hit Count')],
             'postDate' => ['label' => Craft::t('app', 'Post Date')],
             'expiryDate' => ['label' => Craft::t('app', 'Expiry Date')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
-            'statusCode' => ['label' => Plugin::t( 'Status Code')],
+            'statusCode' => ['label' => Plugin::t('Status Code')],
         ];
     }
 
@@ -355,8 +354,8 @@ class Redirect extends Element
     public static function getRedirectTypes(): array
     {
         return [
-            self::TYPE_STATIC => Plugin::t( 'Static'),
-            self::TYPE_DYNAMIC => Plugin::t( 'Dynamic (RegExp)'),
+            self::TYPE_STATIC => Plugin::t('Static'),
+            self::TYPE_DYNAMIC => Plugin::t('Dynamic (RegExp)'),
         ];
     }
 
@@ -366,8 +365,8 @@ class Redirect extends Element
     public static function getRedirectStatusCodes(): array
     {
         return [
-            self::STATUS_CODE_PERMANENT => Plugin::t( 'Permanent (301)'),
-            self::STATUS_CODE_TEMPORARY => Plugin::t( 'Temporary (302)'),
+            self::STATUS_CODE_PERMANENT => Plugin::t('Permanent (301)'),
+            self::STATUS_CODE_TEMPORARY => Plugin::t('Temporary (302)'),
         ];
     }
 
@@ -381,12 +380,12 @@ class Redirect extends Element
             new RedirectSourceField([
                 'label' => Plugin::t('Source URI'),
                 'attribute' => 'sourceUrl',
-                'instructions' =>  Plugin::t('Enter the URI to redirect'),
+                'instructions' => Plugin::t('Enter the URI to redirect'),
             ]);
         $layoutElements[] =
             new RedirectDestinationField([
-                'label' =>  Plugin::t('Redirect Destination'),
-                'instructions' =>  Plugin::t('Configure the element or external URL to send this request to'),
+                'label' => Plugin::t('Redirect Destination'),
+                'instructions' => Plugin::t('Configure the element or external URL to send this request to'),
             ]);
 
         $fieldLayout = new FieldLayout();
@@ -435,7 +434,7 @@ EOD;
             }
 
             return Cp::selectFieldHtml([
-                'label' => Plugin::t( 'Redirect Type'),
+                'label' => Plugin::t('Redirect Type'),
                 'id' => 'type',
                 'name' => 'type',
                 'value' => $this->type,
@@ -471,7 +470,7 @@ EOD;
             }
 
             return Cp::selectFieldHtml([
-                'label' => Plugin::t( 'Status Code'),
+                'label' => Plugin::t('Status Code'),
                 'id' => 'statusCode',
                 'name' => 'statusCode',
                 'value' => $this->statusCode,
@@ -491,14 +490,14 @@ EOD;
         $metadata = parent::metadata();
 
         if ($this->hitCount) {
-            $metadata[Plugin::t( 'Total Hits')] = $formatter->asInteger($this->hitCount);
+            $metadata[Plugin::t('Total Hits')] = $formatter->asInteger($this->hitCount);
         }
 
         if ($syncedElement = $this->getDestinationElement()) {
-            $metadata[Plugin::t( 'Linked Element')] = Cp::elementHtml($syncedElement);
+            $metadata[Plugin::t('Linked Element')] = Cp::elementHtml($syncedElement);
         }
         if ($this->hitAt) {
-            $metadata[Plugin::t( 'Last Hit')] = $formatter->asDatetime($this->hitAt,
+            $metadata[Plugin::t('Last Hit')] = $formatter->asDatetime($this->hitAt,
                 Formatter::FORMAT_WIDTH_SHORT);
         }
 
@@ -686,7 +685,7 @@ EOD;
         if (!parent::beforeDelete()) {
             return false;
         }
-        
+
         $record = RedirectRecord::findOne($this->id);
         return (bool)$record?->softDelete();
     }
@@ -697,7 +696,6 @@ EOD;
      */
     public function beforeSave(bool $isNew): bool
     {
-        
         return parent::beforeSave($isNew);
     }
 
@@ -726,7 +724,7 @@ EOD;
         } else {
             $record = RedirectRecord::findOne($this->id);
         }
-        
+
         if (!$record) {
             throw new InvalidConfigException("Invalid redirect ID: $this->id");
         }
@@ -832,7 +830,7 @@ EOD;
         switch ($attribute) {
             case 'statusCode':
                 return $this->statusCode ? Html::encodeParams('{statusCode}', [
-                    'statusCode' => Plugin::t( self::getRedirectStatusCodes()[$this->statusCode])
+                    'statusCode' => Plugin::t(self::getRedirectStatusCodes()[$this->statusCode])
                 ]) : '';
 
             case 'destinationUrl':
