@@ -2,6 +2,9 @@
 
 ## 4.0.0-beta.2 - Unreleased
 
+### Added
+- Update UI to use new unified element editor
+
 ### Fixed
 - Fixed error caused by permissions & use new element permissions interface
 
