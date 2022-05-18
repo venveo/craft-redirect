@@ -34,7 +34,6 @@ Craft.Redirects.CatchAllIndex = Garnish.Base.extend({
                 this.updateElements();
             });
         }).finally(() => {
-            // this.$newRedirectBtn.removeClass('loading');
         });
     },
 });

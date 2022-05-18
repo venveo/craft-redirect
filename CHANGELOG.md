@@ -3,7 +3,12 @@
 ## 4.0.0-beta.2 - Unreleased
 
 ### Added
-- Update UI to use new unified element editor
+- Add support for new unified element editor experience
+- Add warning for when a source URI matches a URL on the site
+- Add warning for when a source URI matches an existing redirect
+
+### Changed
+- Redirect source and destination URLs now get normalized when set on the element rather than on-save.
 
 ### Fixed
 - Fixed error caused by permissions & use new element permissions interface

@@ -36,6 +36,7 @@ use venveo\redirect\elements\conditions\RedirectCondition;
 use venveo\redirect\elements\db\RedirectQuery;
 use venveo\redirect\fieldlayoutelements\RedirectDestinationField;
 use venveo\redirect\fieldlayoutelements\RedirectSourceField;
+use venveo\redirect\fieldlayoutelements\RedirectSourceUrlExistingWarning;
 use venveo\redirect\models\Settings;
 use venveo\redirect\Plugin;
 use venveo\redirect\records\Redirect as RedirectRecord;
@@ -65,11 +66,11 @@ class Redirect extends Element
     /**
      * @var string sourceUrl
      */
-    public ?string $sourceUrl = null;
+    private ?string $_sourceUrl = null;
     /**
      * @var string|null destinationUrl
      */
-    public ?string $destinationUrl = null;
+    private ?string $_destinationUrl = null;
     /**
      * @var DateTime|null
      */
@@ -375,12 +376,26 @@ class Redirect extends Element
      */
     public function getFieldLayout(): FieldLayout
     {
+        $conflictingElement = $this->getConflictingElementForSource();
+        $conflictingRedirects = $this->getDuplicateRedirects();
         $layoutElements = [];
         $layoutElements[] =
             new RedirectSourceField([
                 'label' => Plugin::t('Source URI'),
                 'attribute' => 'sourceUrl',
                 'instructions' => Plugin::t('Enter the URI to redirect'),
+            ]);
+        $layoutElements[] =
+            new RedirectSourceUrlExistingWarning([
+                'uid' => 'sourceUrlConflictWarning',
+                'showInForm' => (bool)$conflictingElement,
+                'tip' => Plugin::t('This redirect source points to an existing page URL. The redirect will not function until the conflicting page URL is changed or the page is deactivated.')
+            ]);
+        $layoutElements[] =
+            new RedirectSourceUrlExistingWarning([
+                'uid' => 'sourceUrlDuplicate',
+                'showInForm' => (bool)$conflictingRedirects?->isNotEmpty(),
+                'tip' => Plugin::t('Another redirect exists with the same source and may prevent this redirect from functioning.')
             ]);
         $layoutElements[] =
             new RedirectDestinationField([
@@ -530,16 +545,16 @@ EOD;
                 return $element->getUrl();
             }
             // We don't have an element, but we do have a site ID, so send to that site, regardless of URL format
-        } elseif (isset($this->destinationUrl, $this->destinationSiteId)) {
+        } elseif (isset($this->_destinationUrl, $this->destinationSiteId)) {
             // UrlHelper::siteUrl() will try to default to absolute URLs, so we'll handle it ourselves
-            return $this->getDestinationSite()->getBaseUrl() . $this->destinationUrl;
+            return $this->getDestinationSite()->getBaseUrl() . $this->_destinationUrl;
         } else {
             // No site ID, so if it's absolute, send to that URL
-            if (UrlHelper::isAbsoluteUrl($this->destinationUrl)) {
-                return $this->destinationUrl;
+            if (UrlHelper::isAbsoluteUrl($this->_destinationUrl)) {
+                return $this->_destinationUrl;
             }
             // It's not absolute, so use the site the redirect was saved in
-            return $this->getSite()->getBaseUrl() . $this->destinationUrl;
+            return $this->getSite()->getBaseUrl() . $this->_destinationUrl;
         }
         return null;
     }
@@ -699,6 +714,23 @@ EOD;
         return parent::beforeSave($isNew);
     }
 
+    public function setDestinationUrl($value): void
+    {
+        $this->_destinationUrl = $this->formatUrl(trim($value), false);
+    }
+
+    public function setSourceUrl($value): void {
+        $this->_sourceUrl = $this->formatUrl(trim($value), true);
+    }
+
+    public function getDestinationUrl(): ?string {
+        return $this->_destinationUrl;
+    }
+
+    public function getSourceUrl(): ?string {
+        return $this->_sourceUrl;
+    }
+
     /**
      * @inheritdoc
      */
@@ -731,11 +763,11 @@ EOD;
 
         $record->hitCount = $this->hitCount;
         $record->hitAt = $this->hitAt;
-        $record->sourceUrl = $this->formatUrl(trim($this->sourceUrl), true);
+        $record->sourceUrl = $this->_sourceUrl;
 
         // Don't overwrite an existing destinationUrl, just in case...
-        if ($this->destinationUrl) {
-            $record->destinationUrl = $this->formatUrl(trim($this->destinationUrl), false);
+        if ($this->_destinationUrl) {
+            $record->destinationUrl = $this->_destinationUrl;
         }
 
         $record->destinationElementId = $this->destinationElementId;
@@ -751,9 +783,32 @@ EOD;
         $dirtyAttributes = array_keys($record->getDirtyAttributes());
 
         $record->save(false);
+
         $this->setDirtyAttributes($dirtyAttributes);
         parent::afterSave($isNew);
     }
+
+
+    /**
+     * Returns an element with a URL that resolves to the redirect's source URL
+     * @return \craft\base\ElementInterface|null
+     */
+    public function getConflictingElementForSource(): ?\craft\base\ElementInterface
+    {
+        if ($this->type !== Redirect::TYPE_STATIC || !$this->_sourceUrl) {
+            return null;
+        }
+        return Craft::$app->elements->getElementByUri($this->_sourceUrl, $this->siteId, true);
+    }
+
+    public function getDuplicateRedirects(): ?\Illuminate\Support\Collection
+    {
+        if (!$this->_sourceUrl) {
+            return null;
+        }
+        return static::find()->sourceUrl($this->_sourceUrl)->siteId($this->siteId)->id('NOT '. $this->id)->collect();
+    }
+
 
     /**
      * Cleans a URL by removing its base URL if it's a relative one
@@ -819,7 +874,7 @@ EOD;
 
     public function __toString(): string
     {
-        return $this->sourceUrl;
+        return $this->_sourceUrl;
     }
 
     /**
@@ -837,7 +892,7 @@ EOD;
                 if ($this->type === self::TYPE_STATIC) {
                     return $this->renderDestinationUrl();
                 }
-                return $this->destinationUrl;
+                return $this->_destinationUrl;
             default:
                 break;
         }
@@ -860,9 +915,9 @@ EOD;
                     $this->destinationSiteId),
             ]);
         }
-        if ($this->destinationUrl) {
-            return Html::a(Html::tag('span', $this->destinationUrl, ['dir' => 'ltr']), $this->resolveDestinationUrl(), [
-                'href' => $this->destinationUrl,
+        if ($this->_destinationUrl) {
+            return Html::a(Html::tag('span', $this->_destinationUrl, ['dir' => 'ltr']), $this->resolveDestinationUrl(), [
+                'href' => $this->_destinationUrl,
                 'rel' => 'noopener',
                 'target' => '_blank',
                 'class' => 'go',
@@ -885,11 +940,11 @@ EOD;
      */
     public function refreshDestinationElement(): void
     {
-        if (!isset($this->destinationUrl)) {
+        if (!isset($this->_destinationUrl)) {
             return;
         }
 
-        $element = Craft::$app->getElements()->getElementByUri($this->destinationUrl, $this->destinationSiteId, true);
+        $element = Craft::$app->getElements()->getElementByUri($this->_destinationUrl, $this->destinationSiteId, true);
         if ($element) {
             $this->destinationElementId = $element->id;
         }
