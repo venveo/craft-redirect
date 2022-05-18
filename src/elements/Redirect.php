@@ -508,9 +508,9 @@ EOD;
     /**
      * @inheritdoc
      */
-    public function getCpEditUrl(): ?string
+    protected function cpEditUrl(): ?string
     {
-        return UrlHelper::cpUrl('redirect/redirects/' . $this->id);
+        return UrlHelper::cpUrl('redirect/redirects/' . $this->getCanonicalId());
     }
 
     /**
