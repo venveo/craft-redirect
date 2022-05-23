@@ -1,5 +1,11 @@
 # Redirect Changelog
 
+## 3.0.10 - 2022-05-23
+
+### Fixed
+
+- Fixed ignored 404s getting pruned if not hit for a while
+
 ## 3.0.9.1 - 2021-10-14
 
 ### Fixed
