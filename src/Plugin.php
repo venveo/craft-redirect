@@ -15,7 +15,6 @@ use craft\base\Element;
 use craft\base\Plugin as BasePlugin;
 use craft\elements\Entry;
 use craft\errors\MigrationException;
-use craft\events\DeleteElementEvent;
 use craft\events\ElementEvent;
 use craft\events\ExceptionEvent;
 use craft\events\RegisterComponentTypesEvent;
@@ -334,16 +333,6 @@ class Plugin extends BasePlugin
                 return;
             }
             Plugin::getInstance()->redirects->handleAfterElementSaved($e);
-        });
-
-
-
-        Event::on(Elements::class, Elements::EVENT_BEFORE_DELETE_ELEMENT, function (DeleteElementEvent $e) {
-            Plugin::getInstance()->redirects->handleElementDeleted($e);
-        });
-
-        Event::on(Elements::class, Elements::EVENT_AFTER_RESTORE_ELEMENT, function (ElementEvent $e) {
-            Plugin::getInstance()->redirects->handleElementRestored($e);
         });
     }
 

@@ -1,5 +1,14 @@
 # Redirect Changelog
 
+## 3.0.11 - 2022-06-21
+
+### Fixed
+- When a redirect is created for a changed slug, the original URI is still stored in addition to the element ID.
+- Redirects that are matched that don't have a valid destination now 404 properly.
+
+### Changed
+- Removed element deletion redirect pruning
+
 ## 3.0.10 - 2022-05-23
 
 ### Fixed
