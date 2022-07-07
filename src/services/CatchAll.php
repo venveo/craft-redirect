@@ -100,6 +100,7 @@ class CatchAll extends Component
         $pastTime = $expire->sub($interval);
 
         $catchAllQuery = CatchAllUrlRecord::find()
+            ->andWhere(['ignored' => false])
             ->andWhere(['<', 'dateUpdated', Db::prepareDateForDb($pastTime)]);
 
         if ($limit) {
