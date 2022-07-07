@@ -31,12 +31,6 @@ Trust us - we didn't want to make this plugin; however, we found that many websi
 
 For most people starting fresh, we strongly recommend using the excellent [Retour plugin by nystudio107](https://plugins.craftcms.com/retour) 
 
-## Updating form Dolphiq Redirect
-You can migrate directly from Dolphiq Redirect to Venveo Redirect. [Please see the migration guide](MIGRATING.md) 
-
-## Requirements
-This plugin requires Craft CMS 3.4 or later
-
 ## Installation
 
 [Click here](INSTALL.md) for the installation readme.
@@ -53,9 +47,5 @@ This plugin requires Craft CMS 3.4 or later
 ## Importing redirects using Feed Me
 ![Screenshot](resources/screenshots/import-from-feedme.png)
 
-## Using the Redirect plugin
-
-You can use the Redirect plugin to redirect simple routes but also use it for
-more advanced route matches.
 
 [Click here](RULES.md) for the complete overview of rule examples.

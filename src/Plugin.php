@@ -59,43 +59,6 @@ class Plugin extends BasePlugin
     public bool $hasCpSection = true;
     public bool $hasCpSettings = true;
 
-    public function install(): void
-    {
-        $migrator = $this->getMigrator();
-
-        $oldPlugin = Craft::$app->plugins->getPlugin('redirect');
-        if ($oldPlugin) {
-            // We need to copy the migrations that have already been run on the original plugin to our new plugin
-            $oldPluginMigrations = $oldPlugin->getMigrator()->getMigrationHistory();
-            foreach ($oldPluginMigrations as $name) {
-                $migrator->addMigrationHistory($name);
-            }
-            // Now we'll apply all the new migrations
-            $migrator->up();
-
-            // Disable the old plugin
-            Craft::$app->plugins->disablePlugin('redirect');
-
-            $this->isInstalled = true;
-            $this->afterInstall();
-            return;
-        }
-
-        // Run the install migration, if there is one
-        if (($migration = $this->createInstallMigration()) !== null) {
-            $migrator->migrateUp($migration);
-        }
-
-        // Mark all existing migrations as applied
-        foreach ($migrator->getNewMigrations() as $name) {
-            $migrator->addMigrationHistory($name);
-        }
-
-        $this->isInstalled = true;
-
-        $this->afterInstall();
-    }
-
     /*
     *
     *  The Craft plugin documentation points to the EVENT_REGISTER_CP_NAV_ITEMS event to register navigation items.
