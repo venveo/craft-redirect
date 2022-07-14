@@ -190,7 +190,7 @@ class Redirects extends Component
             static::$elementUrisChanging[$siteId] = [];
         }
         // Grab the current URI from the database and store it
-        $oldUri = Craft::$app->elements->getElementById($elementId, null, $siteId)->uri;
+        $oldUri = Craft::$app->elements->getElementById($elementId, null, $siteId)->uri ?? null;
         if ($oldUri) {
             static::$elementUrisChanging[$siteId][$elementId] = $oldUri;
         }
@@ -209,7 +209,7 @@ class Redirects extends Component
             $siteId = $savedElement->siteId;
             $elementId = $savedElement->id;
             $oldUri = static::$elementUrisChanging[$siteId][$elementId] ?? null;
-            $newUri = $savedElement->uri;
+            $newUri = $savedElement->uri ?? null;
             // If there were no URI changes, let's bail
             if (!$oldUri || !$newUri || $oldUri === $newUri) {
                 return;
