@@ -157,10 +157,11 @@ class Redirect extends Element
      */
     public static function statuses(): array
     {
-        return parent::statuses() + [
-                self::STATUS_LIVE => Plugin::t('Live'),
-                self::STATUS_EXPIRED => Plugin::t('Expired'),
-                self::STATUS_PENDING => Plugin::t('Pending')
+        return [
+                self::STATUS_LIVE => Craft::t('app', 'Live'),
+                self::STATUS_EXPIRED => Craft::t('app', 'Expired'),
+                self::STATUS_PENDING => Craft::t('app', 'Pending'),
+                self::STATUS_DISABLED => Craft::t('app', 'Disabled'),
             ];
     }
 
@@ -806,7 +807,7 @@ EOD;
         if (!$this->_sourceUrl) {
             return null;
         }
-        return static::find()->sourceUrl($this->_sourceUrl)->siteId($this->siteId)->id('NOT '. $this->id)->collect();
+        return static::find()->sourceUrl($this->_sourceUrl)->siteId($this->siteId)->id('NOT '. $this->getCanonicalId())->collect();
     }
 
 
