@@ -16,6 +16,7 @@
 .DS_Store
 .DQ
 .php_cs.cache
-/tests/*
 
 .idea
+
+tests/_output

@@ -1,0 +1,26 @@
+actor: Tester
+paths:
+  tests: tests
+  log: tests/_output
+  data: tests/_data
+  support: tests/_support
+  envs: tests/_envs
+bootstrap: _bootstrap.php
+params:
+  - env
+  - tests/.env
+modules:
+  config:
+    \craft\test\Craft:
+      configFile: "tests/_craft/config/test.php"
+      entryUrl: "http://localhost:8004/index.php"
+      projectConfig: {}
+      plugins:
+        vredirect:
+          class: '\venveo\redirect\Plugin'
+          handle: 'vredirect'
+      migrations: []
+      cleanup: true
+      transaction: true
+      dbSetup: { clean: true, setupCraft: true }
+      fullMock: false
