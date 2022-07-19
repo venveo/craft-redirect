@@ -189,7 +189,7 @@ class Redirects extends Component
             static::$elementUrisChanging[$siteId] = [];
         }
         // Grab the current URI from the database and store it
-        $oldUri = Craft::$app->elements->getElementById($elementId, null, $siteId)->uri;
+        $oldUri = Craft::$app->elements->getElementById($elementId, null, $siteId)?->uri;
         if ($oldUri) {
             static::$elementUrisChanging[$siteId][$elementId] = $oldUri;
         }

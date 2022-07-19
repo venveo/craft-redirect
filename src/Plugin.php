@@ -268,15 +268,6 @@ class Plugin extends BasePlugin
             }
             Plugin::getInstance()->redirects->handleAfterElementSaved($e);
         });
-
-
-        Event::on(Elements::class, Elements::EVENT_BEFORE_DELETE_ELEMENT, function (DeleteElementEvent $e) {
-            Plugin::getInstance()->redirects->handleElementDeleted($e);
-        });
-
-        Event::on(Elements::class, Elements::EVENT_AFTER_RESTORE_ELEMENT, function (ElementEvent $e) {
-            Plugin::getInstance()->redirects->handleElementRestored($e);
-        });
     }
 
     private function registerPermissions()
