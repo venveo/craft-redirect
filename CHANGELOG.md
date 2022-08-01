@@ -1,11 +1,13 @@
 # Redirect Changelog
 
-## 4.0.0-beta.2 - Unreleased
+## 4.0.0-beta.2 - 2022-8-1
 
 ### Added
 - Add support for new unified element editor experience
 - Add warning for when a source URI matches a URL on the site
 - Add warning for when a source URI matches an existing redirect
+- Added groups to help organize redirects
+- Added flag to track if redirects were created automatically or not
 
 ### Changed
 - Redirect source and destination URLs now get normalized when set on the element rather than on-save.
