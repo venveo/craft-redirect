@@ -9,6 +9,7 @@
 namespace venveo\redirect\services;
 
 use Craft;
+use craft\db\Query;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use Throwable;
@@ -24,16 +25,15 @@ use yii\db\StaleObjectException;
 class CatchAll extends Component
 {
     /**
-     * Register a hit to the catch all uri by its uri.
+     * Register a hit to the catch-all uri by its uri.
      *
      * @param string $uri
-     * @param null $queryString
+     * @param string|null $queryString
      * @param int|null $siteId
      * @return bool
-     * @throws Throwable
      * @throws StaleObjectException
      */
-    public function registerHitByUri(string $uri, $queryString = null, $siteId = null): bool
+    public function registerHitByUri(string $uri, string $queryString = null, int $siteId = null): bool
     {
         if ($siteId === null) {
             $siteId = Craft::$app->getSites()->currentSite->id;
@@ -45,7 +45,9 @@ class CatchAll extends Component
         if (strlen($uri) > CatchAllUrlRecord::MAX_URI_LENGTH || strlen($query) > CatchAllUrlRecord::MAX_QUERY_LENGTH) {
             return true;
         }
-
+        // TODO: Switch to insert with ON DUPLICATE id increment
+        // https://planetscale.com/blog/the-slotted-counter-pattern
+        
         // See if this URI already exists
         $params = [
             'uri' => $uri,

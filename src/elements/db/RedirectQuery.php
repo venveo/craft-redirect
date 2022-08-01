@@ -13,6 +13,8 @@ use Craft;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 use venveo\redirect\elements\Redirect;
+use venveo\redirect\models\Group;
+use venveo\redirect\Plugin;
 
 /**
  * RedirectQuery represents a SELECT SQL statement for redirects in a way that is independent of DBMS.
@@ -88,6 +90,10 @@ class RedirectQuery extends ElementQuery
      * @inheritdoc
      */
     protected array $defaultOrderBy = ['venveo_redirects.postDate' => SORT_DESC];
+
+    public ?bool $createdAutomatically = null;
+
+    public ?int $groupId = null;
 
 
 //
@@ -192,6 +198,22 @@ class RedirectQuery extends ElementQuery
         return $this;
     }
 
+    public function createdAutomatically($value = true): RedirectQuery {
+        $this->createdAutomatically = $value;
+        return $this;
+    }
+
+    public function group($value): RedirectQuery {
+        if ($value instanceof Group && isset($value->id)) {
+            $this->groupId = $value->id;
+        }
+        if (is_numeric($value) && $group = Plugin::getInstance()->groups->getGroupById($value)) {
+            $this->groupId = $group->id;
+        }
+        return $this;
+
+    }
+
     /**
      * @inheritdoc
      */
@@ -205,6 +227,8 @@ class RedirectQuery extends ElementQuery
             'venveo_redirects.destinationUrl',
             'venveo_redirects.destinationElementId',
             'venveo_redirects.destinationSiteId',
+            'venveo_redirects.createdAutomatically',
+            'venveo_redirects.groupId',
             'venveo_redirects.hitAt',
             'venveo_redirects.hitCount',
             'venveo_redirects.postDate',
@@ -226,7 +250,6 @@ class RedirectQuery extends ElementQuery
         if ($this->expiryDate) {
             $this->subQuery->andWhere(Db::parseDateParam('venveo_redirects.expiryDate', $this->expiryDate));
         }
-
         if ($this->sourceUrl) {
             $this->subQuery->andWhere(Db::parseParam('venveo_redirects.sourceUrl', $this->sourceUrl));
         }
@@ -245,6 +268,13 @@ class RedirectQuery extends ElementQuery
         if ($this->destinationSiteId) {
             $this->subQuery->andWhere(Db::parseParam('venveo_redirects.destinationSiteId', $this->destinationSiteId));
         }
+        if ($this->createdAutomatically !== null) {
+            $this->subQuery->andWhere(Db::parseParam('venveo_redirects.createdAutomatically', $this->createdAutomatically));
+        }
+        if ($this->groupId !== null) {
+            $this->subQuery->andWhere(Db::parseParam('venveo_redirects.groupId', $this->groupId));
+        }
+
 
         if ($this->hitAt) {
             $this->subQuery->andWhere(Db::parseDateParam('venveo_redirects.hitAt', $this->hitAt));

@@ -226,6 +226,7 @@ class Redirects extends Component
 
             $redirect = new Redirect();
             $redirect->siteId = $siteId;
+            $redirect->createdAutomatically = true;
             $redirect->sourceUrl = $oldUri;
             $redirect->destinationUrl = $newUri;
             $redirect->destinationElementId = $elementId;

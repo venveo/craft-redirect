@@ -26,6 +26,10 @@ use yii\db\ActiveQueryInterface;
  * @property string destinationUrl
  * @property string statusCode
  * @property string type
+ * @property int|null $groupId [int]
+ * @property bool $createdAutomatically
+ * @property string $postDate [datetime]
+ * @property string $expiryDate [datetime]
  */
 class Redirect extends ActiveRecord
 {

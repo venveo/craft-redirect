@@ -14,7 +14,6 @@ use Craft;
 use craft\base\Element;
 use craft\base\Plugin as BasePlugin;
 use craft\elements\Entry;
-use craft\events\DeleteElementEvent;
 use craft\events\ElementEvent;
 use craft\events\ExceptionEvent;
 use craft\events\RegisterComponentTypesEvent;
@@ -38,6 +37,7 @@ use venveo\redirect\elements\Redirect;
 use venveo\redirect\models\Settings;
 use venveo\redirect\records\CatchAllUrl;
 use venveo\redirect\services\CatchAll;
+use venveo\redirect\services\Groups;
 use venveo\redirect\services\Redirects;
 use venveo\redirect\widgets\LatestErrors;
 use yii\base\Event;
@@ -48,13 +48,15 @@ use yii\web\HttpException;
  * @property Redirects $redirects
  * @property array $cpNavItem
  * @property CatchAll $catchAll
+ * @property Groups $groups
  */
 class Plugin extends BasePlugin
 {
     public const PERMISSION_MANAGE_REDIRECTS = 'vredirect:redirects:manage';
+    public const PERMISSION_MANAGE_GROUPS = 'vredirect:groups:manage';
     public const PERMISSION_MANAGE_404S = 'vredirect:404s:manage';
 
-    public string $schemaVersion = '3.0.5';
+    public string $schemaVersion = '4.0.0';
 
     public bool $hasCpSection = true;
     public bool $hasCpSettings = true;
@@ -73,14 +75,20 @@ class Plugin extends BasePlugin
 
         $subnavItems = [];
         $currentUser = Craft::$app->getUser()->getIdentity();
-        if ($currentUser->can('vredirect:redirects:manage')) {
+        if ($currentUser->can(static::PERMISSION_MANAGE_REDIRECTS)) {
             $subnavItems['redirects'] = [
                 'label' => static::t('Redirects'),
                 'url' => 'redirect/redirects',
             ];
         }
+        if ($currentUser->can(static::PERMISSION_MANAGE_GROUPS)) {
+            $subnavItems['groups'] = [
+                'label' => static::t('Redirect Groups'),
+                'url' => 'redirect/groups',
+            ];
+        }
 
-        if ($currentUser->can('vredirect:404s:manage')) {
+        if ($currentUser->can(static::PERMISSION_MANAGE_404S)) {
             $subnavItems['catch-all'] = [
                 'label' => static::t('Registered 404s'),
                 'url' => 'redirect/catch-all',
@@ -107,7 +115,8 @@ class Plugin extends BasePlugin
         return [
             'components' => [
                 'catchAll' => CatchAll::class,
-                'redirects' => Redirects::class
+                'redirects' => Redirects::class,
+                'groups' => Groups::class
             ]
         ];
     }
@@ -137,7 +146,7 @@ class Plugin extends BasePlugin
         } else {
             $this->registerCpRoutes();
         }
-//        $this->registerFeedMeElement();
+        $this->registerFeedMeElement();
         $this->registerElementEvents();
         $this->registerWidgets();
         $this->registerPermissions();
@@ -192,6 +201,10 @@ class Plugin extends BasePlugin
                 'redirect/catch-all/<siteId:\d+>' => 'vredirect/catch-all/index',
                 'redirect/catch-all' => 'vredirect/catch-all/index',
 
+                'redirect/groups/<id:\d+>' => 'vredirect/groups/edit',
+                'redirect/groups/new' => 'vredirect/groups/edit',
+                'redirect/groups' => 'vredirect/groups/index',
+
                 'redirect/catch-all/ignored' => 'vredirect/catch-all/ignored',
                 'redirect/catch-all/ignored/<siteId:\d+>' => 'vredirect/catch-all/ignored',
 
@@ -213,7 +226,7 @@ class Plugin extends BasePlugin
             Event::on(
                 FeedMeElementsService::class,
                 FeedMeElementsService::EVENT_REGISTER_FEED_ME_ELEMENTS,
-                function (RegisterFeedMeElementsEvent $e) {
+                static function (RegisterFeedMeElementsEvent $e) {
                     $e->elements[] = FeedMeRedirect::class;
                 }
             );
@@ -226,7 +239,7 @@ class Plugin extends BasePlugin
             return;
         }
 
-        Event::on(Elements::class, Elements::EVENT_BEFORE_SAVE_ELEMENT, function (ElementEvent $e) {
+        Event::on(Elements::class, Elements::EVENT_BEFORE_SAVE_ELEMENT, static function (ElementEvent $e) {
             /** @var Element $element */
             $element = $e->element;
 
@@ -237,7 +250,7 @@ class Plugin extends BasePlugin
 
             Plugin::getInstance()->redirects->handleBeforeElementSaved($e);
         });
-        Event::on(Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT, function (ElementEvent $e) {
+        Event::on(Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT, static function (ElementEvent $e) {
             /** @var Element $element */
             $element = $e->element;
 
@@ -248,7 +261,7 @@ class Plugin extends BasePlugin
 
             Plugin::getInstance()->redirects->handleAfterElementSaved($e);
         });
-        Event::on(Elements::class, Elements::EVENT_BEFORE_UPDATE_SLUG_AND_URI, function (ElementEvent $e) {
+        Event::on(Elements::class, Elements::EVENT_BEFORE_UPDATE_SLUG_AND_URI, static function (ElementEvent $e) {
             /** @var Element $element */
             $element = $e->element;
 
@@ -258,7 +271,7 @@ class Plugin extends BasePlugin
             }
             Plugin::getInstance()->redirects->handleBeforeElementSaved($e);
         });
-        Event::on(Elements::class, Elements::EVENT_AFTER_UPDATE_SLUG_AND_URI, function (ElementEvent $e) {
+        Event::on(Elements::class, Elements::EVENT_AFTER_UPDATE_SLUG_AND_URI, static function (ElementEvent $e) {
             /** @var Element $element */
             $element = $e->element;
 
@@ -279,20 +292,23 @@ class Plugin extends BasePlugin
                 $event->permissions[] = [
                     'heading' => static::t('Redirects'),
                     'permissions' => [
-                        'vredirect:redirects:manage' => [
-                            'label' => static::t('Manage Redirects on Editable Sites')
-                        ],
-                        'vredirect:404s:manage' => ['label' => static::t('Manage Registered 404s')],
+                        static::PERMISSION_MANAGE_REDIRECTS => ['label' => static::t('Manage Redirects on Editable Sites')],
+                        static::PERMISSION_MANAGE_404S => ['label' => static::t('Manage Registered 404s')],
+                        static::PERMISSION_MANAGE_GROUPS => ['label' => static::t('Manage Redirect Groups')],
                     ],
                 ];
             });
     }
 
+    /**
+     * TODO: Update for Craft 4
+     * @return void
+     */
     protected function attachTemplateHooks()
     {
         Event::on(View::class, View::EVENT_BEFORE_RENDER_PAGE_TEMPLATE, function (TemplateEvent $e) {
             $currentUser = \Craft::$app->getUser()->getIdentity();
-            if (!$currentUser || !$currentUser->can('vredirect:redirects:manage')) {
+            if (!$currentUser || !$currentUser->can(static::PERMISSION_MANAGE_REDIRECTS)) {
                 return;
             }
             if ($e->template === 'entries/_edit') {
@@ -301,7 +317,7 @@ class Plugin extends BasePlugin
         });
         Craft::$app->view->hook('cp.entries.edit.meta', function (array &$context) {
             $currentUser = \Craft::$app->getUser()->getIdentity();
-            if (!$currentUser || !$currentUser->can('vredirect:redirects:manage')) {
+            if (!$currentUser || !$currentUser->can(static::PERMISSION_MANAGE_REDIRECTS)) {
                 return '';
             }
             /** @var Entry $element */

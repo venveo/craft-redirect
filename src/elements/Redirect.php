@@ -37,6 +37,7 @@ use venveo\redirect\elements\db\RedirectQuery;
 use venveo\redirect\fieldlayoutelements\RedirectDestinationField;
 use venveo\redirect\fieldlayoutelements\RedirectSourceField;
 use venveo\redirect\fieldlayoutelements\RedirectSourceUrlExistingWarning;
+use venveo\redirect\models\Group;
 use venveo\redirect\models\Settings;
 use venveo\redirect\Plugin;
 use venveo\redirect\records\Redirect as RedirectRecord;
@@ -111,6 +112,12 @@ class Redirect extends Element
      * @var DateTime|null
      */
     public ?DateTime $expiryDate = null;
+
+    public bool $createdAutomatically = false;
+
+    public ?int $groupId = null;
+
+    public ?int $catchAllId = null;
 
     /**
      * @inheritdoc
@@ -198,13 +205,20 @@ class Redirect extends Element
                     'label' => Plugin::t('All redirects'),
                     'criteria' => [],
                 ],
-                [
-                    'key' => 'stale',
-                    'label' => Plugin::t('Stale Redirects'),
-                    'criteria' => ['hitAt' => '< ' . Db::prepareDateForDb($staleDate)],
-                ],
             ];
-            // TODO: Add redirect groups
+            $groups = Plugin::getInstance()->groups->getAllGroups();
+            foreach($groups as $group) {
+                $sources[] = [
+                    'key' => 'group:'.$group->uid,
+                    'label' => Craft::t('site', $group->name),
+                    'criteria' => ['groupId' => $group->id]
+                ];
+            }
+            $sources[] = [
+                'key' => 'stale',
+                'label' => Plugin::t('Stale Redirects'),
+                'criteria' => ['hitAt' => '< ' . Db::prepareDateForDb($staleDate)],
+            ];
         }
         return $sources;
     }
@@ -495,6 +509,26 @@ EOD;
             ]);
         })();
 
+        $groupOptions = array_map(function(Group $group) {
+            return [
+                'label' => $group->name,
+                'value' => $group->id
+            ];
+        }, Plugin::getInstance()->groups->getAllGroups());
+        $groupOptions = array_merge([[
+            'label' => 'None',
+            'value' => null,
+        ]], $groupOptions);
+
+        $fields[] = Cp::selectFieldHtml([
+            'label' => Plugin::t('Group'),
+            'id' => 'groupId',
+            'name' => 'groupId',
+            'value' => $this->groupId,
+            'options' => $groupOptions,
+            'disabled' => $static,
+        ]);
+
         $fields[] = parent::metaFieldsHtml($static);
 
         return implode("\n", $fields);
@@ -606,8 +640,9 @@ EOD;
     {
         $rules = parent::defineRules();
         $rules[] = [['hitAt'], DateTimeValidator::class];
-        $rules[] = [['hitCount', 'destinationElementId', 'destinationSiteId', 'catchAllId'], 'number', 'integerOnly' => true];
+        $rules[] = [['hitCount', 'destinationElementId', 'destinationSiteId', 'catchAllId', 'groupId'], 'number', 'integerOnly' => true];
         $rules[] = [['sourceUrl', 'destinationUrl'], 'string', 'max' => 255];
+        $rules[] = [['createdAutomatically'], 'boolean'];
         $rules[] = [['sourceUrl', 'type'], 'required', 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
 
         $rules[] = [
@@ -765,6 +800,8 @@ EOD;
         $record->hitCount = $this->hitCount;
         $record->hitAt = $this->hitAt;
         $record->sourceUrl = $this->_sourceUrl;
+        $record->createdAutomatically = $this->createdAutomatically;
+        $record->groupId = $this->groupId;
 
         // Don't overwrite an existing destinationUrl, just in case...
         if ($this->_destinationUrl) {

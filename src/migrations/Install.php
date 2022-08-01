@@ -16,8 +16,6 @@ class Install extends Migration
     public function safeUp()
     {
         $this->createTables();
-
-        echo " done\n";
     }
 
     /**
@@ -27,6 +25,15 @@ class Install extends Migration
      */
     protected function createTables()
     {
+        $this->createTable('{{%venveo_redirect_groups}}', [
+            'id' => $this->primaryKey(),
+            'name' => $this->string(128)->unique()->notNull(),
+            'description' => $this->text()->null(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+
         $this->createTable('{{%venveo_redirects}}', [
             'id' => $this->primaryKey(),
             'type' => $this->string('8')->null()->defaultValue('static')->notNull(),
@@ -35,6 +42,8 @@ class Install extends Migration
             'destinationElementId' => $this->integer()->null()->defaultValue(null),
             'destinationSiteId' => $this->integer()->null()->defaultValue(null),
             'statusCode' => $this->string(3),
+            'createdAutomatically' => $this->boolean()->defaultValue(false),
+            'groupId' => $this->integer()->null()->defaultValue(null),
             'hitCount' => $this->integer()->unsigned()->notNull()->defaultValue(0),
             'hitAt' => $this->dateTime(),
             'postDate' => $this->dateTime(),
@@ -65,6 +74,7 @@ class Install extends Migration
 
         $this->addForeignKey(null, '{{%venveo_redirects}}', ['id'], '{{%elements}}', ['id'], 'CASCADE', null);
         $this->addForeignKey(null, '{{%venveo_redirects}}', ['destinationElementId'], '{{%elements}}', ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, '{{%venveo_redirects}}', ['groupId'], '{{%venveo_redirect_groups}}', ['id'], 'SET NULL', null);
         $this->addForeignKey(null, '{{%venveo_redirects_catch_all_urls}}', ['siteId'], '{{%sites}}', ['id'], 'CASCADE', null);
 
         $this->createIndex($this->db->getIndexName('{{%venveo_redirects}}', ['sourceUrl'], false), '{{%venveo_redirects}}', ['sourceUrl'], false);
@@ -80,6 +90,7 @@ class Install extends Migration
 
     public function safeDown()
     {
+        $this->dropTableIfExists('{{%venveo_redirect_groups}}');
         $this->dropTableIfExists('{{%venveo_redirects}}');
         $this->dropTableIfExists('{{%venveo_redirects_catch_all_urls}}');
         return true;
