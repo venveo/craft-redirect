@@ -7,7 +7,6 @@ use craft\web\assets\cp\CpAsset;
 
 class RedirectsIndex extends AssetBundle
 {
-
     public function init()
     {
         $this->sourcePath = "@venveo/redirect/resources/dist";
@@ -24,4 +23,3 @@ class RedirectsIndex extends AssetBundle
         parent::init();
     }
 }
-

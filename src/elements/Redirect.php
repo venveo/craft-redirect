@@ -51,6 +51,8 @@ use yii\web\Response;
  * @property-read null|\craft\base\Element $destinationElement
  * @property-read null|string $postEditUrl
  * @property-read null|\craft\models\Site $destinationSite
+ * @property null|string $sourceUrl
+ * @property null|string $destinationUrl
  */
 class Redirect extends Element
 {
@@ -165,11 +167,11 @@ class Redirect extends Element
     public static function statuses(): array
     {
         return [
-                self::STATUS_LIVE => Craft::t('app', 'Live'),
-                self::STATUS_EXPIRED => Craft::t('app', 'Expired'),
-                self::STATUS_PENDING => Craft::t('app', 'Pending'),
-                self::STATUS_DISABLED => Craft::t('app', 'Disabled'),
-            ];
+            self::STATUS_LIVE => Craft::t('app', 'Live'),
+            self::STATUS_EXPIRED => Craft::t('app', 'Expired'),
+            self::STATUS_PENDING => Craft::t('app', 'Pending'),
+            self::STATUS_DISABLED => Craft::t('app', 'Disabled'),
+        ];
     }
 
     /**
@@ -207,11 +209,11 @@ class Redirect extends Element
                 ],
             ];
             $groups = Plugin::getInstance()->groups->getAllGroups();
-            foreach($groups as $group) {
+            foreach ($groups as $group) {
                 $sources[] = [
-                    'key' => 'group:'.$group->uid,
+                    'key' => 'group:' . $group->uid,
                     'label' => Craft::t('site', $group->name),
-                    'criteria' => ['groupId' => $group->id]
+                    'criteria' => ['groupId' => $group->id],
                 ];
             }
             $sources[] = [
@@ -229,12 +231,11 @@ class Redirect extends Element
      */
     public function prepareEditScreen(Response $response, string $containerId): void
     {
-
         $crumbs = [
             [
                 'label' => Plugin::t('Redirects'),
                 'url' => UrlHelper::url('redirect/redirects'),
-            ]
+            ],
         ];
 
         /** @var Response|CpScreenResponseBehavior $response */
@@ -404,13 +405,13 @@ class Redirect extends Element
             new RedirectSourceUrlExistingWarning([
                 'uid' => 'sourceUrlConflictWarning',
                 'showInForm' => (bool)$conflictingElement,
-                'tip' => Plugin::t('This redirect source points to an existing page URL. The redirect will not function until the conflicting page URL is changed or the page is deactivated.')
+                'tip' => Plugin::t('This redirect source points to an existing page URL. The redirect will not function until the conflicting page URL is changed or the page is deactivated.'),
             ]);
         $layoutElements[] =
             new RedirectSourceUrlExistingWarning([
                 'uid' => 'sourceUrlDuplicate',
                 'showInForm' => (bool)$conflictingRedirects?->isNotEmpty(),
-                'tip' => Plugin::t('Another redirect exists with the same source and may prevent this redirect from functioning.')
+                'tip' => Plugin::t('Another redirect exists with the same source and may prevent this redirect from functioning.'),
             ]);
         $layoutElements[] =
             new RedirectDestinationField([
@@ -509,16 +510,18 @@ EOD;
             ]);
         })();
 
-        $groupOptions = array_map(function(Group $group) {
+        $groupOptions = array_map(function (Group $group) {
             return [
                 'label' => $group->name,
-                'value' => $group->id
+                'value' => $group->id,
             ];
         }, Plugin::getInstance()->groups->getAllGroups());
-        $groupOptions = array_merge([[
-            'label' => 'None',
-            'value' => null,
-        ]], $groupOptions);
+        $groupOptions = array_merge([
+            [
+                'label' => 'None',
+                'value' => null,
+            ]
+        ], $groupOptions);
 
         $fields[] = Cp::selectFieldHtml([
             'label' => Plugin::t('Group'),
@@ -640,7 +643,11 @@ EOD;
     {
         $rules = parent::defineRules();
         $rules[] = [['hitAt'], DateTimeValidator::class];
-        $rules[] = [['hitCount', 'destinationElementId', 'destinationSiteId', 'catchAllId', 'groupId'], 'number', 'integerOnly' => true];
+        $rules[] = [
+            ['hitCount', 'destinationElementId', 'destinationSiteId', 'catchAllId', 'groupId'],
+            'number',
+            'integerOnly' => true
+        ];
         $rules[] = [['sourceUrl', 'destinationUrl'], 'string', 'max' => 255];
         $rules[] = [['createdAutomatically'], 'boolean'];
         $rules[] = [['sourceUrl', 'type'], 'required', 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
@@ -649,7 +656,7 @@ EOD;
             ['type'],
             'in',
             'range' => [self::TYPE_STATIC, self::TYPE_DYNAMIC],
-            'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]
+            'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
         ];
         $rules[] = [['statusCode'], 'in', 'range' => array_keys(self::getRedirectStatusCodes())];
 
@@ -658,14 +665,14 @@ EOD;
             'destinationElementId',
             'exist',
             'targetClass' => \craft\records\Element::class,
-            'targetAttribute' => ['destinationElementId' => 'id']
+            'targetAttribute' => ['destinationElementId' => 'id'],
         ];
         $rules[] = [
             'destinationSiteId',
             'required',
             'when' => function ($model) {
                 return !empty($model->destinationElementId);
-            }
+            },
         ];
         $rules[] = [
             'destinationUrl',
@@ -673,7 +680,7 @@ EOD;
             'when' => function ($model) {
                 return empty($model->destinationElementId);
             },
-            'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]
+            'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
         ];
         // TODO: Re-add validation for URLs
 //        $rules[] = [
@@ -755,15 +762,18 @@ EOD;
         $this->_destinationUrl = $this->formatUrl(trim($value), false);
     }
 
-    public function setSourceUrl($value): void {
+    public function setSourceUrl($value): void
+    {
         $this->_sourceUrl = $this->formatUrl(trim($value), true);
     }
 
-    public function getDestinationUrl(): ?string {
+    public function getDestinationUrl(): ?string
+    {
         return $this->_destinationUrl;
     }
 
-    public function getSourceUrl(): ?string {
+    public function getSourceUrl(): ?string
+    {
         return $this->_sourceUrl;
     }
 
@@ -844,7 +854,7 @@ EOD;
         if (!$this->_sourceUrl) {
             return null;
         }
-        return static::find()->sourceUrl($this->_sourceUrl)->siteId($this->siteId)->id('NOT '. $this->getCanonicalId())->collect();
+        return static::find()->sourceUrl($this->_sourceUrl)->siteId($this->siteId)->id('NOT ' . $this->getCanonicalId())->collect();
     }
 
 
@@ -923,7 +933,7 @@ EOD;
         switch ($attribute) {
             case 'statusCode':
                 return $this->statusCode ? Html::encodeParams('{statusCode}', [
-                    'statusCode' => Plugin::t(self::getRedirectStatusCodes()[$this->statusCode])
+                    'statusCode' => Plugin::t(self::getRedirectStatusCodes()[$this->statusCode]),
                 ]) : '';
 
             case 'destinationUrl':
@@ -954,13 +964,14 @@ EOD;
             ]);
         }
         if ($this->_destinationUrl) {
-            return Html::a(Html::tag('span', $this->_destinationUrl, ['dir' => 'ltr']), $this->resolveDestinationUrl(), [
-                'href' => $this->_destinationUrl,
-                'rel' => 'noopener',
-                'target' => '_blank',
-                'class' => 'go',
-                'title' => Craft::t('app', 'Visit webpage'),
-            ]);
+            return Html::a(Html::tag('span', $this->_destinationUrl, ['dir' => 'ltr']), $this->resolveDestinationUrl(),
+                [
+                    'href' => $this->_destinationUrl,
+                    'rel' => 'noopener',
+                    'target' => '_blank',
+                    'class' => 'go',
+                    'title' => Craft::t('app', 'Visit webpage'),
+                ]);
         }
         return '';
     }
@@ -1029,12 +1040,5 @@ EOD;
             return true;
         }
         return $user->can(Plugin::PERMISSION_MANAGE_REDIRECTS) && (Craft::$app->getIsMultiSite() && $user->can('editSite:' . $this->site->uid));
-    }
-
-    protected static function defineExporters(string $source): array
-    {
-        $exporters = parent::defineExporters($source);
-        // TODO: Add custom exporter
-        return $exporters;
     }
 }

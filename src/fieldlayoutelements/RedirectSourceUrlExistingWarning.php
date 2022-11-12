@@ -6,7 +6,6 @@ use craft\base\ElementInterface;
 use craft\fieldlayoutelements\Tip;
 use venveo\redirect\elements\Redirect;
 
-
 class RedirectSourceUrlExistingWarning extends Tip
 {
     public string $style = self::STYLE_WARNING;

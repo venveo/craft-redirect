@@ -8,10 +8,8 @@ use craft\fieldlayoutelements\TextField;
 use craft\helpers\Html;
 use venveo\redirect\assetbundles\UrlFieldInputAsset;
 
-
 class RedirectSourceField extends TextField
 {
-
     /**
      * @inheritdoc
      */
@@ -48,9 +46,8 @@ class RedirectSourceField extends TextField
         ]);
         $html = Html::tag('div', $element->site->baseUrl) . $html;
         $html = Html::tag('div', $html, [
-            'class' => 'sourceUri flex'
+            'class' => 'sourceUri flex',
         ]);
         return $html;
-
     }
 }

@@ -1,9 +1,7 @@
 <?php
 /**
  *
- * @author    dolphiq & Venveo
- * @copyright Copyright (c) 2017 dolphiq
- * @copyright Copyright (c) 2019 Venveo
+ * @copyright Copyright (c) 2022 Venveo
  */
 
 namespace venveo\redirect\records;
@@ -16,5 +14,4 @@ class Group extends ActiveRecord
     {
         return '{{%venveo_redirect_groups}}';
     }
-
 }

@@ -12,7 +12,6 @@ use Craft;
 use craft\errors\SiteNotFoundException;
 use craft\helpers\AdminTable;
 use craft\helpers\Html;
-use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use venveo\redirect\Plugin;
 use venveo\redirect\records\CatchAllUrl;

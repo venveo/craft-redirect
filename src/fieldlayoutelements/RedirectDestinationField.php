@@ -11,10 +11,8 @@ use venveo\redirect\assetbundles\UrlFieldInputAsset;
 use venveo\redirect\elements\Redirect;
 use venveo\redirect\Plugin;
 
-
 class RedirectDestinationField extends BaseNativeField
 {
-
     /**
      * @inheritdoc
      */
@@ -71,15 +69,15 @@ class RedirectDestinationField extends BaseNativeField
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         $config = [
-            'id' => 'redirectDestination'
+            'id' => 'redirectDestination',
         ];
         $destinationSites = Plugin::getInstance()->redirects->getValidSites();
-        $config['siteOptions'] = array_map(function ($site) {
+        $config['siteOptions'] = array_map(function($site) {
             return [
                 'id' => $site->id,
                 'baseUrl' => $site->getBaseUrl(),
                 'name' => $site->name,
-                'handle' => $site->handle
+                'handle' => $site->handle,
             ];
         }, $destinationSites);
 
@@ -92,11 +90,11 @@ new Craft.Redirects.UrlFieldInput(container, $settings);
 JS, [
             $view->getNamespace(),
             [
-                'siteOptions' => $config['siteOptions']
-            ]
+                'siteOptions' => $config['siteOptions'],
+            ],
         ]);
 
-        $siteOptions = array_merge([['label' => 'External URL', 'value' => null]], array_map(function ($site) {
+        $siteOptions = array_merge([['label' => 'External URL', 'value' => null]], array_map(function($site) {
             return ['label' => $site->name, 'value' => $site->id];
         }, $destinationSites));
 
@@ -105,7 +103,7 @@ JS, [
                 'class' => 'sites',
                 'options' => $siteOptions,
                 'name' => 'destinationSiteId',
-                'value' => $element->destinationSiteId
+                'value' => $element->destinationSiteId,
 //                'data-attribute' => 'destinationSiteId'
             ]) .
             Html::beginTag('div', ['class' => 'destinationUrlWrapper']) .
@@ -115,12 +113,11 @@ JS, [
             Cp::textFieldHtml([
                 'class' => 'url',
                 'name' => 'destinationUrl',
-                'value' => $element->destinationUrl
+                'value' => $element->destinationUrl,
             ]) .
             Html::endTag('div') . // inner div
             Html::endTag('div'); // Outer Div
         return $html;
-
     }
 
     public function attribute(): string

@@ -37,6 +37,7 @@ use yii\web\HttpException;
 class Redirects extends Component
 {
     private static array $elementUrisChanging = [];
+
     /**
      * Returns a redirect by its ID.
      *
@@ -80,7 +81,7 @@ class Redirects extends Component
         }
 
         // Make sure we handle static redirects first
-        usort($matchedRedirects, static function($a, $b) {
+        usort($matchedRedirects, static function ($a, $b) {
             if ($a->type === 'static' && $b->type === 'dynamic') {
                 return -1;
             }
@@ -151,7 +152,7 @@ class Redirects extends Component
             return;
         }
         if (!$processedUrl) {
-            Craft::warning('A matched redirect is missing a destination URL: '. $redirect->id);
+            Craft::warning('A matched redirect is missing a destination URL: ' . $redirect->id);
             throw new NotFoundHttpException();
         }
 
@@ -215,24 +216,24 @@ class Redirects extends Component
         }
         // If there's already a redirect for this, bail
         $exists = Redirect::find()
-                ->destinationElementId($elementId)
-                ->siteId($siteId)
-                ->destinationSiteId($siteId)
-                ->sourceUrl($oldUri)->exists();
+            ->destinationElementId($elementId)
+            ->siteId($siteId)
+            ->destinationSiteId($siteId)
+            ->sourceUrl($oldUri)->exists();
         if ($exists) {
             unset(static::$elementUrisChanging[$siteId][$elementId]);
             return;
         }
 
-            $redirect = new Redirect();
-            $redirect->siteId = $siteId;
-            $redirect->createdAutomatically = true;
-            $redirect->sourceUrl = $oldUri;
-            $redirect->destinationUrl = $newUri;
-            $redirect->destinationElementId = $elementId;
-            $redirect->destinationSiteId = $siteId;
-            $redirect->type = Redirect::TYPE_STATIC;
-            $redirect->statusCode = '301';
+        $redirect = new Redirect();
+        $redirect->siteId = $siteId;
+        $redirect->createdAutomatically = true;
+        $redirect->sourceUrl = $oldUri;
+        $redirect->destinationUrl = $newUri;
+        $redirect->destinationElementId = $elementId;
+        $redirect->destinationSiteId = $siteId;
+        $redirect->type = Redirect::TYPE_STATIC;
+        $redirect->statusCode = '301';
 
         try {
             Craft::$app->elements->saveElement($redirect);

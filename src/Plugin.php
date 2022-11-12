@@ -116,8 +116,8 @@ class Plugin extends BasePlugin
             'components' => [
                 'catchAll' => CatchAll::class,
                 'redirects' => Redirects::class,
-                'groups' => Groups::class
-            ]
+                'groups' => Groups::class,
+            ],
         ];
     }
 
@@ -212,7 +212,7 @@ class Plugin extends BasePlugin
 
                 'redirect/redirects' => 'vredirect/redirects/index',
                 'redirect/redirects/new' => 'vredirect/redirects/edit-redirect',
-                'redirect/redirects/<elementId:\d+>' => 'elements/edit'
+                'redirect/redirects/<elementId:\d+>' => 'elements/edit',
             ]);
         });
     }

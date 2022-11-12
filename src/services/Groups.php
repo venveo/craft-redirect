@@ -9,13 +9,11 @@ use Throwable;
 use venveo\redirect\models\Group;
 use venveo\redirect\records\Group as GroupRecord;
 use yii\base\Component;
-use yii\base\InvalidConfigException;
 use yii\db\StaleObjectException;
 use yii\web\BadRequestHttpException;
 
 class Groups extends Component
 {
-
     /**
      * @var MemoizableArray<Group>|null
      * @see _groups()
@@ -167,7 +165,7 @@ class Groups extends Component
             ->select([
                 'groups.id',
                 'groups.name',
-                'groups.description'
+                'groups.description',
             ])
             ->from(['{{%venveo_redirect_groups}}' . ' groups']);
     }

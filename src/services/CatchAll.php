@@ -9,7 +9,6 @@
 namespace venveo\redirect\services;
 
 use Craft;
-use craft\db\Query;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use Throwable;
@@ -47,7 +46,7 @@ class CatchAll extends Component
         }
         // TODO: Switch to insert with ON DUPLICATE id increment
         // https://planetscale.com/blog/the-slotted-counter-pattern
-        
+
         // See if this URI already exists
         $params = [
             'uri' => $uri,

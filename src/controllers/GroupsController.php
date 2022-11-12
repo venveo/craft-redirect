@@ -1,4 +1,5 @@
 <?php
+
 namespace venveo\redirect\controllers;
 
 use craft\web\Controller;

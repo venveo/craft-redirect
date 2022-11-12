@@ -96,23 +96,6 @@ class RedirectQuery extends ElementQuery
     public ?int $groupId = null;
 
 
-//
-//    /**
-//     * @inheritdoc
-//     */
-//    public function __construct($elementType, array $config = [])
-//    {
-//        // Default orderBy
-//        if (!isset($config['orderBy'])) {
-//            $config['orderBy'] = 'sourceUrl';
-//        }
-//        if (!isset($config['status'])) {
-//            $config['status'] = ['live'];
-//        }
-//
-//        parent::__construct($elementType, $config);
-//    }
-
     /**
      * Sets the [[editable]] property.
      *
@@ -198,12 +181,14 @@ class RedirectQuery extends ElementQuery
         return $this;
     }
 
-    public function createdAutomatically($value = true): RedirectQuery {
+    public function createdAutomatically($value = true): RedirectQuery
+    {
         $this->createdAutomatically = $value;
         return $this;
     }
 
-    public function group($value): RedirectQuery {
+    public function group($value): RedirectQuery
+    {
         if ($value instanceof Group && isset($value->id)) {
             $this->groupId = $value->id;
         }
@@ -211,7 +196,6 @@ class RedirectQuery extends ElementQuery
             $this->groupId = $group->id;
         }
         return $this;
-
     }
 
     /**
@@ -263,13 +247,15 @@ class RedirectQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseParam('venveo_redirects.type', $this->type));
         }
         if ($this->destinationElementId) {
-            $this->subQuery->andWhere(Db::parseParam('venveo_redirects.destinationElementId', $this->destinationElementId));
+            $this->subQuery->andWhere(Db::parseParam('venveo_redirects.destinationElementId',
+                $this->destinationElementId));
         }
         if ($this->destinationSiteId) {
             $this->subQuery->andWhere(Db::parseParam('venveo_redirects.destinationSiteId', $this->destinationSiteId));
         }
         if ($this->createdAutomatically !== null) {
-            $this->subQuery->andWhere(Db::parseParam('venveo_redirects.createdAutomatically', $this->createdAutomatically));
+            $this->subQuery->andWhere(Db::parseParam('venveo_redirects.createdAutomatically',
+                $this->createdAutomatically));
         }
         if ($this->groupId !== null) {
             $this->subQuery->andWhere(Db::parseParam('venveo_redirects.groupId', $this->groupId));
@@ -281,7 +267,8 @@ class RedirectQuery extends ElementQuery
         }
 
         if ($this->matchingUri) {
-            $this->subQuery->andWhere(['and',
+            $this->subQuery->andWhere([
+                'and',
                 ['[[venveo_redirects.type]]' => 'static'],
                 ['[[venveo_redirects.sourceUrl]]' => $this->matchingUri],
             ]);
@@ -349,7 +336,4 @@ class RedirectQuery extends ElementQuery
                 return parent::statusCondition($status);
         }
     }
-
-    // Private Methods
-    // =========================================================================
 }
