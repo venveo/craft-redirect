@@ -7,9 +7,9 @@ use craft\base\ElementInterface;
 use craft\fieldlayoutelements\BaseNativeField;
 use craft\helpers\Cp;
 use craft\helpers\Html;
-use venveo\redirect\assetbundles\UrlFieldInputAsset;
 use venveo\redirect\elements\Redirect;
 use venveo\redirect\Plugin;
+use venveo\redirect\web\assets\redirectscp\RedirectsCpAsset;
 
 class RedirectDestinationField extends BaseNativeField
 {
@@ -54,7 +54,7 @@ class RedirectDestinationField extends BaseNativeField
     {
         parent::init();
 
-        Craft::$app->getView()->registerAssetBundle(UrlFieldInputAsset::class);
+        Craft::$app->getView()->registerAssetBundle(RedirectsCpAsset::class);
     }
 
     /**

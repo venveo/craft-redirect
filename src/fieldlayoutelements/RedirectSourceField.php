@@ -6,7 +6,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\fieldlayoutelements\TextField;
 use craft\helpers\Html;
-use venveo\redirect\assetbundles\UrlFieldInputAsset;
+use venveo\redirect\web\assets\redirectscp\RedirectsCpAsset;
 
 class RedirectSourceField extends TextField
 {
@@ -17,7 +17,7 @@ class RedirectSourceField extends TextField
     {
         parent::init();
 
-        Craft::$app->getView()->registerAssetBundle(UrlFieldInputAsset::class);
+        Craft::$app->getView()->registerAssetBundle(RedirectsCpAsset::class);
     }
 
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
