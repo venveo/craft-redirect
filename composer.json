@@ -1,72 +1,75 @@
 {
-    "name": "venveo/craft-redirect",
-    "description": "Craft redirect plugin provides an easy way to enter and maintain 301 and 302 redirects and 404 error pages.",
-    "type": "craft-plugin",
-    "version": "4.0.0-beta.2",
-    "keywords": [
-        "craft",
-        "cms",
-        "craftcms",
-        "craft-plugin",
-        "redirect",
-        "seo",
-        "craft3",
-        "dolphiq",
-        "venveo"
-    ],
-    "license": "MIT",
-    "support": {
-        "docs": "https://github.com/venveo/craft-redirect/blob/master/README.md",
-        "issues": "https://github.com/venveo/craft-redirect/issues"
+  "name": "venveo/craft-redirect",
+  "description": "Craft redirect plugin provides an easy way to enter and maintain 301 and 302 redirects and 404 error pages.",
+  "type": "craft-plugin",
+  "version": "4.0.0-beta.2",
+  "keywords": [
+    "craft",
+    "cms",
+    "craftcms",
+    "craft-plugin",
+    "redirect",
+    "seo",
+    "craft3",
+    "dolphiq",
+    "venveo"
+  ],
+  "license": "MIT",
+  "support": {
+    "docs": "https://github.com/venveo/craft-redirect/blob/master/README.md",
+    "issues": "https://github.com/venveo/craft-redirect/issues"
+  },
+  "authors": [
+    {
+      "name": "Venveo",
+      "email": "info@venveo.com",
+      "homepage": "https://www.venveo.com"
     },
-    "authors": [
-        {
-            "name": "Venveo",
-            "email": "info@venveo.com",
-            "homepage": "https://www.venveo.com"
-        },
-        {
-            "name": "Dolphiq",
-            "email": "info@dolphiq.nl",
-            "homepage": "https://dolphiq.nl/"
-        }
-    ],
-    "require-dev": {
-        "craftcms/ecs": "dev-main",
-        "craftcms/phpstan": "dev-main",
-        "craftcms/rector": "dev-main"
-    },
-    "require": {
-        "php": "^8.0.2",
-        "craftcms/cms": "^4.0.0"
-    },
-    "autoload": {
-        "psr-4": {
-          "venveo\\redirect\\": "src/"
-        }
-    },
-    "scripts": {
-        "check-cs": "ecs check --ansi",
-        "fix-cs": "ecs check --ansi --fix",
-        "phpstan": "phpstan --memory-limit=1G"
-    },
-    "config": {
-        "platform": {
-            "php": "8.0.2"
-        },
-        "allow-plugins": {
-            "yiisoft/yii2-composer": true,
-            "craftcms/plugin-installer": true
-        }
-    },
-    "extra": {
-        "name": "Redirects",
-        "handle": "vredirect",
-        "developer": "Venveo",
-        "developerUrl": "https://www.venveo.com",
-        "description": "Craft redirect plugin provides an easy way to enter and maintain 301 and 302 redirects and 404 error pages.",
-        "documentationUrl": "https://github.com/venveo/craft-redirect/blob/master/README.md",
-        "changelogUrl": "https://raw.githubusercontent.com/venveo/craft-redirect/master/CHANGELOG.md",
-        "class": "venveo\\redirect\\Plugin"
+    {
+      "name": "Dolphiq",
+      "email": "info@dolphiq.nl",
+      "homepage": "https://dolphiq.nl/"
     }
+  ],
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "require-dev": {
+    "craftcms/ecs": "dev-main",
+    "craftcms/phpstan": "dev-main",
+    "craftcms/rector": "dev-main"
+  },
+  "require": {
+    "php": "^8.0.2",
+    "craftcms/cms": "^4.0.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "venveo\\redirect\\": "src/"
+    }
+  },
+  "scripts": {
+    "check-cs": "ecs check --ansi",
+    "fix-cs": "ecs check --ansi --fix",
+    "phpstan": "phpstan --memory-limit=1G"
+  },
+  "config": {
+    "sort-packages": true,
+    "platform": {
+      "php": "8.0.2"
+    },
+    "allow-plugins": {
+      "yiisoft/yii2-composer": true,
+      "craftcms/plugin-installer": true
+    }
+  },
+  "extra": {
+    "name": "Redirects",
+    "handle": "vredirect",
+    "developer": "Venveo",
+    "developerUrl": "https://www.venveo.com",
+    "description": "Craft redirect plugin provides an easy way to enter and maintain 301 and 302 redirects and 404 error pages.",
+    "documentationUrl": "https://github.com/venveo/craft-redirect/blob/master/README.md",
+    "changelogUrl": "https://raw.githubusercontent.com/venveo/craft-redirect/master/CHANGELOG.md",
+    "class": "venveo\\redirect\\Plugin"
+  }
 }

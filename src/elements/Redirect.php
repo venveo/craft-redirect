@@ -52,6 +52,8 @@ use yii\web\Response;
  * @property-read null|string $postEditUrl
  * @property-read null|\craft\models\Site $destinationSite
  * @property null|string $sourceUrl
+ * @property-read null|\Illuminate\Support\Collection $duplicateRedirects
+ * @property-read null|\craft\base\ElementInterface $conflictingElementForSource
  * @property null|string $destinationUrl
  */
 class Redirect extends Element
@@ -67,7 +69,7 @@ class Redirect extends Element
     public const STATUS_CODE_PERMANENT = 301;
 
     /**
-     * @var string sourceUrl
+     * @var string|null sourceUrl
      */
     private ?string $_sourceUrl = null;
     /**
@@ -620,7 +622,7 @@ EOD;
         if ($status == self::STATUS_ENABLED && $this->postDate) {
             $currentTime = DateTimeHelper::currentTimeStamp();
             $postDate = $this->postDate->getTimestamp();
-            $expiryDate = ($this->expiryDate ? $this->expiryDate->getTimestamp() : null);
+            $expiryDate = ($this->expiryDate?->getTimestamp());
 
             if ($postDate <= $currentTime && ($expiryDate === null || $expiryDate > $currentTime)) {
                 return self::STATUS_LIVE;

@@ -12,6 +12,12 @@ use yii\base\Component;
 use yii\db\StaleObjectException;
 use yii\web\BadRequestHttpException;
 
+/**
+ *
+ * @property-read Group[] $allGroups
+ * @property string $name
+ * @property string $description
+ */
 class Groups extends Component
 {
     /**
@@ -23,7 +29,7 @@ class Groups extends Component
     /**
      * Serializer
      */
-    public function __serialize()
+    public function __serialize(): array
     {
         $vars = get_object_vars($this);
         unset($vars['_groups']);

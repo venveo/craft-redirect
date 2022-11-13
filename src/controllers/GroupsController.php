@@ -6,7 +6,6 @@ use craft\web\Controller;
 use venveo\redirect\models\Group;
 use venveo\redirect\Plugin;
 use yii\web\BadRequestHttpException;
-use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\Response as YiiResponse;
@@ -42,22 +41,17 @@ class GroupsController extends Controller
      * @param int|null $id The group’s id, if editing an existing group.
      * @param Group|null $group The group being edited, if there were any validation errors.
      * @return Response
-     * @throws ForbiddenHttpException if the user is not an admin
      * @throws NotFoundHttpException if the requested group` cannot be found
      */
     public function actionEdit(?int $id = null, ?Group $group = null): Response
     {
-        $this->requireAdmin();
-
         $groupsService = Plugin::getInstance()->groups;
 
-        if ($group === null) {
-            if ($id !== null) {
-                $group = $groupsService->getGroupById($id);
+        if (($group === null) && $id !== null) {
+            $group = $groupsService->getGroupById($id);
 
-                if ($group === null) {
-                    throw new NotFoundHttpException('Group not found');
-                }
+            if ($group === null) {
+                throw new NotFoundHttpException('Group not found');
             }
         }
 

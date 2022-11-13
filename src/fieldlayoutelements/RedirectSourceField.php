@@ -22,6 +22,9 @@ class RedirectSourceField extends TextField
 
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
+        if (!$element) {
+            return null;
+        }
         $html = Craft::$app->getView()->renderTemplate('_includes/forms/text', [
             'type' => $this->type,
             'autocomplete' => $this->autocomplete,
