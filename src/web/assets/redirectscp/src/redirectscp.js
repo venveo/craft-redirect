@@ -3,9 +3,9 @@ import "./scss/redirectscp.scss";
 
 // JS
 (function ($) {
-    if (typeof Craft.Redirects === typeof undefined) {
-        Craft.Redirects = {};
-    }
+  if (typeof Craft.Redirects === typeof undefined) {
+    Craft.Redirects = {};
+  }
 })(jQuery);
 
 import "./js/AdminTableSiteSwitcher";
