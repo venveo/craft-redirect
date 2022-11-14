@@ -59,7 +59,7 @@ class RedirectsController extends Controller
      */
     public function actionCreate(?string $group = null): ?Response
     {
-        if ($group) {
+        if ($group || $group = $this->request->getBodyParam('group')) {
             $group = Plugin::getInstance()->groups->getGroupById($group);
             if (!$group) {
                 throw new BadRequestHttpException("Invalid group ID supplied");
@@ -110,6 +110,10 @@ class RedirectsController extends Controller
         // Title & slug
         $redirect->sourceUrl = $this->request->getQueryParam('sourceUrl');
         $redirect->catchAllId = $this->request->getQueryParam('catchAllId');
+
+        if ($group) {
+            $redirect->groupId = $group->id;
+        }
 
 
         // Pause time so postDate will definitely be equal to dateCreated, if not explicitly defined

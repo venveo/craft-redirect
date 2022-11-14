@@ -26,13 +26,14 @@ Craft.Redirects.RedirectsIndex = Craft.BaseElementIndex.extend({
       .addClass("submit add icon btngroup-btn-last");
 
     this.addListener(this.$newRedirectBtn, "click mousedown", () => {
-      this._createRedirect();
+      const sourceId = this.$source.data("id");
+      this._createRedirect(sourceId);
     });
 
     this.addButton(this.$newRedirectBtn);
   },
 
-  _createRedirect: function () {
+  _createRedirect: function (groupId) {
     if (this.$newRedirectBtn.hasClass("loading")) {
       return;
     }
@@ -42,6 +43,7 @@ Craft.Redirects.RedirectsIndex = Craft.BaseElementIndex.extend({
     Craft.sendActionRequest("POST", "vredirect/redirects/create", {
       data: {
         siteId: this.siteId,
+        group: groupId,
       },
     })
       .then(({ data }) => {

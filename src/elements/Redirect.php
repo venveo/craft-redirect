@@ -214,6 +214,9 @@ class Redirect extends Element
             foreach ($groups as $group) {
                 $sources[] = [
                     'key' => 'group:' . $group->uid,
+                    'data' => [
+                      'id' => $group->id
+                    ],
                     'label' => Craft::t('site', $group->name),
                     'criteria' => ['groupId' => $group->id],
                 ];
