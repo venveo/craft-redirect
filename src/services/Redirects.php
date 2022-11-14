@@ -209,7 +209,7 @@ class Redirects extends Component
         $siteId = $savedElement->siteId;
         $elementId = $savedElement->id;
         $oldUri = static::$elementUrisChanging[$siteId][$elementId] ?? null;
-        $newUri = $savedElement->uri;
+        $newUri = $savedElement->uri ?? null;
         // If there were no URI changes, let's bail
         if (!$oldUri || !$newUri || $oldUri === $newUri) {
             return;
