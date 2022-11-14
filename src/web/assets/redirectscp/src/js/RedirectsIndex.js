@@ -2,12 +2,9 @@
 /** global: Garnish */
 // noinspection JSVoidFunctionReturnValueUsed
 
-if (typeof Craft.Redirects === typeof undefined) {
-  Craft.Redirects = {};
-}
 Craft.Redirects.RedirectsIndex = Craft.BaseElementIndex.extend({
-  elementType: "venveo\\redirect\\elements\\Redirect",
   $newRedirectBtn: null,
+  forceCreateInSlideout: true,
 
   init: function (elementType, $container, settings) {
     this.on("selectSource", this.updateButton.bind(this));
@@ -28,7 +25,7 @@ Craft.Redirects.RedirectsIndex = Craft.BaseElementIndex.extend({
       })
       .addClass("submit add icon btngroup-btn-last");
 
-    this.addListener(this.$newRedirectBtn, "click", () => {
+    this.addListener(this.$newRedirectBtn, "click mousedown", () => {
       this._createRedirect();
     });
 
@@ -42,25 +39,31 @@ Craft.Redirects.RedirectsIndex = Craft.BaseElementIndex.extend({
 
     this.$newRedirectBtn.addClass("loading");
 
-    Craft.sendActionRequest("POST", "elements/create", {
+    Craft.sendActionRequest("POST", "vredirect/redirects/create", {
       data: {
-        elementType: this.elementType,
         siteId: this.siteId,
       },
     })
-      .then((ev) => {
-        const slideout = Craft.createElementEditor(this.elementType, {
-          siteId: this.siteId,
-          elementId: ev.data.element.id,
-          draftId: ev.data.element.draftId,
-          params: {
-            fresh: 1,
-          },
-        });
-        slideout.on("submit", () => {
-          this.selectElementAfterUpdate(ev.data.element.id);
-          this.updateElements();
-        });
+      .then(({ data }) => {
+        // NOTE:
+        if (!this.forceCreateInSlideout && this.settings.context === "index") {
+          document.location.href = Craft.getUrl(data.cpEditUrl, { fresh: 1 });
+        } else {
+          const slideout = Craft.createElementEditor(this.elementType, {
+            siteId: this.siteId,
+            elementId: data.redirect.id,
+            draftId: data.redirect.draftId,
+            params: {
+              fresh: 1,
+            },
+          });
+          slideout.on("submit", () => {
+            this.clearSearch();
+            this.setSelectedSortAttribute("dateCreated", "desc");
+            this.selectElementAfterUpdate(data.entry.id);
+            this.updateElements();
+          });
+        }
       })
       .finally(() => {
         this.$newRedirectBtn.removeClass("loading");

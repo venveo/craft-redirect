@@ -2,13 +2,11 @@
 {% set selectedSubnavItem = 'redirects' %}
 {% set title = "Redirects"|t('vredirect') %}
 {% set elementType = 'venveo\\redirect\\elements\\Redirect' %}
-
 {% set canHaveDrafts = true %}
 
 {% do view.registerTranslations('vredirect', [
     'New redirect'
 ]) %}
-{% do view.registerAssetBundle('venveo\\redirect\\web\\assets\\redirectscp\\RedirectsCpAsset')%}
 
 {% if groupId is defined %}
     {% js %}

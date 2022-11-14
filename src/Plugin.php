@@ -210,6 +210,7 @@ class Plugin extends BasePlugin
                 'redirect/dashboard' => 'vredirect/dashboard/index',
 
                 'redirect/redirects' => 'vredirect/redirects/index',
+                'redirect/redirects/create' => 'vredirect/redirects/create',
                 'redirect/redirects/new' => 'vredirect/redirects/edit-redirect',
                 'redirect/redirects/<elementId:\d+>' => 'elements/edit',
             ]);

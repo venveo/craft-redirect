@@ -14,6 +14,7 @@
 
 - Redirect source and destination URLs now get normalized when set on the element rather than on-save.
 - Removed element deletion redirect pruning
+- Creating a new redirect will now always open in a slide-out
 
 ### Fixed
 
