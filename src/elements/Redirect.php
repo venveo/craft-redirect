@@ -515,27 +515,45 @@ EOD;
             ]);
         })();
 
-        $groupOptions = array_map(function (Group $group) {
-            return [
-                'label' => $group->name,
-                'value' => $group->id,
-            ];
-        }, Plugin::getInstance()->groups->getAllGroups());
-        $groupOptions = array_merge([
-            [
-                'label' => 'None',
-                'value' => null,
-            ]
-        ], $groupOptions);
+        $fields[] = (function () use ($static) {
+            if (!$static) {
+                $view = Craft::$app->getView();
+                $groupIdInputId = $view->namespaceInputId('groupId');
+                $js = <<<EOD
+(() => {
+    const \$typeInput = $('#$groupIdInputId');
+    const editor = \$typeInput.closest('form').data('elementEditor');
+    if (editor) {
+        editor.checkForm();
+    }
+})();
+EOD;
+                $view->registerJs($js);
+            }
 
-        $fields[] = Cp::selectFieldHtml([
-            'label' => Plugin::t('Group'),
-            'id' => 'groupId',
-            'name' => 'groupId',
-            'value' => $this->groupId,
-            'options' => $groupOptions,
-            'disabled' => $static,
-        ]);
+
+            $groupOptions = array_map(function (Group $group) {
+                return [
+                    'label' => $group->name,
+                    'value' => $group->id,
+                ];
+            }, Plugin::getInstance()->groups->getAllGroups());
+            $groupOptions = array_merge([
+                [
+                    'label' => 'None',
+                    'value' => null,
+                ]
+            ], $groupOptions);
+
+            return Cp::selectFieldHtml([
+                'label' => Plugin::t('Group'),
+                'id' => 'groupId',
+                'name' => 'groupId',
+                'value' => $this->groupId,
+                'options' => $groupOptions,
+                'disabled' => $static,
+            ]);
+        })();
 
         $fields[] = parent::metaFieldsHtml($static);
 
