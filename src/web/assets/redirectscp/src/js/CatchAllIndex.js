@@ -1,7 +1,9 @@
 /** global: Craft */
 /** global: Garnish */
 // noinspection JSVoidFunctionReturnValueUsed
-
+if (typeof Craft.Redirects === typeof undefined) {
+  Craft.Redirects = {};
+}
 Craft.Redirects.CatchAllIndex = Garnish.Base.extend({
   adminTableVm: null,
   init: function (adminTableVm) {

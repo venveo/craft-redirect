@@ -40,6 +40,7 @@ use venveo\redirect\fieldlayoutelements\RedirectSourceUrlExistingWarning;
 use venveo\redirect\models\Group;
 use venveo\redirect\models\Settings;
 use venveo\redirect\Plugin;
+use venveo\redirect\records\CatchAllUrl;
 use venveo\redirect\records\Redirect as RedirectRecord;
 use yii\base\InvalidConfigException;
 use yii\db\Exception;
@@ -805,16 +806,9 @@ EOD;
      */
     public function afterSave(bool $isNew): void
     {
-        // TODO: Deal with redirects from 404 list
-        /*
-         *      $fromCatchAllId = Craft::$app->request->getBodyParam('catchAllRecordId');
-        if ($fromCatchAllId) {
-            $catchAllRecord = CatchAllUrl::findOne($fromCatchAllId);
-            if ($catchAllRecord) {
-                $catchAllRecord->delete();
-            }
+        if (!$this->getIsDraft() && $this->getStatus() === static::STATUS_LIVE && $this->type === static::TYPE_STATIC) {
+            CatchAllUrl::deleteAll(['uri' => $this->sourceUrl]);
         }
-         */
         if ($this->propagating) {
             parent::afterSave($isNew);
             return;
