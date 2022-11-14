@@ -2,10 +2,6 @@
 /** global: Garnish */
 /** global: $ */
 
-if (typeof Craft.Redirects === typeof undefined) {
-  Craft.Redirects = {};
-}
-
 (function ($) {
   Craft.Redirects.AdminTableSiteSwitcher = Garnish.Base.extend({
     $siteMenuButton: null,

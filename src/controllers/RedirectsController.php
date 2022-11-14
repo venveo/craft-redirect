@@ -59,6 +59,7 @@ class RedirectsController extends Controller
      */
     public function actionCreate(?string $group = null): ?Response
     {
+        $this->requirePermission(Plugin::PERMISSION_MANAGE_REDIRECTS);
         if ($group || $group = $this->request->getBodyParam('group')) {
             $group = Plugin::getInstance()->groups->getGroupById($group);
             if (!$group) {
@@ -109,7 +110,15 @@ class RedirectsController extends Controller
 
         // Title & slug
         $redirect->sourceUrl = $this->request->getQueryParam('sourceUrl');
-        $redirect->catchAllId = $this->request->getQueryParam('catchAllId');
+        $catchAllId = $this->request->getBodyParam('catchAllId');
+        if ($catchAllId) {
+            $catchAll = Plugin::getInstance()->catchAll->getUrlById((int)$catchAllId);
+            if ($catchAll) {
+                $redirect->catchAllId = $catchAll->id;
+                $redirect->sourceUrl = $catchAll->uri;
+                $redirect->siteId = $catchAll->siteId;
+            }
+        }
 
         if ($group) {
             $redirect->groupId = $group->id;

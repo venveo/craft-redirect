@@ -2,9 +2,6 @@
 /** global: Garnish */
 // noinspection JSVoidFunctionReturnValueUsed
 
-if (typeof Craft.Redirects === typeof undefined) {
-  Craft.Redirects = {};
-}
 Craft.Redirects.CatchAllIndex = Garnish.Base.extend({
   adminTableVm: null,
   init: function (adminTableVm) {
@@ -14,26 +11,23 @@ Craft.Redirects.CatchAllIndex = Garnish.Base.extend({
     });
   },
   _createRedirect: function (catchAllId) {
-    Craft.sendActionRequest("POST", "elements/create", {
+    Craft.sendActionRequest("POST", "vredirect/redirects/create", {
       data: {
-        elementType: "venveo\\redirect\\elements\\Redirect",
+        siteId: this.siteId,
+        catchAllId: catchAllId,
       },
     })
-      .then((ev) => {
-        const slideout = Craft.createElementEditor(
-          "venveo\\redirect\\elements\\Redirect",
-          {
-            siteId: this.siteId,
-            elementId: ev.data.element.id,
-            draftId: ev.data.element.draftId,
-            params: {
-              fresh: 1,
-            },
-          }
-        );
+      .then(({ data }) => {
+        const slideout = Craft.createElementEditor(this.elementType, {
+          siteId: this.siteId,
+          elementId: data.redirect.id,
+          draftId: data.redirect.draftId,
+          params: {
+            fresh: 1,
+          },
+        });
         slideout.on("submit", () => {
-          this.selectElementAfterUpdate(ev.data.element.id);
-          this.updateElements();
+          this.adminTableVm.$children[0].reload();
         });
       })
       .finally(() => {});

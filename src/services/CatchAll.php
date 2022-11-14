@@ -151,6 +151,17 @@ class CatchAll extends Component
     }
 
     /**
+     * @param int $id
+     * @return CatchAllUrlRecord|null
+     */
+    public function getUrlById(int $id): CatchAllUrlRecord|null
+    {
+        return CatchAllUrlRecord::findOne([
+            'id' => $id,
+        ]);
+    }
+
+    /**
      * @param string $uid
      * @return CatchAllUrlRecord|null
      */
