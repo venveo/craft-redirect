@@ -20,7 +20,10 @@ Craft.Redirects.ElementRedirectSlideout = Garnish.Base.extend({
 
     this.elementId = elementId;
     this.siteId = siteId;
-    this.setSettings(settings, Craft.ElementRedirectSlideout.defaults);
+    this.setSettings(
+      settings,
+      Craft.Redirects.ElementRedirectSlideout.defaults
+    );
 
     this.$openDialogButton = $("#redirect-slideout-trigger > button");
 

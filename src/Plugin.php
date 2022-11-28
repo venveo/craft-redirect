@@ -13,13 +13,12 @@ namespace venveo\redirect;
 use Craft;
 use craft\base\Element;
 use craft\base\Plugin as BasePlugin;
-use craft\elements\Entry;
+use craft\events\DefineHtmlEvent;
 use craft\events\ElementEvent;
 use craft\events\ExceptionEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
-use craft\events\TemplateEvent;
 use craft\feedme\events\RegisterFeedMeElementsEvent;
 use craft\feedme\services\Elements as FeedMeElementsService;
 use craft\helpers\Json;
@@ -28,8 +27,8 @@ use craft\services\Elements;
 use craft\services\Gc;
 use craft\services\UserPermissions;
 use craft\web\ErrorHandler;
+use craft\web\Request;
 use craft\web\UrlManager;
-use craft\web\View;
 use Twig\Error\RuntimeError;
 use venveo\redirect\elements\FeedMeRedirect;
 use venveo\redirect\elements\Redirect;
@@ -38,6 +37,7 @@ use venveo\redirect\records\CatchAllUrl;
 use venveo\redirect\services\CatchAll;
 use venveo\redirect\services\Groups;
 use venveo\redirect\services\Redirects;
+use venveo\redirect\web\assets\redirectscp\RedirectsCpAsset;
 use venveo\redirect\widgets\LatestErrors;
 use yii\base\Event;
 use yii\web\HttpException;
@@ -129,7 +129,7 @@ class Plugin extends BasePlugin
      *
      * @since 2.2.0
      */
-    public static function t($message, $params = [], $language = null)
+    public static function t($message, array $params = [], $language = null): string
     {
         return Craft::t('vredirect', $message, $params, $language);
     }
@@ -150,8 +150,8 @@ class Plugin extends BasePlugin
         $this->registerWidgets();
         $this->registerPermissions();
 
-        if (Craft::$app->request->isCpRequest) {
-//            $this->attachTemplateHooks();
+        if (Craft::$app->request instanceof Request && Craft::$app->request->isCpRequest) {
+            $this->attachTemplateHooks();
             $this->registerWidgets();
         }
 
@@ -301,46 +301,50 @@ class Plugin extends BasePlugin
     }
 
     /**
-     * TODO: Update for Craft 4
      * @return void
      */
-//    protected function attachTemplateHooks()
-//    {
-//        Event::on(View::class, View::EVENT_BEFORE_RENDER_PAGE_TEMPLATE, function (TemplateEvent $e) {
-//            $currentUser = \Craft::$app->getUser()->getIdentity();
-//            if (!$currentUser || !$currentUser->can(static::PERMISSION_MANAGE_REDIRECTS)) {
-//                return;
-//            }
-//            if ($e->template === 'entries/_edit') {
-//                Craft::$app->view->registerAssetBundle(ElementRedirectSlideout::class);
-//            }
-//        });
-//        Craft::$app->view->hook('cp.entries.edit.meta', function (array &$context) {
-//            $currentUser = \Craft::$app->getUser()->getIdentity();
-//            if (!$currentUser || !$currentUser->can(static::PERMISSION_MANAGE_REDIRECTS)) {
-//                return '';
-//            }
-//            /** @var Entry $element */
-//            $element = $context['element'] ?? null;
-//            if (!$element || !$element->getCanonicalId()) {
-//                return '';
-//            }
-//            $elementId = $element->getCanonicalId();
-//            $idJs = Json::encode($elementId);
-//            $siteIdJs = Json::encode($element->siteId);
-//            Craft::$app->view->registerJs("Craft.elementRedirectSlideout = (new Craft.ElementRedirectSlideout($idJs, $siteIdJs))");
-//            $redirectCount = Redirect::find()->destinationElementId($elementId)->count();
-//            if ($redirectCount) {
-//                $word = $redirectCount > 1 ? Redirect::pluralDisplayName() : Redirect::displayName();
-//                return '
-//            <div class="data">
-//                <h5 class="heading">' . Redirect::pluralDisplayName() . '</h5>
-//                <div id="redirect-slideout-trigger" class="value"><button class="btn small">View ' . $redirectCount . ' ' . $word . '</button></div>
-//            </div>
-//            ';
-//            }
-//        });
-//    }
+    protected function attachTemplateHooks()
+    {
+        $currentUser = \Craft::$app->getUser()->getIdentity();
+        if (!$currentUser || !$currentUser->can(static::PERMISSION_MANAGE_REDIRECTS)) {
+            return;
+        }
+
+        Craft::$app->view->registerAssetBundle(RedirectsCpAsset::class);
+
+        Event::on(
+            Element::class,
+            Element::EVENT_DEFINE_SIDEBAR_HTML,
+            function (DefineHtmlEvent $event) {
+                if ($event->static) {
+                    return;
+                }
+
+                /** @var Element $element */
+                $element = $event->sender ?? null;
+
+                if (!$element || !$element->getCanonical()->uri) {
+                    return;
+                }
+                $elementId = $element->getCanonicalId();
+                $idJs = Json::encode($elementId);
+                $siteIdJs = Json::encode($element->siteId);
+                Craft::$app->view->registerJs("Craft.elementRedirectSlideout = (new Craft.Redirects.ElementRedirectSlideout($idJs, $siteIdJs))");
+                $redirectCount = Redirect::find()->destinationElementId($elementId)->count();
+                if ($redirectCount) {
+                    $word = $redirectCount > 1 ? Redirect::pluralDisplayName() : Redirect::displayName();
+                    $event->html .= '
+<dl class="meta read-only">
+            <div class="data">
+                <h5 class="heading">' . Redirect::pluralDisplayName() . '</h5>
+                <div id="redirect-slideout-trigger" class="value"><button class="btn small">View ' . $redirectCount . ' ' . $word . '</button></div>
+            </div>
+</dl>
+            ';
+                }
+            }
+        );
+    }
 
     private function registerWidgets()
     {
