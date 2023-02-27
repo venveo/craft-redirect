@@ -70,6 +70,16 @@ class Redirects extends Component
             $searchUri .= '?' . $queryString;
         }
 
+        // Strip site path if it exists
+        if ($baseUrl = Craft::$app->getSites()->getCurrentSite()->getBaseUrl()) {
+            if ($basePath = parse_url($baseUrl, PHP_URL_PATH)) {
+                $sitePath = trim($basePath, '/');
+                if (!empty($sitePath) && str_starts_with($searchUri, "{$sitePath}/")) {
+                    $searchUri = substr($searchUri, strlen("{$sitePath}/"));
+                }
+            }
+        }
+
         $query = new RedirectQuery(Redirect::class);
         $query->matchingUri = $searchUri;
         $matchedRedirects = $query->all();
@@ -167,7 +177,13 @@ class Redirects extends Component
             $redirectRecord->save();
         }
 
-        Craft::$app->response->redirect(UrlHelper::url($processedUrl), $redirect->statusCode)->send();
+        if ($redirect->destinationSiteId) {
+            $redirectUrl = UrlHelper::siteUrl($processedUrl, null, null, $redirect->destinationSiteId);
+        } else {
+            $redirectUrl = UrlHelper::url($processedUrl);
+        }
+
+        Craft::$app->response->redirect($redirectUrl, $redirect->statusCode)->send();
 
         try {
             Craft::$app->end();
