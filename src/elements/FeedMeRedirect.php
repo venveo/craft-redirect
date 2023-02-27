@@ -41,17 +41,17 @@ class FeedMeRedirect extends Element implements ElementInterface
     // Templates
     // =========================================================================
 
-    public function getGroupsTemplate()
+    public function getGroupsTemplate(): string
     {
         return 'vredirect/_feed-me/groups';
     }
 
-    public function getColumnTemplate()
+    public function getColumnTemplate(): string
     {
         return 'vredirect/_feed-me/column';
     }
 
-    public function getMappingTemplate()
+    public function getMappingTemplate(): string
     {
         return 'vredirect/_feed-me/map';
     }
@@ -60,7 +60,7 @@ class FeedMeRedirect extends Element implements ElementInterface
     // Public Methods
     // =========================================================================
 
-    public function getGroups()
+    public function getGroups(): array
     {
         return [];
     }
@@ -70,7 +70,7 @@ class FeedMeRedirect extends Element implements ElementInterface
      * @param array $params
      * @return ElementQueryInterface|db\RedirectQuery
      */
-    public function getQuery($settings, $params = [])
+    public function getQuery($settings, array $params = []): mixed
     {
         $query = RedirectElement::find();
 
@@ -95,7 +95,7 @@ class FeedMeRedirect extends Element implements ElementInterface
      * @param $settings
      * @return Redirect
      */
-    public function setModel($settings)
+    public function setModel($settings): \craft\base\ElementInterface
     {
         $this->element = new RedirectElement();
 
@@ -116,7 +116,7 @@ class FeedMeRedirect extends Element implements ElementInterface
      * @throws ElementNotFoundException
      * @throws Exception
      */
-    public function save($element, $settings)
+    public function save($element, $settings): bool
     {
         $this->element = $element;
 
