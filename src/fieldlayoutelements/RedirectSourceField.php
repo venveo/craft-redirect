@@ -16,8 +16,6 @@ class RedirectSourceField extends TextField
     public function init(): void
     {
         parent::init();
-
-        Craft::$app->getView()->registerAssetBundle(RedirectsCpAsset::class);
     }
 
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
@@ -25,6 +23,9 @@ class RedirectSourceField extends TextField
         if (!$element) {
             return null;
         }
+
+        Craft::$app->getView()->registerAssetBundle(RedirectsCpAsset::class);
+
         $html = Craft::$app->getView()->renderTemplate('_includes/forms/text', [
             'type' => $this->type,
             'autocomplete' => $this->autocomplete,
