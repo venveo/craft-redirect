@@ -26,6 +26,7 @@ use craft\services\Dashboard;
 use craft\services\Elements;
 use craft\services\Gc;
 use craft\services\UserPermissions;
+use craft\web\Application as WebApplication;
 use craft\web\ErrorHandler;
 use craft\web\Request;
 use craft\web\UrlManager;
@@ -150,10 +151,13 @@ class Plugin extends BasePlugin
         $this->registerWidgets();
         $this->registerPermissions();
 
-        if (Craft::$app->request instanceof Request && Craft::$app->request->isCpRequest) {
-            $this->attachTemplateHooks();
-            $this->registerWidgets();
-        }
+        // Register template hooks
+        Event::on(WebApplication::class, WebApplication::EVENT_INIT, function () {
+            if (Craft::$app->request instanceof Request && Craft::$app->request->isCpRequest) {
+                $this->attachTemplateHooks();
+                $this->registerWidgets();
+            }
+        });
 
         // Remove our soft-deleted redirects when Craft is ready
         Event::on(Gc::class, Gc::EVENT_RUN, function () {
