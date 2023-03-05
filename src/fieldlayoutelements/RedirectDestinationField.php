@@ -53,8 +53,6 @@ class RedirectDestinationField extends BaseNativeField
     public function init(): void
     {
         parent::init();
-
-        Craft::$app->getView()->registerAssetBundle(RedirectsCpAsset::class);
     }
 
     /**
@@ -68,6 +66,8 @@ class RedirectDestinationField extends BaseNativeField
      */
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
+        Craft::$app->getView()->registerAssetBundle(RedirectsCpAsset::class);
+
         $config = [
             'id' => 'redirectDestination',
         ];
