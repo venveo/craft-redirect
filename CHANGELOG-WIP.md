@@ -1,5 +1,11 @@
 # Redirect Changelog
 
+## Unreleased
+
+### Fixed
+
+- Fixed namespace issue on 404 exception
+
 ## 4.0.0-beta.2 - 2022-08-01
 
 ### Added

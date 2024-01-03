@@ -27,6 +27,7 @@ use yii\base\Component;
 use yii\base\ExitException;
 use yii\db\StaleObjectException;
 use yii\web\HttpException;
+use yii\web\NotFoundHttpException;
 
 /**
  * Class Redirects service.
