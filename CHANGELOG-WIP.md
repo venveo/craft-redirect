@@ -5,6 +5,7 @@
 ### Fixed
 
 - Fixed namespace issue on 404 exception
+- Fixed site base path not being processed out of redirects
 
 ## 4.0.0-beta.2 - 2022-08-01
 
