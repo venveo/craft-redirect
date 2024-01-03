@@ -1,6 +1,6 @@
 # Redirect Changelog
 
-## Unreleased
+## 4.0.0-beta.4 - 2024-03-01
 
 ### Added
 
@@ -10,6 +10,10 @@
 
 - Fixed namespace issue on 404 exception
 - Fixed site base path not being processed out of redirects
+
+## 4.0.0-beta.3 - 2022-12-12
+
+- Update redirect slideout for Craft 4
 
 ## 4.0.0-beta.2 - 2022-08-01
 
