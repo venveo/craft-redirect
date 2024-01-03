@@ -8,8 +8,10 @@
 
 ### Fixed
 
+- Fixed queue jobs loading assets inappropriately (@gglnx)
 - Fixed namespace issue on 404 exception
-- Fixed site base path not being processed out of redirects
+- Fixed site base path not being processed out of redirects (@gglnx)
+- Probably a lot more bugs by @gglnx - I owe him a beer
 
 ## 4.0.0-beta.3 - 2022-12-12
 
