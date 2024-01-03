@@ -147,7 +147,7 @@ class Redirects extends Component
         } elseif ($redirect->type === Redirect::TYPE_DYNAMIC) {
             $sourceUrl = $redirect->sourceUrl;
             // Add leading and trailing slashes for RegEx
-            if (mb_strpos($sourceUrl, '/') !== 0) {
+            if (!str_starts_with($sourceUrl, '/')) {
                 $sourceUrl = '/' . $sourceUrl;
             }
             if (mb_strrpos($sourceUrl, '/') !== strlen($sourceUrl)) {
@@ -162,7 +162,7 @@ class Redirects extends Component
         } else {
             return;
         }
-        if (!$processedUrl) {
+        if ($processedUrl === null) {
             Craft::warning('A matched redirect is missing a destination URL: ' . $redirect->id);
             throw new NotFoundHttpException();
         }
