@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- Added link to conflicting redirect in warning message
+
 ### Fixed
 
 - Fixed namespace issue on 404 exception

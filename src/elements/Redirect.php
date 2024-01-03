@@ -417,7 +417,7 @@ class Redirect extends Element
             new RedirectSourceUrlExistingWarning([
                 'uid' => 'sourceUrlDuplicate',
                 'showInForm' => (bool)$conflictingRedirects?->isNotEmpty(),
-                'tip' => Plugin::t('Another redirect exists with the same source and may prevent this redirect from functioning.'),
+                'conflictingRedirects' => $conflictingRedirects
             ]);
         $layoutElements[] =
             new RedirectDestinationField([
