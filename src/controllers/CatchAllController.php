@@ -185,6 +185,7 @@ class CatchAllController extends Controller
                 $uri .= '?' . $item['query'];
             }
             $rows[] = [
+                'title' => $uri,
                 'id' => $item['id'],
                 'siteId' => $item['siteId'],
                 'ignored' => $item['ignored'],

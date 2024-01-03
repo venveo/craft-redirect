@@ -1,5 +1,12 @@
 # Redirect Changelog
 
+## Unreleased
+
+### Fixed
+
+- Fixed "title" placeholder not being filled in delete dialog.
+
+
 ## 4.0.0-beta.4 - 2024-03-01
 
 ### Added
