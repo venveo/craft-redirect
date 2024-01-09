@@ -143,7 +143,7 @@ class Redirects extends Component
         $destinationUrl = null;
 
         if ($redirect->type === Redirect::TYPE_STATIC) {
-            $processedUrl = $redirect->getDestinationUrl();
+            $processedUrl = $redirect->resolveDestinationUrl();
         } elseif ($redirect->type === Redirect::TYPE_DYNAMIC) {
             $sourceUrl = $redirect->sourceUrl;
             // Add leading and trailing slashes for RegEx

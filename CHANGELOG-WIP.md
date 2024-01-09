@@ -1,14 +1,15 @@
 # Redirect Changelog
 
-## Unreleased
+## 4.0.0-beta.5 - 2024-01-09
 
 ### Fixed
 
+- Fixed broken redirects on matched entries
 - Fixed "title" placeholder not being filled in delete dialog.
 - Fixed redirects to "/" not working properly
 
 
-## 4.0.0-beta.4 - 2024-03-01
+## 4.0.0-beta.4 - 2024-01-03
 
 ### Added
 
