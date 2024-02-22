@@ -1,0 +1,48 @@
+{% extends "_layouts/cp" %}
+{% set title = 'Redirect Groups'|t('vredirect') %}
+{% set selectedSubnavItem = "groups" %}
+
+{% set crumbs = [
+    { label: "Redirects"|t('vredirect'), url: url('redirect') }
+] %}
+
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
+{% do view.registerTranslations('vredirect', [
+    "Name",
+    "No redirect groups exist yet."
+]) %}
+
+{% block actionButton %}
+    <a class="btn submit add icon" href="{{ url('redirect/groups/new') }}">{{ "New group"|t('app') }}</a>
+{% endblock %}
+
+{% block content %}
+    <div id="groups-vue-admin-table"></div>
+{% endblock %}
+
+{% set tableData = [] %}
+{% for group in groups %}
+    {% set tableData = tableData|merge([{
+        id: group.id,
+        title: group.name|t('site'),
+        description: group.description|t('site'),
+        url: url('redirect/groups/' ~ group.id),
+        name: group.name|t('site')|e,
+    }]) %}
+{% endfor %}
+
+{% js %}
+var columns = [
+    { name: '__slot:title', title: Craft.t('app', 'Name') },
+    { name: 'description', title: Craft.t('app', 'Description') }
+];
+
+new Craft.VueAdminTable({
+    columns: columns,
+    container: '#groups-vue-admin-table',
+    deleteAction: 'vredirect/groups/delete',
+    emptyMessage: Craft.t('app', 'No groups exist yet.'),
+    tableData: {{ tableData|json_encode|raw }}
+});
+{% endjs %}

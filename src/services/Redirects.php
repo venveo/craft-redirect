@@ -11,26 +11,23 @@ namespace venveo\redirect\services;
 use Craft;
 use craft\base\Element;
 use craft\errors\ElementNotFoundException;
-use craft\events\DeleteElementEvent;
 use craft\events\ElementEvent;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Site;
-use craft\services\Elements;
 use DateTime;
 use Exception;
 use Throwable;
 use venveo\redirect\elements\db\RedirectQuery;
 use venveo\redirect\elements\Redirect;
 use venveo\redirect\Plugin;
-use venveo\redirect\queue\jobs\PruneDeletedRedirects;
 use venveo\redirect\records\Redirect as RedirectRecord;
 use yii\base\Component;
-use yii\base\Event;
 use yii\base\ExitException;
 use yii\db\StaleObjectException;
 use yii\web\HttpException;
+use yii\web\NotFoundHttpException;
 
 /**
  * Class Redirects service.
@@ -41,6 +38,7 @@ use yii\web\HttpException;
 class Redirects extends Component
 {
     private static array $elementUrisChanging = [];
+
     /**
      * Returns a redirect by its ID.
      *
@@ -49,7 +47,7 @@ class Redirects extends Component
      *
      * @return Redirect|null
      */
-    public function getRedirectById(int $redirectId, int $siteId = null)
+    public function getRedirectById(int $redirectId, int $siteId = null): ?Redirect
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($redirectId, Redirect::class, $siteId);
@@ -73,18 +71,28 @@ class Redirects extends Component
             $searchUri .= '?' . $queryString;
         }
 
+        // Strip site path if it exists
+        if ($baseUrl = Craft::$app->getSites()->getCurrentSite()->getBaseUrl()) {
+            if ($basePath = parse_url($baseUrl, PHP_URL_PATH)) {
+                $sitePath = trim($basePath, '/');
+                if (!empty($sitePath) && str_starts_with($searchUri, "{$sitePath}/")) {
+                    $searchUri = substr($searchUri, strlen("{$sitePath}/"));
+                }
+            }
+        }
+
         $query = new RedirectQuery(Redirect::class);
         $query->matchingUri = $searchUri;
         $matchedRedirects = $query->all();
         if (empty($matchedRedirects)) {
-            if (Plugin::$plugin->getSettings()->catchAllActive) {
+            if (Plugin::getInstance()->getSettings()->catchAllActive) {
                 $this->register404();
             }
             return;
         }
 
         // Make sure we handle static redirects first
-        usort($matchedRedirects, function($a, $b) {
+        usort($matchedRedirects, static function ($a, $b) {
             if ($a->type === 'static' && $b->type === 'dynamic') {
                 return -1;
             }
@@ -111,7 +119,7 @@ class Redirects extends Component
      */
     public function register404()
     {
-        $catchAllService = Plugin::$plugin->catchAll;
+        $catchAllService = Plugin::getInstance()->catchAll;
         $settings = Plugin::getInstance()->getSettings();
 
         $fullPath = Craft::$app->request->getFullPath();
@@ -135,24 +143,28 @@ class Redirects extends Component
         $destinationUrl = null;
 
         if ($redirect->type === Redirect::TYPE_STATIC) {
-            $processedUrl = $redirect->getDestinationUrl();
+            $processedUrl = $redirect->resolveDestinationUrl();
         } elseif ($redirect->type === Redirect::TYPE_DYNAMIC) {
             $sourceUrl = $redirect->sourceUrl;
             // Add leading and trailing slashes for RegEx
-            if (mb_strpos($sourceUrl, '/') !== 0) {
+            if (!str_starts_with($sourceUrl, '/')) {
                 $sourceUrl = '/' . $sourceUrl;
             }
             if (mb_strrpos($sourceUrl, '/') !== strlen($sourceUrl)) {
                 $sourceUrl .= '/';
             }
             // Only preg_replace if there are replacements available
-            if (preg_match('/\$[1-9]+/', $redirect->getDestinationUrl())) {
-                $processedUrl = preg_replace($sourceUrl, $redirect->getDestinationUrl(), $uri);
+            if (preg_match('/\$[1-9]+/', $redirect->resolveDestinationUrl())) {
+                $processedUrl = preg_replace($sourceUrl, $redirect->resolveDestinationUrl(), $uri);
             } else {
                 $processedUrl = $redirect->getDestinationUrl();
             }
         } else {
             return;
+        }
+        if ($processedUrl === null) {
+            Craft::warning('A matched redirect is missing a destination URL: ' . $redirect->id);
+            throw new NotFoundHttpException();
         }
 
         // Saving elements takes a while - we're going to do our incrementing
@@ -166,7 +178,13 @@ class Redirects extends Component
             $redirectRecord->save();
         }
 
-        Craft::$app->response->redirect(UrlHelper::url($processedUrl), $redirect->statusCode)->send();
+        if ($redirect->destinationSiteId) {
+            $redirectUrl = UrlHelper::siteUrl($processedUrl, null, null, $redirect->destinationSiteId);
+        } else {
+            $redirectUrl = UrlHelper::url($processedUrl);
+        }
+
+        Craft::$app->response->redirect($redirectUrl, $redirect->statusCode)->send();
 
         try {
             Craft::$app->end();
@@ -189,7 +207,7 @@ class Redirects extends Component
             static::$elementUrisChanging[$siteId] = [];
         }
         // Grab the current URI from the database and store it
-        $oldUri = Craft::$app->elements->getElementById($elementId, null, $siteId)->uri;
+        $oldUri = Craft::$app->elements->getElementById($elementId, null, $siteId)?->uri;
         if ($oldUri) {
             static::$elementUrisChanging[$siteId][$elementId] = $oldUri;
         }
@@ -208,17 +226,17 @@ class Redirects extends Component
         $siteId = $savedElement->siteId;
         $elementId = $savedElement->id;
         $oldUri = static::$elementUrisChanging[$siteId][$elementId] ?? null;
-        $newUri = $savedElement->uri;
+        $newUri = $savedElement->uri ?? null;
         // If there were no URI changes, let's bail
         if (!$oldUri || !$newUri || $oldUri === $newUri) {
             return;
         }
         // If there's already a redirect for this, bail
         $exists = Redirect::find()
-                ->destinationElementId($elementId)
-                ->siteId($siteId)
-                ->destinationSiteId($siteId)
-                ->sourceUrl($oldUri)->exists();
+            ->destinationElementId($elementId)
+            ->siteId($siteId)
+            ->destinationSiteId($siteId)
+            ->sourceUrl($oldUri)->exists();
         if ($exists) {
             unset(static::$elementUrisChanging[$siteId][$elementId]);
             return;
@@ -226,7 +244,9 @@ class Redirects extends Component
 
         $redirect = new Redirect();
         $redirect->siteId = $siteId;
+        $redirect->createdAutomatically = true;
         $redirect->sourceUrl = $oldUri;
+        $redirect->destinationUrl = $newUri;
         $redirect->destinationElementId = $elementId;
         $redirect->destinationSiteId = $siteId;
         $redirect->type = Redirect::TYPE_STATIC;
@@ -246,65 +266,13 @@ class Redirects extends Component
         }
     }
 
-    /**
-     * When an element is deleted, we'll delete its redirects as well
-     *
-     * @param DeleteElementEvent $e
-     */
-    public function handleElementDeleted(DeleteElementEvent $e)
-    {
-        /** @var Element $element */
-        $element = $e->element;
-        if ($element instanceof Redirect) {
-            return;
-        }
-
-        if (!$element->uri) {
-            return;
-        }
-
-        $job = new PruneDeletedRedirects([
-            'deletedElementId' => $element->id,
-            'deletedElementUri' => $element->uri,
-            'siteId' => $element->siteId,
-            'hardDelete' => $e->hardDelete,
-        ]);
-        Craft::$app->queue->push($job);
-    }
-
-
-    /**
-     * When an element is restored, we'll try to restore any related redirects
-     *
-     * @param ElementEvent $e
-     * @throws Throwable
-     * @throws \yii\base\Exception
-     */
-    public function handleElementRestored(ElementEvent $e)
-    {
-        /** @var Element $element */
-        $element = $e->element;
-        if ($element instanceof Redirect) {
-            return;
-        }
-
-        if (!$element->uri) {
-            return;
-        }
-
-        // We'll search by URL and by ID just to be thorough
-        $redirectsByUrl = Redirect::find()->destinationUrl($element->uri)->siteId($element->siteId)->trashed(true)->all();
-        $redirectsById = Redirect::find()->destinationElementId($element->id)->siteId($element->siteId)->trashed(true)->all();
-        Craft::$app->elements->restoreElements($redirectsById);
-        Craft::$app->elements->restoreElements($redirectsByUrl);
-    }
 
     /**
      * Returns all sites that the user can create redirects in
      *
      * @return Site[]
      */
-    public function getValidSites()
+    public function getValidSites(): array
     {
         $sites = [];
         foreach (Craft::$app->getSites()->getEditableSites() as $site) {

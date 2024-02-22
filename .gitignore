@@ -17,3 +17,5 @@
 .DQ
 .php_cs.cache
 /tests/*
+
+.idea

@@ -24,16 +24,15 @@ use yii\db\StaleObjectException;
 class CatchAll extends Component
 {
     /**
-     * Register a hit to the catch all uri by its uri.
+     * Register a hit to the catch-all uri by its uri.
      *
      * @param string $uri
-     * @param null $queryString
+     * @param string|null $queryString
      * @param int|null $siteId
      * @return bool
-     * @throws Throwable
      * @throws StaleObjectException
      */
-    public function registerHitByUri(string $uri, $queryString = null, $siteId = null): bool
+    public function registerHitByUri(string $uri, string $queryString = null, int $siteId = null): bool
     {
         if ($siteId === null) {
             $siteId = Craft::$app->getSites()->currentSite->id;
@@ -45,6 +44,8 @@ class CatchAll extends Component
         if (strlen($uri) > CatchAllUrlRecord::MAX_URI_LENGTH || strlen($query) > CatchAllUrlRecord::MAX_QUERY_LENGTH) {
             return true;
         }
+        // TODO: Switch to insert with ON DUPLICATE id increment
+        // https://planetscale.com/blog/the-slotted-counter-pattern
 
         // See if this URI already exists
         $params = [
@@ -70,14 +71,14 @@ class CatchAll extends Component
             ++$catchAllURL->hitCount;
         }
 
-        if (Craft::$app->request->referrer && Plugin::$plugin->getSettings()->storeReferrer) {
+        if (Craft::$app->request->referrer && Plugin::getInstance()->getSettings()->storeReferrer) {
             $catchAllURL->referrer = Craft::$app->request->referrer;
         }
 
         $catchAllURL->save();
 
         // Give the plugin an opportunity to do some garbage collection
-        if (Plugin::$plugin->getSettings()->deleteStale404s === true) {
+        if (Plugin::getInstance()->getSettings()->deleteStale404s === true) {
             // Let's only delete a few at a time to prevent flooding. Especially after initial feature roll-out
             $this->deleteStale404s(100);
         }
@@ -91,15 +92,16 @@ class CatchAll extends Component
      * @throws Throwable
      * @throws StaleObjectException
      */
-    public function deleteStale404s($limit = null)
+    public function deleteStale404s($limit = null): void
     {
-        $hours = Plugin::$plugin->getSettings()->deleteStale404sHours;
+        $hours = Plugin::getInstance()->getSettings()->deleteStale404sHours;
 
         $interval = DateTimeHelper::secondsToInterval($hours * 60 * 60);
         $expire = DateTimeHelper::currentUTCDateTime();
         $pastTime = $expire->sub($interval);
 
         $catchAllQuery = CatchAllUrlRecord::find()
+            ->andWhere(['ignored' => false])
             ->andWhere(['<', 'dateUpdated', Db::prepareDateForDb($pastTime)]);
 
         if ($limit) {
@@ -118,7 +120,7 @@ class CatchAll extends Component
      * @param int $id
      * @return bool
      */
-    public function ignoreUrlById(int $id)
+    public function ignoreUrlById(int $id): bool
     {
         $catchAllURL = CatchAllUrlRecord::findOne($id);
 
@@ -149,10 +151,21 @@ class CatchAll extends Component
     }
 
     /**
-     * @param string $uid
-     * @return CatchAllUrlRecord
+     * @param int $id
+     * @return CatchAllUrlRecord|null
      */
-    public function getUrlByUid(string $uid): CatchAllUrlRecord
+    public function getUrlById(int $id): CatchAllUrlRecord|null
+    {
+        return CatchAllUrlRecord::findOne([
+            'id' => $id,
+        ]);
+    }
+
+    /**
+     * @param string $uid
+     * @return CatchAllUrlRecord|null
+     */
+    public function getUrlByUid(string $uid): CatchAllUrlRecord|null
     {
         return CatchAllUrlRecord::findOne([
             'uid' => $uid,

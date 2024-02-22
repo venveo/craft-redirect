@@ -12,7 +12,6 @@ use Craft;
 use craft\errors\SiteNotFoundException;
 use craft\helpers\AdminTable;
 use craft\helpers\Html;
-use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use venveo\redirect\Plugin;
 use venveo\redirect\records\CatchAllUrl;
@@ -26,8 +25,9 @@ class CatchAllController extends Controller
     /**
      * Called before displaying the redirect settings index page.
      *
+     * @param null $siteId
      * @return Response
-     * @throws SiteNotFoundException
+     * @throws \yii\web\ForbiddenHttpException
      */
     public function actionIndex($siteId = null)
     {
@@ -39,7 +39,12 @@ class CatchAllController extends Controller
         return $this->renderTemplate('vredirect/_catch-all/index', []);
     }
 
-    public function actionIgnored($siteId = null)
+    /**
+     * @param $siteId
+     * @return Response
+     * @throws \yii\web\ForbiddenHttpException
+     */
+    public function actionIgnored($siteId = null): Response
     {
         $this->requirePermission(Plugin::PERMISSION_MANAGE_404S);
         if ($siteId) {
@@ -50,7 +55,12 @@ class CatchAllController extends Controller
     }
 
 
-    public function actionDelete()
+    /**
+     * @return Response
+     * @throws \yii\web\BadRequestHttpException
+     * @throws \yii\web\ForbiddenHttpException
+     */
+    public function actionDelete(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -61,7 +71,12 @@ class CatchAllController extends Controller
         return $this->asJson(['success' => true]);
     }
 
-    public function actionDeleteOne()
+    /**
+     * @return Response
+     * @throws \yii\web\BadRequestHttpException
+     * @throws \yii\web\ForbiddenHttpException
+     */
+    public function actionDeleteOne(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -72,7 +87,12 @@ class CatchAllController extends Controller
         return $this->asJson(['success' => true]);
     }
 
-    public function actionIgnore()
+    /**
+     * @return Response
+     * @throws \yii\web\BadRequestHttpException
+     * @throws \yii\web\ForbiddenHttpException
+     */
+    public function actionIgnore(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -83,7 +103,12 @@ class CatchAllController extends Controller
         return $this->asJson(['success' => true]);
     }
 
-    public function actionUnignore()
+    /**
+     * @return Response
+     * @throws \yii\web\BadRequestHttpException
+     * @throws \yii\web\ForbiddenHttpException
+     */
+    public function actionUnignore(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -94,7 +119,13 @@ class CatchAllController extends Controller
         return $this->asJson(['success' => true]);
     }
 
-    public function actionHitsTable()
+    /**
+     * @return Response
+     * @throws SiteNotFoundException
+     * @throws \yii\web\BadRequestHttpException
+     * @throws \yii\web\ForbiddenHttpException
+     */
+    public function actionHitsTable(): Response
     {
         $this->requirePermission(Plugin::PERMISSION_MANAGE_404S);
         $this->requireAcceptsJson();
@@ -154,6 +185,7 @@ class CatchAllController extends Controller
                 $uri .= '?' . $item['query'];
             }
             $rows[] = [
+                'title' => $uri,
                 'id' => $item['id'],
                 'siteId' => $item['siteId'],
                 'ignored' => $item['ignored'],
@@ -162,7 +194,7 @@ class CatchAllController extends Controller
                 'hitCount' => $item['hitCount'],
                 'dateCreated' => $item['dateCreated'],
                 'dateUpdated' => $item['dateUpdated'],
-                'menu' => ['createUrl' => UrlHelper::cpUrl('redirect/redirects/new', ['from' => $item['id']])],
+                'menu' => ['id' => $item['id']],
             ];
         }
 

@@ -3,7 +3,7 @@
 {% set title = "Registered 404 entries"|t('vredirect') %}
 
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
-{% do view.registerAssetBundle('venveo\\redirect\\assetbundles\\admintablesiteswitcher\\AdminTableSiteSwitcher') -%}
+{% do view.registerAssetBundle('venveo\\redirect\\web\\assets\\redirectscp\\RedirectsCpAsset')%}
 
 {% block contextMenu %}
     <div id="redirect-site-menu">
@@ -59,7 +59,7 @@ var columns = [
     {
         name: 'menu', callback: function (value) {
             if (value) {
-                return '<a class="btn primary small" target="_blank" href="' + value.createUrl + '">'+Craft.t('vredirect', 'Redirect')+'</a>';
+                return '<button class="btn primary small createRedirectBtn" target="_blank" data-id="'+value.id+'">'+Craft.t('vredirect', 'Redirect')+'</button>';
             }
 
             return '';
@@ -99,5 +99,6 @@ window.adminTableVm = new Craft.VueAdminTable().init({
     tableDataEndpoint: Craft.getActionUrl('vredirect/catch-all/hits-table?siteId='+ Craft.siteId)
 });
 
-new Craft.AdminTableSiteSwitcher('#redirect-site-menu', adminTableVm, Craft.siteId);
+new Craft.Redirects.AdminTableSiteSwitcher('#redirect-site-menu', adminTableVm, Craft.siteId);
+new Craft.Redirects.CatchAllIndex(adminTableVm);
 {% endjs %}

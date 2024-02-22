@@ -13,6 +13,8 @@ use Craft;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 use venveo\redirect\elements\Redirect;
+use venveo\redirect\models\Group;
+use venveo\redirect\Plugin;
 
 /**
  * RedirectQuery represents a SELECT SQL statement for redirects in a way that is independent of DBMS.
@@ -22,105 +24,77 @@ use venveo\redirect\elements\Redirect;
  */
 class RedirectQuery extends ElementQuery
 {
-    // Properties
-    // =========================================================================
-
-    // General parameters
-    // -------------------------------------------------------------------------
-
-    /**
-     * @var bool Whether to only return global sets that the user has permission to edit.
-     */
-    public $editable = false;
+    public ?bool $editable = null;
 
     /**
      * @var string|string[]|null The handle(s) that the resulting global sets must have.
      */
-    public $sourceUrl;
+    public ?string $sourceUrl = null;
 
     /**
      * @var string|string[]|null The handle(s) that the resulting global sets must have.
      */
-    public $destinationUrl;
+    public ?string $destinationUrl = null;
 
-    /**
-     * @var string|string[]|null The handle(s) that the resulting global sets must have.
-     */
-    public $statusCode;
-    /**
-     * @var string|null hitAt
-     */
-    public $hitAt;
+    public mixed $statusCode = null;
+
+
+    public mixed $hitAt = null;
 
     /**
      * @var string|null The type of redirect (static/dynamic)
      */
-    public $type;
+    public ?string $type = null;
 
     /**
      * @var string|null A URI you're trying to match against
      */
-    public $matchingUri;
+    public ?string $matchingUri = null;
 
     /**
      * @var int|null An element ID
      */
-    public $destinationElementId;
+    public ?int $destinationElementId = null;
 
     /**
      * @var int|null site id for the destination
      */
-    public $destinationSiteId;
+    public ?int $destinationSiteId = null;
 
 
     /**
      * @var mixed The Post Date that the resulting redirects must have.
      * @used-by postDate()
      */
-    public $postDate;
+    public mixed $postDate = null;
 
     /**
      * @var string|array|\DateTime The maximum Post Date that resulting redirects can have.
      * @used-by before()
      */
-    public $before;
+    public mixed $before = null;
 
     /**
      * @var string|array|\DateTime The minimum Post Date that resulting redirects can have.
      * @used-by after()
      */
-    public $after;
+    public mixed $after = null;
 
     /**
      * @var mixed The Expiry Date that the resulting redirects must have.
      * @used-by expiryDate()
      */
-    public $expiryDate;
+    public mixed $expiryDate = null;
 
     /**
      * @inheritdoc
      */
     protected array $defaultOrderBy = ['venveo_redirects.postDate' => SORT_DESC];
 
+    public ?bool $createdAutomatically = null;
 
-    // Public Methods
-    // =========================================================================
+    public ?int $groupId = null;
 
-    /**
-     * @inheritdoc
-     */
-    public function __construct($elementType, array $config = [])
-    {
-        // Default orderBy
-        if (!isset($config['orderBy'])) {
-            $config['orderBy'] = 'sourceUrl';
-        }
-        if (!isset($config['status'])) {
-            $config['status'] = ['live'];
-        }
-
-        parent::__construct($elementType, $config);
-    }
 
     /**
      * Sets the [[editable]] property.
@@ -136,20 +110,36 @@ class RedirectQuery extends ElementQuery
         return $this;
     }
 
-    public function expiryDate($value)
+    public function expiryDate(mixed $value)
     {
         $this->expiryDate = $value;
         return $this;
     }
 
-    public function postDate($value)
+    public function postDate(mixed $value)
     {
         $this->postDate = $value;
         return $this;
     }
 
+
     /**
-     * Sets the [[handle]] property.
+     * Sets the [[type]] property.
+     *
+     * @param string|string[]|null $value The property value
+     *
+     * @return static self reference
+     */
+    public function type($value): RedirectQuery
+    {
+        $this->type = $value;
+
+        return $this;
+    }
+
+
+    /**
+     * Sets the [[sourceUrl]] property.
      *
      * @param string|string[]|null $value The property value
      *
@@ -191,6 +181,23 @@ class RedirectQuery extends ElementQuery
         return $this;
     }
 
+    public function createdAutomatically($value = true): RedirectQuery
+    {
+        $this->createdAutomatically = $value;
+        return $this;
+    }
+
+    public function group($value): RedirectQuery
+    {
+        if ($value instanceof Group && isset($value->id)) {
+            $this->groupId = $value->id;
+        }
+        if (is_numeric($value) && $group = Plugin::getInstance()->groups->getGroupById($value)) {
+            $this->groupId = $group->id;
+        }
+        return $this;
+    }
+
     /**
      * @inheritdoc
      */
@@ -204,6 +211,8 @@ class RedirectQuery extends ElementQuery
             'venveo_redirects.destinationUrl',
             'venveo_redirects.destinationElementId',
             'venveo_redirects.destinationSiteId',
+            'venveo_redirects.createdAutomatically',
+            'venveo_redirects.groupId',
             'venveo_redirects.hitAt',
             'venveo_redirects.hitCount',
             'venveo_redirects.postDate',
@@ -225,7 +234,6 @@ class RedirectQuery extends ElementQuery
         if ($this->expiryDate) {
             $this->subQuery->andWhere(Db::parseDateParam('venveo_redirects.expiryDate', $this->expiryDate));
         }
-
         if ($this->sourceUrl) {
             $this->subQuery->andWhere(Db::parseParam('venveo_redirects.sourceUrl', $this->sourceUrl));
         }
@@ -239,18 +247,28 @@ class RedirectQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseParam('venveo_redirects.type', $this->type));
         }
         if ($this->destinationElementId) {
-            $this->subQuery->andWhere(Db::parseParam('venveo_redirects.destinationElementId', $this->destinationElementId));
+            $this->subQuery->andWhere(Db::parseParam('venveo_redirects.destinationElementId',
+                $this->destinationElementId));
         }
         if ($this->destinationSiteId) {
             $this->subQuery->andWhere(Db::parseParam('venveo_redirects.destinationSiteId', $this->destinationSiteId));
         }
+        if ($this->createdAutomatically !== null) {
+            $this->subQuery->andWhere(Db::parseParam('venveo_redirects.createdAutomatically',
+                $this->createdAutomatically));
+        }
+        if ($this->groupId !== null) {
+            $this->subQuery->andWhere(Db::parseParam('venveo_redirects.groupId', $this->groupId));
+        }
+
 
         if ($this->hitAt) {
             $this->subQuery->andWhere(Db::parseDateParam('venveo_redirects.hitAt', $this->hitAt));
         }
 
         if ($this->matchingUri) {
-            $this->subQuery->andWhere(['and',
+            $this->subQuery->andWhere([
+                'and',
                 ['[[venveo_redirects.type]]' => 'static'],
                 ['[[venveo_redirects.sourceUrl]]' => $this->matchingUri],
             ]);
@@ -318,7 +336,4 @@ class RedirectQuery extends ElementQuery
                 return parent::statusCondition($status);
         }
     }
-
-    // Private Methods
-    // =========================================================================
 }

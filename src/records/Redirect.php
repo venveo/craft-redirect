@@ -8,6 +8,7 @@
 
 namespace venveo\redirect\records;
 
+use craft\db\ActiveQuery;
 use craft\db\ActiveRecord;
 use craft\db\SoftDeleteTrait;
 use craft\records\Element;
@@ -16,7 +17,7 @@ use yii\db\ActiveQueryInterface;
 /**
  *
  * @property ActiveQueryInterface $element
- * @property Date|null hitAt
+ * @property \DateTime|null hitAt
  * @property integer|null hitCount
  * @property int $destinationElementId [int(11)]
  * @property int $destinationSiteId [int(11)]
@@ -25,6 +26,10 @@ use yii\db\ActiveQueryInterface;
  * @property string destinationUrl
  * @property string statusCode
  * @property string type
+ * @property int|null $groupId [int]
+ * @property bool $createdAutomatically
+ * @property string $postDate [datetime]
+ * @property string $expiryDate [datetime]
  */
 class Redirect extends ActiveRecord
 {
@@ -48,5 +53,15 @@ class Redirect extends ActiveRecord
     public function getElement(): ActiveQueryInterface
     {
         return $this->hasOne(Element::class, ['id' => 'id']);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function find(): ActiveQuery
+    {
+        return parent::find()
+            ->innerJoinWith(['element element'])
+            ->where(['element.dateDeleted' => null]);
     }
 }

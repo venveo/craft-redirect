@@ -1,0 +1,24 @@
+{% import "_includes/forms" as forms %}
+{% if group is defined and group.id %}
+{{ hiddenInput('id', group.id) }}
+{% endif %}
+
+{{ forms.textField({
+    first: true,
+    label: "Name"|t('app'),
+    id: 'name',
+    name: 'name',
+    value: (group is defined ? group.name : null),
+    errors: (group is defined ? group.getErrors('name') : null),
+    autofocus: true,
+    required: true,
+}) }}
+
+{{ forms.textareaField({
+    label: 'Description'|t('app'),
+    id: 'description',
+    class: 'nicetext',
+    name: 'description',
+    value: group.description ?? null,
+    errors: (group is defined ? group.getErrors('description') : null),
+}) }}

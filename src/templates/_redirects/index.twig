@@ -1,11 +1,15 @@
 {% extends "_layouts/elementindex" %}
 {% set selectedSubnavItem = 'redirects' %}
-{% set title = "Website Redirects"|t('vredirect') %}
+{% set title = "Redirects"|t('vredirect') %}
 {% set elementType = 'venveo\\redirect\\elements\\Redirect' %}
+{% set canHaveDrafts = true %}
 
+{% do view.registerTranslations('vredirect', [
+    'New redirect'
+]) %}
 
-{% block actionButton %}
-    <a href="{{ url( 'redirect/redirects/new') }}" class="submit btn add icon">{{ "New redirect"|t('vredirect') }}</a>
-{% endblock %}
-
-{% set showSiteMenu = 'auto' %}
+{% if groupId is defined %}
+    {% js %}
+    window.defaultGroupId = "{{ groupId|e('js') }}";
+    {% endjs %}
+{% endif %}
