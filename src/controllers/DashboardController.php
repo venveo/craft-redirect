@@ -25,7 +25,7 @@ class DashboardController extends Controller
      * @return Response
      * @throws SiteNotFoundException
      */
-    public function actionIndex(): craft\web\Response
+    public function actionIndex(): Response
     {
         return $this->renderTemplate('vredirect/dashboard/index', []);
     }

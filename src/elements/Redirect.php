@@ -587,6 +587,20 @@ EOD;
         return UrlHelper::cpUrl('redirect/redirects/' . $this->getCanonicalId());
     }
 
+    protected function crumbs(): array
+    {
+        return [
+            [
+                'label' => Plugin::t('Site Redirects'),
+                'url' => UrlHelper::cpUrl('redirect'),
+            ],
+            [
+                'label' => Plugin::t('Redirects'),
+                'url' => UrlHelper::cpUrl('redirect/redirects'),
+            ],
+        ];
+    }
+
     /**
      * Gets the actual final absolute destination URL
      *
@@ -1019,7 +1033,7 @@ EOD;
             return true;
         }
 
-        return $user->can(Plugin::PERMISSION_MANAGE_REDIRECTS) && (Craft::$app->getIsMultiSite() && $user->can('editSite:' . $this->site->uid));
+        return $user->can(Plugin::PERMISSION_MANAGE_REDIRECTS);
     }
 
 
@@ -1037,7 +1051,8 @@ EOD;
         if (parent::canDelete($user)) {
             return true;
         }
-        return $user->can(Plugin::PERMISSION_MANAGE_REDIRECTS) && (Craft::$app->getIsMultiSite() && $user->can('editSite:' . $this->site->uid));
+        
+        return $user->can(Plugin::PERMISSION_MANAGE_REDIRECTS);
     }
 
     public function canSave(User $user): bool
@@ -1045,7 +1060,8 @@ EOD;
         if (parent::canSave($user)) {
             return true;
         }
-        return $user->can(Plugin::PERMISSION_MANAGE_REDIRECTS) && (Craft::$app->getIsMultiSite() && $user->can('editSite:' . $this->site->uid));
+        
+        return $user->can(Plugin::PERMISSION_MANAGE_REDIRECTS);
     }
 
     public function canDeleteForSite(User $user): bool
@@ -1053,6 +1069,7 @@ EOD;
         if (parent::canDeleteForSite($user)) {
             return true;
         }
-        return $user->can(Plugin::PERMISSION_MANAGE_REDIRECTS) && (Craft::$app->getIsMultiSite() && $user->can('editSite:' . $this->site->uid));
+        
+        return $user->can(Plugin::PERMISSION_MANAGE_REDIRECTS);
     }
 }
