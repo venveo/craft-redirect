@@ -194,7 +194,10 @@ class CatchAllController extends Controller
                 'hitCount' => $item['hitCount'],
                 'dateCreated' => $item['dateCreated'],
                 'dateUpdated' => $item['dateUpdated'],
-                'menu' => ['id' => $item['id']],
+                'menu' => [
+                    'id' => $item['id'],
+                    'siteId' => $item['siteId'],
+                ],
             ];
         }
 

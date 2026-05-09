@@ -11,12 +11,12 @@ namespace venveo\redirect\records;
 use craft\db\ActiveRecord;
 
 /**
- * @property string uri
+ * @property string $uri
  * @property string $query
- * @property int hitCount
- * @property int|null siteId
- * @property boolean ignored
- * @property string referrer
+ * @property int $hitCount
+ * @property int|null $siteId
+ * @property boolean $ignored
+ * @property string $referrer
  * @property int $id [int(11)]
  */
 class CatchAllUrl extends ActiveRecord

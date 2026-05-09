@@ -17,7 +17,7 @@ var columns = [
     {
         name: 'menu', callback: function (value) {
             if (value) {
-                return '<a class="btn primary small" target="_blank" href="' + value.createUrl + '">' + Craft.t('vredirect', 'Redirect') + '</a>';
+                return '<button class="btn primary small createRedirectBtn" data-id="'+value.id+'" data-site-id="'+value.siteId+'">' + Craft.t('vredirect', 'Redirect') + '</button>';
             }
 
             return '';
@@ -26,7 +26,7 @@ var columns = [
 ];
 
 
-new Craft.VueAdminTable({
+var latestErrorsTable = new Craft.VueAdminTable().init({
     deleteAction: Craft.getActionUrl('vredirect/catch-all/delete-one'),
     columns: columns,
     container: '#{{ id }}',
@@ -35,5 +35,10 @@ new Craft.VueAdminTable({
     search: false,
     searchPlaceholder: Craft.t('vredirect', 'Search for 404s'),
     tableDataEndpoint: Craft.getActionUrl('vredirect/catch-all/hits-table?sort=dateCreated')
-    });
+});
+
+new Craft.Redirects.CatchAllIndex(latestErrorsTable, {
+    container: '#{{ id }}',
+    siteId: Craft.siteId
+});
 {% endjs %}

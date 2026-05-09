@@ -398,8 +398,6 @@ class Redirect extends Element
      */
     public function getFieldLayout(): FieldLayout
     {
-        $conflictingElement = $this->getConflictingElementForSource();
-        $conflictingRedirects = $this->getDuplicateRedirects();
         $layoutElements = [];
         $layoutElements[] =
             new RedirectSourceField([
@@ -411,14 +409,12 @@ class Redirect extends Element
         $layoutElements[] =
             new RedirectSourceUrlExistingWarning([
                 'uid' => 'sourceUrlConflictWarning',
-                'showInForm' => (bool)$conflictingElement,
-                'tip' => Plugin::t('This redirect source points to an existing page URL. The redirect will not function until the conflicting page URL is changed or the page is deactivated.'),
+                'warningType' => RedirectSourceUrlExistingWarning::TYPE_CONFLICT,
             ]);
         $layoutElements[] =
             new RedirectSourceUrlExistingWarning([
                 'uid' => 'sourceUrlDuplicate',
-                'showInForm' => (bool)$conflictingRedirects?->isNotEmpty(),
-                'conflictingRedirects' => $conflictingRedirects
+                'warningType' => RedirectSourceUrlExistingWarning::TYPE_DUPLICATE,
             ]);
         $layoutElements[] =
             new RedirectDestinationField([
@@ -818,7 +814,7 @@ EOD;
     public function afterSave(bool $isNew): void
     {
         if (!$this->getIsDraft() && $this->getStatus() === static::STATUS_LIVE && $this->type === static::TYPE_STATIC) {
-            CatchAllUrl::deleteAll(['uri' => $this->sourceUrl]);
+            $this->deleteMatchingCatchAllUrls();
         }
         if ($this->propagating) {
             parent::afterSave($isNew);
@@ -882,7 +878,49 @@ EOD;
         if (!$this->_sourceUrl) {
             return null;
         }
-        return static::find()->sourceUrl($this->_sourceUrl)->siteId($this->siteId)->id('NOT ' . $this->getCanonicalId())->collect();
+
+        static $inFlight = [];
+
+        $siteId = $this->siteId ?: 0;
+        $key = $siteId . ':' . $this->_sourceUrl;
+        if (isset($inFlight[$key])) {
+            return collect();
+        }
+
+        $inFlight[$key] = true;
+        try {
+            $query = static::find()
+                ->sourceUrl($this->_sourceUrl)
+                ->siteId($this->siteId);
+
+            if ($canonicalId = $this->getCanonicalId()) {
+                $query->id('NOT ' . $canonicalId);
+            }
+
+            return $query->collect();
+        } finally {
+            unset($inFlight[$key]);
+        }
+    }
+
+    private function deleteMatchingCatchAllUrls(): void
+    {
+        if ($this->catchAllId) {
+            CatchAllUrl::deleteAll(['id' => $this->catchAllId]);
+            return;
+        }
+
+        $sourceParts = parse_url($this->_sourceUrl ?? '');
+        $uri = isset($sourceParts['path']) ? ltrim($sourceParts['path'], '/') : ($this->_sourceUrl ?? '');
+        $query = $sourceParts['query'] ?? '';
+
+        CatchAllUrl::deleteAll([
+            'and',
+            ['siteId' => $this->siteId],
+            ['uri' => $uri],
+            $query === '' ? ['or', ['query' => ''], ['query' => null]] : ['query' => $query],
+            ['ignored' => false],
+        ]);
     }
 
 
@@ -901,8 +939,7 @@ EOD;
 
         $resultUrl = $url;
         $urlInfo = parse_url($resultUrl);
-        $siteUrlHost = parse_url($this->site->getBaseUrl(true), PHP_URL_HOST);
-        $siteBaseUrlParts = parse_url($this->site->getBaseUrl(true));
+        $siteBaseUrlParts = parse_url($this->getSite()->getBaseUrl(true));
 
         // If we're the source and we're static or we're not the source, we should check for relative URLs
         if ($this->type === self::TYPE_STATIC || !$isSource) {

@@ -6,22 +6,31 @@ if (typeof Craft.Redirects === typeof undefined) {
 }
 Craft.Redirects.CatchAllIndex = Garnish.Base.extend({
   adminTableVm: null,
-  init: function (adminTableVm) {
+  $container: null,
+  init: function (adminTableVm, settings) {
     this.adminTableVm = adminTableVm;
-    $(document.body).on("click", ".createRedirectBtn", (ev) => {
-      this._createRedirect(ev.target.dataset.id);
+    this.setSettings(settings, Craft.Redirects.CatchAllIndex.defaults);
+    this.$container = $(this.settings.container || document.body);
+    this.$container.on("click", ".createRedirectBtn", (ev) => {
+      ev.preventDefault();
+      ev.stopImmediatePropagation();
+      this._createRedirect(
+        ev.currentTarget.dataset.id,
+        ev.currentTarget.dataset.siteId
+      );
     });
   },
-  _createRedirect: function (catchAllId) {
+  _createRedirect: function (catchAllId, siteId) {
+    siteId = siteId || this.settings.siteId || Craft.siteId;
     Craft.sendActionRequest("POST", "vredirect/redirects/create", {
       data: {
-        siteId: this.siteId,
+        siteId: siteId,
         catchAllId: catchAllId,
       },
     })
       .then(({ data }) => {
-        const slideout = Craft.createElementEditor(this.elementType, {
-          siteId: this.siteId,
+        const slideout = Craft.createElementEditor(this.settings.elementType, {
+          siteId: siteId,
           elementId: data.redirect.id,
           draftId: data.redirect.draftId,
           params: {
@@ -29,9 +38,20 @@ Craft.Redirects.CatchAllIndex = Garnish.Base.extend({
           },
         });
         slideout.on("submit", () => {
-          this.adminTableVm.$children[0].reload();
+          if (
+            this.adminTableVm &&
+            this.adminTableVm.$children &&
+            this.adminTableVm.$children[0]
+          ) {
+            this.adminTableVm.$children[0].reload();
+          }
         });
-      })
-      .finally(() => {});
+      });
+  },
+}, {
+  defaults: {
+    container: null,
+    siteId: null,
+    elementType: "venveo\\redirect\\elements\\Redirect",
   },
 });

@@ -9,7 +9,6 @@
 
 namespace venveo\redirect\elements\db;
 
-use Craft;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 use venveo\redirect\elements\Redirect;
@@ -272,19 +271,6 @@ class RedirectQuery extends ElementQuery
                 ['[[venveo_redirects.type]]' => 'static'],
                 ['[[venveo_redirects.sourceUrl]]' => $this->matchingUri],
             ]);
-            if (Craft::$app->db->getIsPgsql()) {
-                $this->subQuery->orWhere([
-                    'and',
-                    ['[[venveo_redirects.type]]' => 'dynamic'],
-                    ':uri SIMILAR TO [[venveo_redirects.sourceUrl]]',
-                ], ['uri' => $this->matchingUri]);
-            } else {
-                $this->subQuery->orWhere([
-                    'and',
-                    ['[[venveo_redirects.type]]' => 'dynamic'],
-                    ':uri RLIKE [[venveo_redirects.sourceUrl]]',
-                ], ['uri' => $this->matchingUri]);
-            }
         }
 
         return parent::beforePrepare();
@@ -296,7 +282,7 @@ class RedirectQuery extends ElementQuery
      */
     protected function statusCondition(string $status): mixed
     {
-        $currentTimeDb = Db::prepareDateForDb(new \DateTime(), true);
+        $currentTimeDb = Db::prepareDateForDb(new \DateTime());
 
         switch ($status) {
             case Redirect::STATUS_LIVE:

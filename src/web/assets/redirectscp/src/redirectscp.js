@@ -8,7 +8,6 @@ import "./scss/redirectscp.scss";
   }
 })(jQuery);
 
-import "./js/AdminTableSiteSwitcher";
 import "./js/CatchAllIndex";
 import "./js/ElementRedirectSlideout";
 import "./js/RedirectsIndex";

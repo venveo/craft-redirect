@@ -5,14 +5,23 @@
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 {% do view.registerAssetBundle('venveo\\redirect\\web\\assets\\redirectscp\\RedirectsCpAsset')%}
 
-{% block contextMenu %}
-    <div id="redirect-site-menu">
-        {% set siteIds = craft.app.sites.getEditableSiteIds() %}
-        {% if siteIds|length > 1 %}
-            {% include '_elements/sitemenu' %}
-        {% endif %}
-    </div>
-{% endblock %}
+{% set selectableSites = craft.app.sites.getEditableSites() %}
+{% set selectableSites = selectableSites|length ? selectableSites : [craft.app.sites.currentSite] %}
+{% set selectedSite = requestedSite and requestedSite in selectableSites ? requestedSite : selectableSites|first %}
+{% set selectedSiteId = selectedSite.id %}
+
+{% if selectableSites|length > 1 %}
+    {% set crumbs = [{
+        id: 'site-crumb',
+        icon: 'world',
+        iconAltText: 'Site'|t('app'),
+        label: selectedSite.name|t('site'),
+        menu: {
+            items: siteMenuItems(selectableSites, selectedSite),
+            label: 'Select site'|t('app')
+        }
+    }] %}
+{% endif %}
 
 {% set content %}
     <div id="hits-vue-admin-table"></div>
@@ -59,7 +68,7 @@ var columns = [
     {
         name: 'menu', callback: function (value) {
             if (value) {
-                return '<button class="btn primary small createRedirectBtn" target="_blank" data-id="'+value.id+'">'+Craft.t('vredirect', 'Redirect')+'</button>';
+                return '<button class="btn primary small createRedirectBtn" data-id="'+value.id+'" data-site-id="'+value.siteId+'">'+Craft.t('vredirect', 'Redirect')+'</button>';
             }
 
             return '';
@@ -96,9 +105,11 @@ window.adminTableVm = new Craft.VueAdminTable().init({
     padded: false,
     search: true,
     searchPlaceholder: Craft.t('vredirect', 'Search for 404s'),
-    tableDataEndpoint: Craft.getActionUrl('vredirect/catch-all/hits-table?siteId='+ Craft.siteId)
+    tableDataEndpoint: Craft.getActionUrl('vredirect/catch-all/hits-table?siteId={{ selectedSiteId|e('js') }}')
 });
 
-new Craft.Redirects.AdminTableSiteSwitcher('#redirect-site-menu', adminTableVm, Craft.siteId);
-new Craft.Redirects.CatchAllIndex(adminTableVm);
+new Craft.Redirects.CatchAllIndex(adminTableVm, {
+    container: '#hits-vue-admin-table',
+    siteId: {{ selectedSiteId|json_encode|raw }}
+});
 {% endjs %}

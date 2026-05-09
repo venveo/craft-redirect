@@ -113,17 +113,32 @@ class RedirectsController extends Controller
         $catchAllId = $this->request->getBodyParam('catchAllId');
         if ($catchAllId) {
             $catchAll = Plugin::getInstance()->catchAll->getUrlById((int)$catchAllId);
-            if ($catchAll) {
-                $redirect->catchAllId = $catchAll->id;
-                $redirect->sourceUrl = $catchAll->uri;
-                $redirect->siteId = $catchAll->siteId;
+            if (!$catchAll) {
+                throw new BadRequestHttpException("Invalid catch-all ID: $catchAllId");
             }
+
+            $catchAllSite = $catchAll->siteId ? $sitesService->getSiteById($catchAll->siteId) : null;
+            if (!$catchAllSite) {
+                throw new BadRequestHttpException("Invalid catch-all site ID: $catchAll->siteId");
+            }
+            if (!in_array((int)$catchAllSite->id, array_map('intval', $sitesService->getEditableSiteIds()), true)) {
+                throw new ForbiddenHttpException('User not authorized to create a redirect for this catch-all site.');
+            }
+
+            $redirect->catchAllId = $catchAll->id;
+            $redirect->sourceUrl = $catchAll->uri . ($catchAll->query !== null && $catchAll->query !== '' ? '?' . $catchAll->query : '');
+            $redirect->siteId = $catchAll->siteId;
         }
 
         if ($group) {
             $redirect->groupId = $group->id;
         }
 
+
+        // Re-check after catchAllId/group assignment, because catch-all rows determine the final site.
+        if (!Craft::$app->getElements()->canSave($redirect, $user)) {
+            throw new ForbiddenHttpException('User not authorized to save this redirect.');
+        }
 
         // Pause time so postDate will definitely be equal to dateCreated, if not explicitly defined
         DateTimeHelper::pause();

@@ -19,12 +19,13 @@ use craft\models\Site;
 use DateTime;
 use Exception;
 use Throwable;
-use venveo\redirect\elements\db\RedirectQuery;
 use venveo\redirect\elements\Redirect;
+use venveo\redirect\models\Settings;
 use venveo\redirect\Plugin;
 use venveo\redirect\records\Redirect as RedirectRecord;
 use yii\base\Component;
 use yii\base\ExitException;
+use yii\db\Expression;
 use yii\db\StaleObjectException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
@@ -37,6 +38,8 @@ use yii\web\NotFoundHttpException;
  */
 class Redirects extends Component
 {
+    private const DYNAMIC_PATTERN_DELIMITER = '~';
+
     private static array $elementUrisChanging = [];
 
     /**
@@ -81,11 +84,11 @@ class Redirects extends Component
             }
         }
 
-        $query = new RedirectQuery(Redirect::class);
-        $query->matchingUri = $searchUri;
-        $matchedRedirects = $query->all();
+        $matchedRedirects = $this->matchingRedirects($searchUri);
         if (empty($matchedRedirects)) {
-            if (Plugin::getInstance()->getSettings()->catchAllActive) {
+            /** @var Settings $settings */
+            $settings = Plugin::getInstance()->getSettings();
+            if ($settings->catchAllActive) {
                 $this->register404();
             }
             return;
@@ -105,7 +108,7 @@ class Redirects extends Component
         });
 
         try {
-            $this->doRedirect($matchedRedirects[0], $fullPath);
+            $this->doRedirect($matchedRedirects[0], $searchUri);
         } catch (Exception $e) {
             return;
         }
@@ -120,6 +123,7 @@ class Redirects extends Component
     public function register404()
     {
         $catchAllService = Plugin::getInstance()->catchAll;
+        /** @var Settings $settings */
         $settings = Plugin::getInstance()->getSettings();
 
         $fullPath = Craft::$app->request->getFullPath();
@@ -145,19 +149,24 @@ class Redirects extends Component
         if ($redirect->type === Redirect::TYPE_STATIC) {
             $processedUrl = $redirect->resolveDestinationUrl();
         } elseif ($redirect->type === Redirect::TYPE_DYNAMIC) {
-            $sourceUrl = $redirect->sourceUrl;
-            // Add leading and trailing slashes for RegEx
-            if (!str_starts_with($sourceUrl, '/')) {
-                $sourceUrl = '/' . $sourceUrl;
+            $sourceUrl = $this->dynamicRedirectPattern($redirect);
+            if ($sourceUrl === null) {
+                throw new NotFoundHttpException();
             }
-            if (mb_strrpos($sourceUrl, '/') !== strlen($sourceUrl)) {
-                $sourceUrl .= '/';
+            $destinationUrl = $redirect->resolveDestinationUrl();
+            if ($destinationUrl === null) {
+                Craft::warning('A matched redirect is missing a destination URL: ' . $redirect->id);
+                throw new NotFoundHttpException();
             }
             // Only preg_replace if there are replacements available
-            if (preg_match('/\$[1-9]+/', $redirect->resolveDestinationUrl())) {
-                $processedUrl = preg_replace($sourceUrl, $redirect->resolveDestinationUrl(), $uri);
+            if (preg_match('/\$[1-9]+/', $destinationUrl)) {
+                $processedUrl = @preg_replace($sourceUrl, $destinationUrl, $uri, 1);
+                if ($processedUrl === null) {
+                    $this->logInvalidDynamicPattern($redirect, $sourceUrl);
+                    throw new NotFoundHttpException();
+                }
             } else {
-                $processedUrl = $redirect->getDestinationUrl();
+                $processedUrl = $destinationUrl;
             }
         } else {
             return;
@@ -167,16 +176,10 @@ class Redirects extends Component
             throw new NotFoundHttpException();
         }
 
-        // Saving elements takes a while - we're going to do our incrementing
-        // directly on the record instead.
-        /** @var RedirectRecord $redirect */
-        $redirectRecord = RedirectRecord::findOne($redirect->id);
-
-        if ($redirectRecord) {
-            $redirectRecord->hitCount++;
-            $redirectRecord->hitAt = Db::prepareDateForDb(new DateTime());
-            $redirectRecord->save();
-        }
+        RedirectRecord::updateAll([
+            'hitCount' => new Expression('[[hitCount]] + 1'),
+            'hitAt' => Db::prepareDateForDb(new DateTime()),
+        ], ['id' => $redirect->id]);
 
         if ($redirect->destinationSiteId) {
             $redirectUrl = UrlHelper::siteUrl($processedUrl, null, null, $redirect->destinationSiteId);
@@ -191,6 +194,69 @@ class Redirects extends Component
         } catch (ExitException $e) {
             Craft::error($e->getMessage(), __METHOD__);
         }
+    }
+
+    /**
+     * @return Redirect[]
+     */
+    private function matchingRedirects(string $uri): array
+    {
+        $siteId = Craft::$app->getSites()->getCurrentSite()->id;
+        $baseQuery = Redirect::find()
+            ->siteId($siteId)
+            ->status(Redirect::STATUS_LIVE);
+
+        /** @var Redirect[] $staticRedirects */
+        $staticRedirects = (clone $baseQuery)
+            ->type(Redirect::TYPE_STATIC)
+            ->sourceUrl($uri)
+            ->all();
+
+        /** @var Redirect[] $dynamicRedirects */
+        $dynamicRedirects = (clone $baseQuery)
+            ->type(Redirect::TYPE_DYNAMIC)
+            ->all();
+
+        return array_merge($staticRedirects, array_values(array_filter(
+            $dynamicRedirects,
+            fn(Redirect $redirect) => $this->dynamicRedirectMatches($redirect, $uri)
+        )));
+    }
+
+    private function dynamicRedirectMatches(Redirect $redirect, string $uri): bool
+    {
+        $pattern = $this->dynamicRedirectPattern($redirect);
+        if ($pattern === null) {
+            return false;
+        }
+
+        $result = @preg_match($pattern, $uri);
+        if ($result === false) {
+            $this->logInvalidDynamicPattern($redirect, $pattern);
+            return false;
+        }
+
+        return $result === 1;
+    }
+
+    private function dynamicRedirectPattern(Redirect $redirect): ?string
+    {
+        $sourceUrl = $redirect->sourceUrl;
+        if (!$sourceUrl) {
+            return null;
+        }
+
+        $delimiter = self::DYNAMIC_PATTERN_DELIMITER;
+        return $delimiter . str_replace($delimiter, '\\' . $delimiter, $sourceUrl) . $delimiter;
+    }
+
+    private function logInvalidDynamicPattern(Redirect $redirect, string $pattern): void
+    {
+        Craft::warning(sprintf(
+            'Skipping redirect %s because its dynamic source pattern is invalid: %s',
+            $redirect->id ?? '(new)',
+            $pattern
+        ), __METHOD__);
     }
 
     /**

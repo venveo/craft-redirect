@@ -7,6 +7,7 @@ use craft\base\Widget;
 use craft\helpers\StringHelper;
 use craft\web\assets\admintable\AdminTableAsset;
 use venveo\redirect\Plugin;
+use venveo\redirect\web\assets\redirectscp\RedirectsCpAsset;
 
 /**
  * Top Products widget
@@ -83,6 +84,7 @@ class LatestErrors extends Widget
     {
         $view = Craft::$app->getView();
         $view->registerAssetBundle(AdminTableAsset::class);
+        $view->registerAssetBundle(RedirectsCpAsset::class);
 
         return $view->renderTemplate('vredirect/_components/widgets/latest-errors/body', [
             'id' => 'latest-errors' . StringHelper::randomString(),

@@ -60,9 +60,9 @@ class Install extends Migration
                 [
                     'id' => $this->primaryKey(),
                     'uri' => $this->string(255)->notNull()->defaultValue(''),
-                    'query' => $this->string(255)->null()->defaultValue(null),
+                    'query' => $this->string(255)->notNull()->defaultValue(''),
                     'uid' => $this->uid(),
-                    'siteId' => $this->integer()->null()->defaultValue(null),
+                    'siteId' => $this->integer()->notNull(),
                     'dateCreated' => $this->dateTime()->notNull(),
                     'dateUpdated' => $this->dateTime()->notNull(),
                     'hitCount' => $this->integer()->unsigned()->notNull()->defaultValue(0),
@@ -77,9 +77,10 @@ class Install extends Migration
         $this->addForeignKey(null, '{{%venveo_redirects}}', ['groupId'], '{{%venveo_redirect_groups}}', ['id'], 'SET NULL', null);
         $this->addForeignKey(null, '{{%venveo_redirects_catch_all_urls}}', ['siteId'], '{{%sites}}', ['id'], 'CASCADE', null);
 
-        $this->createIndex($this->db->getIndexName('{{%venveo_redirects}}', ['sourceUrl'], false), '{{%venveo_redirects}}', ['sourceUrl'], false);
-        $this->createIndex($this->db->getIndexName('{{%venveo_redirects_catch_all_urls}}', 'uri', false), '{{%venveo_redirects_catch_all_urls}}', 'uri', false);
-        $this->createIndex($this->db->getIndexName('{{%venveo_redirects}}', 'type'), '{{%venveo_redirects}}', 'type');
+        $this->createIndex(null, '{{%venveo_redirects}}', ['sourceUrl'], false);
+        $this->createIndex(null, '{{%venveo_redirects_catch_all_urls}}', 'uri', false);
+        $this->createIndex(null, '{{%venveo_redirects_catch_all_urls}}', ['siteId', 'uri', 'query'], true);
+        $this->createIndex(null, '{{%venveo_redirects}}', 'type');
 
         $this->createIndex(null, '{{%venveo_redirects}}', ['postDate'], false);
         $this->createIndex(null, '{{%venveo_redirects}}', ['expiryDate'], false);

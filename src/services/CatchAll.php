@@ -11,10 +11,15 @@ namespace venveo\redirect\services;
 use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\StringHelper;
+use craft\web\Request as WebRequest;
+use DateTime;
 use Throwable;
+use venveo\redirect\models\Settings;
 use venveo\redirect\Plugin;
 use venveo\redirect\records\CatchAllUrl as CatchAllUrlRecord;
 use yii\base\Component;
+use yii\db\Expression;
 use yii\db\StaleObjectException;
 
 /**
@@ -38,47 +43,56 @@ class CatchAll extends Component
             $siteId = Craft::$app->getSites()->currentSite->id;
         }
 
-        $query = $queryString != '' ? $queryString : null;
+        $query = $queryString !== null && $queryString !== '' ? $queryString : '';
 
         // Not interested in storing giant requests.
         if (strlen($uri) > CatchAllUrlRecord::MAX_URI_LENGTH || strlen($query) > CatchAllUrlRecord::MAX_QUERY_LENGTH) {
             return true;
         }
-        // TODO: Switch to insert with ON DUPLICATE id increment
-        // https://planetscale.com/blog/the-slotted-counter-pattern
 
-        // See if this URI already exists
-        $params = [
+        $now = Db::prepareDateForDb(new DateTime());
+        /** @var Settings $settings */
+        $settings = Plugin::getInstance()->getSettings();
+        $insertColumns = [
             'uri' => $uri,
             'query' => $query,
             'siteId' => $siteId,
+            'dateCreated' => $now,
+            'dateUpdated' => $now,
+            'hitCount' => 1,
+            'ignored' => false,
+            'uid' => StringHelper::UUID(),
         ];
-        $catchAllURL = CatchAllUrlRecord::findOne($params);
-        // It doesn't exist, so create it.
-        if (!$catchAllURL) {
-            // not found, new one!
-            $catchAllURL = new CatchAllUrlRecord();
-            $catchAllURL->uri = $uri;
-            $catchAllURL->hitCount = 1;
-            $catchAllURL->ignored = false;
-            $catchAllURL->siteId = $siteId;
-            $catchAllURL->query = $query;
-        } else {
-            // Don't bother if it's ignored
-            if ($catchAllURL->ignored) {
-                return true;
-            }
-            ++$catchAllURL->hitCount;
+
+        $updateColumns = [
+            'hitCount' => new Expression('CASE WHEN [[ignored]] = :ignored THEN [[hitCount]] ELSE [[hitCount]] + 1 END', [
+                ':ignored' => true,
+            ]),
+            'dateUpdated' => new Expression('CASE WHEN [[ignored]] = :ignored THEN [[dateUpdated]] ELSE :dateUpdated END', [
+                ':ignored' => true,
+                ':dateUpdated' => $now,
+            ]),
+        ];
+
+        $request = Craft::$app->getRequest();
+        if ($request instanceof WebRequest && $request->referrer && $settings->storeReferrer) {
+            $insertColumns['referrer'] = $request->referrer;
+            $updateColumns['referrer'] = new Expression('CASE WHEN [[ignored]] = :ignored THEN [[referrer]] ELSE :referrer END', [
+                ':ignored' => true,
+                ':referrer' => $request->referrer,
+            ]);
         }
 
-        if (Craft::$app->request->referrer && Plugin::getInstance()->getSettings()->storeReferrer) {
-            $catchAllURL->referrer = Craft::$app->request->referrer;
-        }
-
-        $catchAllURL->save();
+        Craft::$app->getDb()->createCommand()->upsert(
+            CatchAllUrlRecord::tableName(),
+            $insertColumns,
+            $updateColumns,
+            [],
+            false
+        )->execute();
 
         // Give the plugin an opportunity to do some garbage collection
-        if (Plugin::getInstance()->getSettings()->deleteStale404s === true) {
+        if ($settings->deleteStale404s === true) {
             // Let's only delete a few at a time to prevent flooding. Especially after initial feature roll-out
             $this->deleteStale404s(100);
         }
@@ -94,7 +108,9 @@ class CatchAll extends Component
      */
     public function deleteStale404s($limit = null): void
     {
-        $hours = Plugin::getInstance()->getSettings()->deleteStale404sHours;
+        /** @var Settings $settings */
+        $settings = Plugin::getInstance()->getSettings();
+        $hours = $settings->deleteStale404sHours;
 
         $interval = DateTimeHelper::secondsToInterval($hours * 60 * 60);
         $expire = DateTimeHelper::currentUTCDateTime();
