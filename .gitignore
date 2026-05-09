@@ -1,5 +1,3 @@
-# @copyright Copyright (c) 2017 dolphiq
-
 # CRAFT ENVIRONMENT
 .env.php
 .env.sh
@@ -21,3 +19,6 @@
 .idea
 
 composer.lock
+
+.omc
+.claude
