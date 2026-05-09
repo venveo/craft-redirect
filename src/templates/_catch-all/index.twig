@@ -64,8 +64,11 @@ var columns = [
     },
     {
         name: 'dateUpdated', title: Craft.t('vredirect', 'Last Hit'), sortField: 'dateUpdated'
-    },
-    {
+    }
+];
+
+{% if craft.app.user.checkPermission('vredirect:redirects:manage') %}
+columns.push({
         name: 'menu', callback: function (value) {
             if (value) {
                 return '<button class="btn primary small createRedirectBtn" data-id="'+value.id+'" data-site-id="'+value.siteId+'">'+Craft.t('vredirect', 'Redirect')+'</button>';
@@ -73,8 +76,8 @@ var columns = [
 
             return '';
         }
-    }
-];
+    });
+{% endif %}
 
 var actions = [
     {

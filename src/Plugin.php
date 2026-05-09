@@ -56,7 +56,7 @@ class Plugin extends BasePlugin
     public const PERMISSION_MANAGE_GROUPS = 'vredirect:groups:manage';
     public const PERMISSION_MANAGE_404S = 'vredirect:404s:manage';
 
-    public string $schemaVersion = '4.0.0';
+    public string $schemaVersion = '5.0.0';
 
     public bool $hasCpSection = true;
     public bool $hasCpSettings = true;
@@ -93,7 +93,10 @@ class Plugin extends BasePlugin
                 'label' => static::t('Registered 404s'),
                 'url' => 'redirect/catch-all',
             ];
-            $count = CatchAllUrl::find()->where(['=', 'ignored', false])->count();
+            $count = CatchAllUrl::find()
+                ->where(['=', 'ignored', false])
+                ->andWhere(['siteId' => Craft::$app->getSites()->getEditableSiteIds()])
+                ->count();
 
             if ($count) {
                 $subnavItems['catch-all']['badgeCount'] = $count;

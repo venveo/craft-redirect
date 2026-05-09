@@ -1,5 +1,23 @@
 # Redirect Changelog
 
+## 5.0.0-beta.2 - 2026-05-09
+
+### Added
+
+- Added support for Craft 5.
+
+### Fixed
+
+- Fixed a duplicate-source redirect crash in Craft 5 element indexes by deferring redirect warning lookups until edit-form render time.
+- Fixed front-end redirect matching so only live redirects fire, dynamic redirects are matched consistently in PHP, and invalid dynamic patterns are skipped with a warning.
+- Fixed race-prone redirect and registered-404 hit counters with atomic database updates.
+- Fixed registered-404 deduplication with a migration that adds a unique key for site, URI, and query string.
+- Fixed catch-all redirect creation permissions, query-string handling, cleanup scope, and CP/widget redirect actions.
+- Fixed the registered-404 site switcher to use Craft's native breadcrumb site selector.
+- Fixed Craft 5 redirect index custom column rendering for status codes and destinations.
+- Hardened registered-404 endpoints and widgets so actions are scoped to editable sites and redirect buttons respect redirect permissions.
+- Updated Craft 5 release metadata/docs and removed CP asset debug logging.
+
 ## 3.0.9.1 - 2021-10-14
 
 ### Fixed

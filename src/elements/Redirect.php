@@ -713,22 +713,6 @@ EOD;
             },
             'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
         ];
-        // TODO: Re-add validation for URLs
-//        $rules[] = [
-//            'destinationUrl',
-//            UrlValidator::class,
-//            'when' => function ($model) {
-//                return empty($model->destinationSiteId);
-//            }
-//        ];
-//        $rules[] = [
-//            'destinationUrl',
-//            UriValidator::class,
-//            'when' => function ($model) {
-//                return !empty($model->destinationSiteId);
-//            }
-//        ];
-
         $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
 
         return $rules;
@@ -993,7 +977,7 @@ EOD;
     /**
      * @inheritdoc
      */
-    protected function tableAttributeHtml(string $attribute): string
+    protected function attributeHtml(string $attribute): string
     {
         switch ($attribute) {
             case 'statusCode':
@@ -1010,7 +994,7 @@ EOD;
                 break;
         }
 
-        return parent::tableAttributeHtml($attribute);
+        return parent::attributeHtml($attribute);
     }
 
     /**

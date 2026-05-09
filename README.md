@@ -7,7 +7,12 @@ the website when not in use. 404s are now registered in the database and matched
 regular expressions rather than application routes. This means your dynamic route
 format will have changed from the previous version of the plugin.
 
-Additionally, the registered 404s has been rebuilt to better handle more numerous entries.
+Additionally, registered 404s have been rebuilt to better handle larger datasets.
+
+## Requirements
+
+- Craft CMS 5.0.0 or later
+- PHP 8.2 or later
 
 ## Features
 
@@ -19,7 +24,7 @@ Additionally, the registered 404s has been rebuilt to better handle more numerou
 - Intelligently normalizes input redirects to remove base URLs when appropriate, making it hard for content editors to break things
 - Track 404s registered on the website and quickly create redirects for them
 - Automatically create redirects when an element URI changes
-- Per-site permissions
+- Per-site permissions for redirects and registered 404s
 - Supports multi-site
 - Supports Feed Me for importing redirects
 

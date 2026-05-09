@@ -20,6 +20,8 @@ use venveo\redirect\web\assets\redirectscp\RedirectsCpAsset;
  */
 class LatestErrors extends Widget
 {
+    private const MAX_COUNT = 100;
+
     public $count = 25;
 
     /**
@@ -32,7 +34,8 @@ class LatestErrors extends Widget
      */
     public static function isSelectable(): bool
     {
-        return Craft::$app->getUser()->checkPermission(Plugin::PERMISSION_MANAGE_404S);
+        return Craft::$app->getUser()->checkPermission(Plugin::PERMISSION_MANAGE_404S)
+            && (bool)Craft::$app->getSites()->getEditableSiteIds();
     }
 
     /**
@@ -85,9 +88,13 @@ class LatestErrors extends Widget
         $view = Craft::$app->getView();
         $view->registerAssetBundle(AdminTableAsset::class);
         $view->registerAssetBundle(RedirectsCpAsset::class);
+        $siteIds = Craft::$app->getSites()->getEditableSiteIds();
+        $siteId = $siteIds ? (int)reset($siteIds) : Craft::$app->getSites()->getCurrentSite()->id;
 
         return $view->renderTemplate('vredirect/_components/widgets/latest-errors/body', [
             'id' => 'latest-errors' . StringHelper::randomString(),
+            'count' => min(self::MAX_COUNT, max(1, (int)$this->count)),
+            'siteId' => $siteId,
         ]);
     }
 

@@ -13,8 +13,11 @@ var columns = [
     },
     {
         name: 'dateCreated', title: Craft.t('vredirect', 'First Hit')
-    },
-    {
+    }
+];
+
+{% if craft.app.user.checkPermission('vredirect:redirects:manage') %}
+columns.push({
         name: 'menu', callback: function (value) {
             if (value) {
                 return '<button class="btn primary small createRedirectBtn" data-id="'+value.id+'" data-site-id="'+value.siteId+'">' + Craft.t('vredirect', 'Redirect') + '</button>';
@@ -22,8 +25,8 @@ var columns = [
 
             return '';
         }
-    }
-];
+    });
+{% endif %}
 
 
 var latestErrorsTable = new Craft.VueAdminTable().init({
@@ -34,11 +37,11 @@ var latestErrorsTable = new Craft.VueAdminTable().init({
     padded: false,
     search: false,
     searchPlaceholder: Craft.t('vredirect', 'Search for 404s'),
-    tableDataEndpoint: Craft.getActionUrl('vredirect/catch-all/hits-table?sort=dateCreated')
+    tableDataEndpoint: Craft.getActionUrl('vredirect/catch-all/hits-table?siteId={{ siteId|json_encode|raw }}&sort=dateUpdated%7Cdesc&per_page={{ count|json_encode|raw }}')
 });
 
 new Craft.Redirects.CatchAllIndex(latestErrorsTable, {
     container: '#{{ id }}',
-    siteId: Craft.siteId
+    siteId: {{ siteId|json_encode|raw }}
 });
 {% endjs %}

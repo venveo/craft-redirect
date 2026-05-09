@@ -9,14 +9,15 @@
     "craft-plugin",
     "redirect",
     "seo",
-    "craft3",
+    "craft5",
+    "craftcms5",
     "dolphiq",
     "venveo"
   ],
   "license": "MIT",
   "support": {
-    "docs": "https://github.com/venveo/craft-redirect/blob/master/README.md",
-    "issues": "https://github.com/venveo/craft-redirect/issues"
+    "docs": "https://github.com/venveo/craft-vredirect/blob/main/README.md",
+    "issues": "https://github.com/venveo/craft-vredirect/issues"
   },
   "authors": [
     {
@@ -67,8 +68,8 @@
     "developer": "Venveo",
     "developerUrl": "https://www.venveo.com",
     "description": "Craft redirect plugin provides an easy way to enter and maintain 301 and 302 redirects and 404 error pages.",
-    "documentationUrl": "https://github.com/venveo/craft-redirect/blob/master/README.md",
-    "changelogUrl": "https://raw.githubusercontent.com/venveo/craft-redirect/master/CHANGELOG.md",
+    "documentationUrl": "https://github.com/venveo/craft-vredirect/blob/main/README.md",
+    "changelogUrl": "https://raw.githubusercontent.com/venveo/craft-vredirect/main/CHANGELOG.md",
     "class": "venveo\\redirect\\Plugin"
   }
 }

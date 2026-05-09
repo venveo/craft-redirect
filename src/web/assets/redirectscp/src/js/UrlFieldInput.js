@@ -53,8 +53,6 @@ if (typeof Craft.Redirects === typeof undefined) {
 
         this.$prefixContainer.show();
         this.$prefixContainer.text(this.selectedSite.baseUrl);
-
-        console.log(this.selectedSite);
       },
     },
     {
